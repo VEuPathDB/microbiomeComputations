@@ -10,3 +10,7 @@ Use the R package [remotes](https://cran.r-project.org/web/packages/remotes/inde
 ```R
 remotes::install_github('VEuPathDB/microbiomeComputations')
 ```
+
+<!-- badges: start -->
+  [![R-CMD-check](https://github.com/VEuPathDB/microbiomeComputations/workflows/R-CMD-check/badge.svg)](https://github.com/VEuPathDB/microbiomeComputations/actions)
+  <!-- badges: end -->
