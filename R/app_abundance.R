@@ -1,0 +1,79 @@
+#' Ranked abundance
+#'
+#' This function returns abundances, ranked by a selected ranking function
+#' 
+#' @param otu data.frame with samples as rows, taxa as columns
+#' @param method string defining the ranking strategy by which to order the taxa. Accepted values are 'median','max','q3',and 'var'.
+#' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
+#' @param verbose boolean indicating if timed logging is desired
+#' @return something that's useful. TBD
+#' @export
+rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=10, verbose = c(TRUE, FALSE)) {
+
+    # Initialize and check inputs
+    method <- plot.data::matchArg(method)
+    verbose <- plot.data::matchArg(verbose)
+
+    computeMessage <- ''
+    plot.data::logWithTime(paste("Received OTU table with", NROW(otu), "samples and", (NCOL(otu)-1), "taxa."), verbose)
+
+    # Reshape back to sample, taxonomicLevel, abundance
+    formattedDT <- data.table::melt(otu, measure.vars=colnames(otu)[-1], variable.factor=F, variable.name='TaxonomicLevel', value.name="Abundance")
+
+    rankedTaxa <- rankTaxa(formattedDT, method)
+
+    # Extract top N taxa
+    topN <- rankedTaxa[Abundance > 0, TaxonomicLevel]
+    if (NROW(topN) > cutoff) {
+      topN <- topN[1:cutoff]
+      computeMessage <- "Applied cutoff"
+    }
+
+    keepCols <- c("SampleID", topN)
+
+    plot.data::logWithTime("Finished ranking taxa", verbose)
+
+    # Write results
+    results <- list(
+      # 'dt' = otu[, ..keepCols], #### Not necessary for us because we run the app.
+      'computeDetails' = jsonlite::unbox(computeMessage),
+      'computedVariables' = topN,
+      'computedVariableLabels' = topN,
+      'computedAxisLabel' = jsonlite::unbox('Relative Abundance'),
+      'defaultRange' = c(0,1),
+      'computeName' = jsonlite::unbox(method)
+    )
+
+    return(results)
+}
+
+#' Ranked abundance app
+#'
+#' This function returns the name of a json file with ranked abundance results.
+#' 
+#' @param otu data.frame with samples as rows, taxa as columns
+#' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
+#' @param verbose boolean indicating if timed logging is desired
+#' @return something that's useful. TBD
+#' @export
+rankedAbundanceApp <- function(otu, cutoff=10, verbose=c(TRUE, FALSE)) {
+
+    verbose <- plot.data::matchArg(verbose)
+
+    rankingMethods <- c('median','max','q3','var')
+    computeResults <- lapply(rankingMethods, rankedAbundance, otu=otu, cutoff=cutoff, verbose=verbose)
+
+    # Return one dt for all methods
+    keepTaxa <- unique(unlist(lapply(computeResults, function(x) return(x$computedVariables))))
+    dt <- otu[, ..keepTaxa]
+
+    appResults <- list("data" = dt,
+                        "stats" = NULL,
+                        "metadata" = computeResults
+    )
+
+    # Write to json -- this is a helper in RServe, not here
+    # outFileName <- writeListToJson(appResults, 'Abundance')
+    return(appResults)
+
+}
