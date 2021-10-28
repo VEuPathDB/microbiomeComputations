@@ -37,7 +37,7 @@ betaDiv <- function(otu,
 
     # Ordination
     ## Need to handle how this might err
-    pcoa <- PCOA(dist)
+    pcoa <- ape::pcoa(dist)
     dt <- data.table::as.data.table(pcoa$vectors)
     computeMessage <- paste("PCoA returned results for", NCOL(dt), "dimensions.")
 

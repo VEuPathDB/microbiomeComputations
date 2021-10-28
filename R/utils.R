@@ -46,3 +46,50 @@ rankTaxa <- function(df, method=c('median','max','q3','var')) {
     
     return(ranked)
 }
+
+
+writeAppResultsToJson <- function(appResults, pattern = NULL, dir = NULL, verbose = c(TRUE, FALSE)) {
+  verbose <- matchArg(verbose)
+  
+  if (is.null(pattern)) pattern <- 'file'
+  if (is.null(dir)) dir <- tempdir()
+  
+  # Simple formatting
+  outJson <- getAppJson(appResults)
+  
+  outFileName <- basename(tempfile(pattern = pattern, tmpdir = dir, fileext = ".json"))
+  write(outJson, outFileName)
+  plot.data::logWithTime(paste('New json file written:', outFileName), verbose)
+  
+  return(outFileName)
+}
+
+getAppJson <- function(appResults) {
+  
+  outList <- lapply(appResults, function(x) {
+    formattedList <- list()
+    formattedList$data <- x
+    formattedList$metaData <- list()
+    formattedList$metaData$computeDetails <- jsonlite::unbox(attr(x, 'computeDetails'))
+    formattedList$metaData$defaultRange <- attr(x, 'defaultRange')
+    formattedList$metaData$computedAxisLabel <-jsonlite::unbox(attr(x, 'computedAxisLabel'))
+    formattedList$metaData$computedVariables <- attr(x, 'computedVariables')
+    formattedList$metaData$computedVariableLabels <- attr(x, 'computedVariableLabels')
+    return(formattedList)
+  })
+  
+  outJson <- jsonlite::toJSON(outList)
+  return(outJson)
+}
+
+# Proof of principle. Needs additional nice inputs and tmp directories and such.
+writeAppDataToFile <- function(appResults, filename="file.tab") {
+  
+  # make one large dt
+  dt <- Reduce(function(...) merge(..., all = TRUE, by='SampleID'), appResults)
+  
+  # Write to file
+  data.table::fwrite(dt, file=filename)
+  
+  return(filename)
+}

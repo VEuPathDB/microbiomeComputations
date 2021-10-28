@@ -21,7 +21,7 @@ alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = 
     if (identical(method, 'shannon') | identical(method, 'simpson')){
 
       alphaDivDT <- try(vegan::diversity(otu[, -c('SampleID')], method))
-      computedVarLabel <- stringr::str_to_title(method)
+      computedVarLabel <- stringi::stri_trans_totitle(method)
 
     } else if (identical(method, 'evenness')) {
 
@@ -31,7 +31,7 @@ alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = 
 
     if (is.error(alphaDivDT)) {
       computeMessage <- paste('Error: alpha diversity', method, 'failed')
-      # Also handle dt, results? Or just stop?
+      # Also handle dt, results? Or just fail?
     } else {
       computeMessage <- paste('Computed', method, 'alpha diversity.')
     }
@@ -41,18 +41,19 @@ alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = 
                       'alphaDiv' = alphaDivDT)
     data.table::setnames(dt, 'alphaDiv', method)
 
-    results <- list(
-      'dt' = dt,
+    attr <- list(
       'computedVariables'= names(dt[, -c('SampleID')]),
       'computedVariableLabels'= computedVarLabel,
-      'computedAxisLabel' = jsonlite::unbox('Alpha Diversity'),
+      'computedAxisLabel' = 'Alpha Diversity',
       'defaultRange' = c(0, 1),
-      'computeDetails' = jsonlite::unbox(computeMessage),
-      'computeName' = jsonlite::unbox(method)
+      'computeDetails' = computeMessage
     )
+    
+    plot.data::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
     plot.data::logWithTime(paste('Alpha diversity calculations completed with parameters method=', method, ', verbose =', verbose), verbose)
-    return(results)
+    
+    return(dt)
 }
 
 
@@ -71,20 +72,9 @@ alphaDivApp <- function(otu, verbose = c(TRUE, FALSE)) {
 
     methods <- c('shannon','simpson','evenness')
 
-    computeResults <- lapply(methods, alphaDiv, otu=otu, verbose=verbose)
-
-
-    # Merge all data into one data table and remove from computeResults
-    dtList <- lapply(computeResults, function(x) return(x$dt))
-    dt <- Reduce(function(...) merge(..., all = TRUE, by='SampleID'), dtList)
-    computeResults <- lapply(computeResults, function(x) {x$dt <- NULL; return(x)})
-
-
-
-    appResults <- list("data" = dt,
-                        "stats" = NULL,
-                        "metadata" = computeResults
-    )
+    appResults <- lapply(methods, alphaDiv, otu=otu, verbose=verbose)
+    
+    names(appResults) <- methods
 
     # Write to json - nope, the following is in RServe general utils
     # outFileName <- writeListToJson(appResults, 'AlphaDiv')
