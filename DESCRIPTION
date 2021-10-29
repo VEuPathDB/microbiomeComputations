@@ -10,7 +10,9 @@ Imports:
     data.table,
     jsonlite,
     stringi,
-    Rcpp (>= 0.11.0)
+    Rcpp (>= 0.11.0),
+    veupathUtils
+Remotes: github::VEuPathDB/veupathUtils
 LinkingTo: Rcpp
 URL: https://github.com/VEuPathDB/microbiomeComputations
 BugReports: https://github.com/VEuPathDB/microbiomeComputations/issues
