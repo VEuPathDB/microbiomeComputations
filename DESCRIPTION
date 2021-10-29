@@ -12,7 +12,8 @@ Imports:
     stringi,
     Rcpp (>= 0.11.0),
     veupathUtils
-Remotes: github::VEuPathDB/veupathUtils
+Remotes:
+    VEuPathDB/veupathUtils
 LinkingTo: Rcpp
 URL: https://github.com/VEuPathDB/microbiomeComputations
 BugReports: https://github.com/VEuPathDB/microbiomeComputations/issues
