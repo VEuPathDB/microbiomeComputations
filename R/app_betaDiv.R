@@ -26,6 +26,7 @@ betaDiv <- function(otu,
       dist <- vegan::vegdist(otu[, -c('SampleID')], method=method, binary=TRUE)
 
     } else if (identical(method, 'jsd')) {
+
       otuMat <- matrix(as.numeric(unlist(otu[, -c("SampleID")])), nrow=NROW(otu))
       dist <- jsd(t(otuMat))
       dist <- as.dist(dist)
@@ -51,19 +52,23 @@ betaDiv <- function(otu,
 
     # Keep dims 1:k
     # We should keep the same number of percentVar values as cols in the data table. However, i think we're letting the user download lots of columns? So perhaps we shouldn't have k at all? A plot can use however many it needs.
+    # For now returning data and percentVar for how much is in the plot.
     percentVar <- percentVar[1:k]
+    keepCols <- c('SampleID',names(dt)[2:(k+1)])
+    dt <- dt[, ..keepCols]
 
-    # Perhaps this would be more clear if pcoaVar and computeDetails were attributes of dt? Worth making a class?
-    results <- list(
-      'dt' = dt,
+    #### Need to add back computed Variable Labels
+    attr <- list(
       'computedVariables' = names(dt[, -c('SampleID')]),
-      'computeName' = jsonlite::unbox(method),
-      'computeDetails' = jsonlite::unbox(computeMessage),
+      'computeDetails' = computeMessage,
       'pcoaVariance' = percentVar
     )
+    
+    plot.data::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
     plot.data::logWithTime(paste('Beta diversity calculations completed with parameters method =', method, ', k =', k, ', verbose =', verbose), verbose)
-    return(results)
+    
+    return(dt)
 }
 
 #' Beta diversity app
@@ -86,20 +91,13 @@ betaDivApp <- function(otu,
     method <- plot.data::matchArg(method)
     verbose <- plot.data::matchArg(verbose)
 
-    computeResults <- betaDiv(otu, method, k, verbose)
+    appResults <- lapply(method, betaDiv, otu=otu, k=k, verbose=verbose)
+    
+    names(appResults) <- method
 
-    outDT <- computeResults$dt
+    # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
+    # outFileName <- writeAppResultsToJson(appResults, 'betaDiv', verbose = T)
 
-    appResults <- list("data" = computeResults$dt,
-                      "stats" = list(pcoaVariance = computeResults$pcoaVariance))
-
-    computeResults$dt <- NULL
-    computeResults$pcoaVariance <- NULL
-    appResults$metadata <- computeResults
-
-
-    # Write to json -- this lives in RServe utils so it's a no go here
-    # outFileName <- writeListToJson(appResults, 'BetaDiv')
     return(appResults)
 
 }

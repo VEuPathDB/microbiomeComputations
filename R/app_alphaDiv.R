@@ -76,7 +76,8 @@ alphaDivApp <- function(otu, verbose = c(TRUE, FALSE)) {
     
     names(appResults) <- methods
 
-    # Write to json - nope, the following is in RServe general utils
-    # outFileName <- writeListToJson(appResults, 'AlphaDiv')
+    # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
+    # outFileName <- writeAppResultsToJson(appResults, 'alphaDiv', verbose = T)
+
     return(appResults)
 }

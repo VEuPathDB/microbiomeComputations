@@ -75,6 +75,7 @@ getAppJson <- function(appResults) {
     formattedList$metaData$computedAxisLabel <-jsonlite::unbox(attr(x, 'computedAxisLabel'))
     formattedList$metaData$computedVariables <- attr(x, 'computedVariables')
     formattedList$metaData$computedVariableLabels <- attr(x, 'computedVariableLabels')
+    formattedList$metaData$pcoaVariance <- attr(x, 'pcoaVariance')
     return(formattedList)
   })
   

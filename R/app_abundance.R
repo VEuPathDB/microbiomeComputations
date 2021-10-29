@@ -30,21 +30,22 @@ rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=1
     }
 
     keepCols <- c("SampleID", topN)
+    dt = otu[, ..keepCols]
 
     plot.data::logWithTime("Finished ranking taxa", verbose)
+    
 
-    # Write results
-    results <- list(
-      # 'dt' = otu[, ..keepCols], #### Not necessary for us because we run the app.
-      'computeDetails' = jsonlite::unbox(computeMessage),
+    attr <- list(
+      'computeDetails' = computeMessage,
       'computedVariables' = topN,
       'computedVariableLabels' = topN,
-      'computedAxisLabel' = jsonlite::unbox('Relative Abundance'),
-      'defaultRange' = c(0,1),
-      'computeName' = jsonlite::unbox(method)
+      'computedAxisLabel' = 'Relative Abundance',
+      'defaultRange' = c(0,1)
     )
 
-    return(results)
+    plot.data::setAttrFromList(dt, attr, removeExtraAttrs = F)
+
+    return(dt)
 }
 
 #' Ranked abundance app
@@ -60,20 +61,15 @@ rankedAbundanceApp <- function(otu, cutoff=10, verbose=c(TRUE, FALSE)) {
 
     verbose <- plot.data::matchArg(verbose)
 
-    rankingMethods <- c('median','max','q3','var')
-    computeResults <- lapply(rankingMethods, rankedAbundance, otu=otu, cutoff=cutoff, verbose=verbose)
+    methods <- c('median','max','q3','var')
 
-    # Return one dt for all methods
-    keepTaxa <- unique(unlist(lapply(computeResults, function(x) return(x$computedVariables))))
-    dt <- otu[, ..keepTaxa]
+    appResults <- lapply(methods, rankedAbundance, otu=otu, cutoff=cutoff, verbose=verbose)
+    
+    names(appResults) <- methods
 
-    appResults <- list("data" = dt,
-                        "stats" = NULL,
-                        "metadata" = computeResults
-    )
+    # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
+    # outFileName <- writeAppResultsToJson(appResults, 'rankedAbundance', verbose = T)
 
-    # Write to json -- this is a helper in RServe, not here
-    # outFileName <- writeListToJson(appResults, 'Abundance')
     return(appResults)
 
 }
