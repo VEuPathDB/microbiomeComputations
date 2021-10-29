@@ -11,7 +11,6 @@ Imports:
     jsonlite,
     stringi,
     Rcpp (>= 0.11.0),
-    veupathUtils
 Remotes:
     VEuPathDB/veupathUtils
 LinkingTo: Rcpp
