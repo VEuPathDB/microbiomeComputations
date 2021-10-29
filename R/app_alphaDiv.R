@@ -10,11 +10,11 @@
 alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = c(TRUE, FALSE)) {
 
     # Initialize and check inputs
-    method <- plot.data::matchArg(method)
-    verbose <- plot.data::matchArg(verbose)
+    method <- veupathUtils::matchArg(method)
+    verbose <- veupathUtils::matchArg(verbose)
 
     computeMessage <- ''
-    plot.data::logWithTime(paste("Received OTU table with", NROW(otu), "samples and", (NCOL(otu)-1), "taxa."), verbose)
+    veupathUtils::logWithTime(paste("Received OTU table with", NROW(otu), "samples and", (NCOL(otu)-1), "taxa."), verbose)
     
 
     # Compute alpha diversity
@@ -49,9 +49,9 @@ alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = 
       'computeDetails' = computeMessage
     )
     
-    plot.data::setAttrFromList(dt, attr, removeExtraAttrs = F)
+    veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
-    plot.data::logWithTime(paste('Alpha diversity calculations completed with parameters method=', method, ', verbose =', verbose), verbose)
+    veupathUtils::logWithTime(paste('Alpha diversity calculations completed with parameters method=', method, ', verbose =', verbose), verbose)
     
     return(dt)
 }
@@ -68,7 +68,7 @@ alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = 
 #' @import data.table
 alphaDivApp <- function(otu, verbose = c(TRUE, FALSE)) {
 
-    verbose <- plot.data::matchArg(verbose)
+    verbose <- veupathUtils::matchArg(verbose)
 
     methods <- c('shannon','simpson','evenness')
 

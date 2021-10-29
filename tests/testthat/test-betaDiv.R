@@ -8,6 +8,9 @@ test_that('betaDiv returns something reasonable', {
   results <- betaDiv(otu, method='jaccard', verbose=T)
   expect_equal(NROW(results), 288)
   
+  results <- betaDiv(otu, method='jsd', verbose=F)
+  expect_equal(NROW(results), 288)
+  
   
 })
 

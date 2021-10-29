@@ -11,11 +11,11 @@
 rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=10, verbose = c(TRUE, FALSE)) {
 
     # Initialize and check inputs
-    method <- plot.data::matchArg(method)
-    verbose <- plot.data::matchArg(verbose)
+    method <- veupathUtils::matchArg(method)
+    verbose <- veupathUtils::matchArg(verbose)
 
     computeMessage <- ''
-    plot.data::logWithTime(paste("Received OTU table with", NROW(otu), "samples and", (NCOL(otu)-1), "taxa."), verbose)
+    veupathUtils::logWithTime(paste("Received OTU table with", NROW(otu), "samples and", (NCOL(otu)-1), "taxa."), verbose)
 
     # Reshape back to sample, taxonomicLevel, abundance
     formattedDT <- data.table::melt(otu, measure.vars=colnames(otu)[-1], variable.factor=F, variable.name='TaxonomicLevel', value.name="Abundance")
@@ -32,7 +32,7 @@ rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=1
     keepCols <- c("SampleID", topN)
     dt = otu[, ..keepCols]
 
-    plot.data::logWithTime("Finished ranking taxa", verbose)
+    veupathUtils::logWithTime("Finished ranking taxa", verbose)
     
 
     attr <- list(
@@ -43,7 +43,7 @@ rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=1
       'defaultRange' = c(0,1)
     )
 
-    plot.data::setAttrFromList(dt, attr, removeExtraAttrs = F)
+    veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
     return(dt)
 }
@@ -59,7 +59,7 @@ rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=1
 #' @export
 rankedAbundanceApp <- function(otu, cutoff=10, verbose=c(TRUE, FALSE)) {
 
-    verbose <- plot.data::matchArg(verbose)
+    verbose <- veupathUtils::matchArg(verbose)
 
     methods <- c('median','max','q3','var')
 
