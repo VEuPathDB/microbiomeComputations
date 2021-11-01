@@ -7,10 +7,14 @@ Authors@R:
            role = c("aut", "cre"),
            email = "dcallan@upenn.edu")
 Imports:
+    ape,
     data.table,
     jsonlite,
-    stringi,
+    phytools,
     Rcpp (>= 0.11.0),
+    stringi,
+    vegan,
+    veupathUtils,
 Remotes:
     VEuPathDB/veupathUtils
 LinkingTo: Rcpp

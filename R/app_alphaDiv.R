@@ -6,6 +6,10 @@
 #' @param method string defining the the alpha diversity method. Accepted values are 'shannon','simpson', and 'evenness'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return something that's useful. TBD
+#' @importFrom vegan diversity
+#' @importFrom stringi stri_trans_totitle
+#' @import veupathUtils
+#' @import data.table
 #' @export
 alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = c(TRUE, FALSE)) {
 
@@ -29,7 +33,7 @@ alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = 
       computedVarLabel <- "Pielou\'s Evenness"
     }
 
-    if (is.error(alphaDivDT)) {
+    if (veupathUtils::is.error(alphaDivDT)) {
       computeMessage <- paste('Error: alpha diversity', method, 'failed')
       # Also handle dt, results? Or just fail?
     } else {
@@ -66,6 +70,7 @@ alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = 
 #' @return something that's useful. TBD
 #' @export
 #' @import data.table
+#' @import veupathUtils
 alphaDivApp <- function(otu, verbose = c(TRUE, FALSE)) {
 
     verbose <- veupathUtils::matchArg(verbose)

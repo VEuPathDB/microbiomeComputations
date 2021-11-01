@@ -7,8 +7,12 @@
 #' @param k integer determining the number of pcoa dimensions to return
 #' @param verbose boolean indicating if timed logging is desired
 #' @return who knows
-#' @useDynLib microbiomeComputations
 #' @importFrom Rcpp sourceCpp
+#' @importFrom vegan vegdist
+#' @importFrom ape pcoa
+#' @import veupathUtils
+#' @import data.table
+#' @useDynLib microbiomeComputations
 #' @export
 betaDiv <- function(otu,
                     method = c('bray','jaccard','jsd'),

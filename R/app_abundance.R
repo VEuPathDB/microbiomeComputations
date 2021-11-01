@@ -7,6 +7,8 @@
 #' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return something that's useful. TBD
+#' @import veupathUtils
+#' @import data.table
 #' @export
 rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=10, verbose = c(TRUE, FALSE)) {
 
@@ -56,6 +58,7 @@ rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=1
 #' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return something that's useful. TBD
+#' @import veupathUtils
 #' @export
 rankedAbundanceApp <- function(otu, cutoff=10, verbose=c(TRUE, FALSE)) {
 

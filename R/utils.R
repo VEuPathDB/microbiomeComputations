@@ -25,9 +25,11 @@
 #     return(tree)
 # }
 
+#' @import data.table
+#' @import veupathUtils
 rankTaxa <- function(df, method=c('median','max','q3','var')) {
 
-    method <- plot.data::matchArg(method)
+    method <- veupathUtils::matchArg(method)
     #### Notes: Assume df has rows as samples and at least columns Abundance and TaxonomicLevel
 
     if (identical(method, 'median')) {
@@ -59,11 +61,13 @@ writeAppResultsToJson <- function(appResults, pattern = NULL, dir = NULL, verbos
   
   outFileName <- basename(tempfile(pattern = pattern, tmpdir = dir, fileext = ".json"))
   write(outJson, outFileName)
-  plot.data::logWithTime(paste('New json file written:', outFileName), verbose)
+  veupathUtils::logWithTime(paste('New json file written:', outFileName), verbose)
   
   return(outFileName)
 }
 
+#' @importFrom jsonlite unbox
+#' @importFrom jsonlite toJSON
 getAppJson <- function(appResults) {
   
   outList <- lapply(appResults, function(x) {
