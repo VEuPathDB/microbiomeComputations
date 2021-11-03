@@ -62,13 +62,21 @@ betaDiv <- function(otu,
     percentVar <- percentVar[1:k]
     keepCols <- c('SampleID',names(dt)[2:(k+1)])
     dt <- dt[, ..keepCols]
+    
+    data.table::setnames(dt, 'SampleID','record')
 
     #### Need to add back computed Variable Labels
-    attr <- list(
-      'computedVariables' = names(dt[, -c('SampleID')]),
-      'computeDetails' = computeMessage,
-      'pcoaVariance' = percentVar
-    )
+    # Collect attributes
+    attr <- list('computationDetails' = computeMessage,
+                 'parameterSet' = c(method, as.character(k)),
+                 'pcoaVariance' = percentVar)
+    
+    #### Make into a function? Need to get entity from variables
+    attr$computedVariableDetails <- list('id' = names(dt[, -c('record')]),
+                                         'entity' = 'entity',
+                                         'displayLabel' = computedVarLabel,
+                                         'defaultRange' = c(0,1),
+                                         'isCollection' = FALSE)
     
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 

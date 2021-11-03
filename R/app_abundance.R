@@ -26,9 +26,11 @@ rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=1
 
     # Extract top N taxa
     topN <- rankedTaxa[Abundance > 0, TaxonomicLevel]
+    isCutoff <- FALSE
     if (NROW(topN) > cutoff) {
       topN <- topN[1:cutoff]
       computeMessage <- "Applied cutoff"
+      isCutoff <- TRUE
     }
 
     keepCols <- c("SampleID", topN)
@@ -36,14 +38,19 @@ rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=1
 
     veupathUtils::logWithTime("Finished ranking taxa", verbose)
     
+    data.table::setnames(dt,'SampleID','record')
+    
 
-    attr <- list(
-      'computeDetails' = computeMessage,
-      'computedVariables' = topN,
-      'computedVariableLabels' = topN,
-      'computedAxisLabel' = 'Relative Abundance',
-      'defaultRange' = c(0,1)
-    )
+    # Collect attributes
+    attr <- list('computationDetails' = computeMessage,
+                 'parameterSet' = method,
+                 'isCutoff' = isCutoff)
+    
+    #### Make into a function? Need to get entity from variables
+    attr$computedVariableDetails <- list('id' = names(dt[, -c('record')]),
+                                         'entity' = 'entity',
+                                         'defaultRange' = c(0,1),
+                                         'isCollection' = TRUE)
 
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 

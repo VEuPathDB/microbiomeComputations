@@ -70,16 +70,17 @@ writeAppResultsToJson <- function(appResults, pattern = NULL, dir = NULL, verbos
 #' @importFrom jsonlite toJSON
 getAppJson <- function(appResults) {
   
+  #### not unboxing yet..
   outList <- lapply(appResults, function(x) {
     formattedList <- list()
     formattedList$data <- x
-    formattedList$metaData <- list()
-    formattedList$metaData$computeDetails <- jsonlite::unbox(attr(x, 'computeDetails'))
-    formattedList$metaData$defaultRange <- attr(x, 'defaultRange')
-    formattedList$metaData$computedAxisLabel <-jsonlite::unbox(attr(x, 'computedAxisLabel'))
-    formattedList$metaData$computedVariables <- attr(x, 'computedVariables')
-    formattedList$metaData$computedVariableLabels <- attr(x, 'computedVariableLabels')
-    formattedList$metaData$pcoaVariance <- attr(x, 'pcoaVariance')
+    formattedList$computedVariableDetails <- attr(x, 'computedVariableDetails')
+    formattedList$parameterSet <- attr(x, 'parameterSet')
+    formattedList$computationDetails <- attr(x, 'computationDetails')
+    
+    # App-specific attributes
+    formattedList$isCutoff <- attr(x, 'isCutoff')
+    formattedList$pcoaVariance <- attr(x, 'pcoaVariance')
     return(formattedList)
   })
   

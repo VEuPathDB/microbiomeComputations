@@ -43,16 +43,20 @@ alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = 
     # Assemble data table
     dt <- data.table('SampleID'= otu[['SampleID']],
                       'alphaDiv' = alphaDivDT)
-    data.table::setnames(dt, 'alphaDiv', method)
-
-    attr <- list(
-      'computedVariables'= names(dt[, -c('SampleID')]),
-      'computedVariableLabels'= computedVarLabel,
-      'computedAxisLabel' = 'Alpha Diversity',
-      'defaultRange' = c(0, 1),
-      'computeDetails' = computeMessage
-    )
     
+    #### Subject to change, so for now setting them here
+    data.table::setnames(dt, c('record','alphaDiversity'))
+    
+    # Collect attributes
+    attr <- list('computationDetails' = computeMessage,
+                 'parameterSet' = method)
+    
+    #### Make into a function? Need to get entity from variables
+    attr$computedVariableDetails <- list('id' = names(dt[, -c('record')]),
+                                    'entity' = 'entity',
+                                    'displayLabel' = computedVarLabel,
+                                    'defaultRange' = c(0,1))
+
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
     veupathUtils::logWithTime(paste('Alpha diversity calculations completed with parameters method=', method, ', verbose =', verbose), verbose)
