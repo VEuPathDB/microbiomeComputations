@@ -14,10 +14,17 @@ test_that("rankedAbundanceApp doesn't fail", {
   otu <- testOTU
   
   appResults <- rankedAbundanceApp(otu, verbose=F)
-  expect_equal(names(appResults), c('median','max','q3','var'))
+  expect_equal(length(appResults), 4)
   outJson <- getAppJson(appResults)
   jsonList <- jsonlite::fromJSON(outJson)
-  expect_equal(names(jsonList), c('median','max','q3','var'))
-  expect_equal(names(jsonList$median), c('data','computedVariableDetails','parameterSet','computationDetails','isCutoff'))
+  expect_equal(names(jsonList), c('data','computedVariableDetails','parameters','computationDetails','isCutoff'))
+  expect_equal(names(jsonList$computedVariableDetails), c('id','entity','defaultRange','isCollection'))
+  
+  appResults <- rankedAbundanceApp(otu, methods = c('q3', 'median'), verbose=F)
+  expect_equal(length(appResults), 2)
+  outJson <- getAppJson(appResults)
+  jsonList <- jsonlite::fromJSON(outJson)
+  expect_equal(names(jsonList), c('data','computedVariableDetails','parameters','computationDetails','isCutoff'))
+  expect_equal(names(jsonList$computedVariableDetails), c('id','entity','defaultRange','isCollection'))
   
 })

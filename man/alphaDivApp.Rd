@@ -4,10 +4,16 @@
 \alias{alphaDivApp}
 \title{Alpha diversity}
 \usage{
-alphaDivApp(otu, verbose = c(TRUE, FALSE))
+alphaDivApp(
+  otu,
+  methods = c("shannon", "simpson", "evenness"),
+  verbose = c(TRUE, FALSE)
+)
 }
 \arguments{
 \item{otu}{data.frame with samples as rows, taxa as columns}
+
+\item{methods}{vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('shannon','simpson','evenness').}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

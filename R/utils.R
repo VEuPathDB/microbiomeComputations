@@ -75,7 +75,7 @@ getAppJson <- function(appResults) {
     formattedList <- list()
     formattedList$data <- x
     formattedList$computedVariableDetails <- attr(x, 'computedVariableDetails')
-    formattedList$parameterSet <- attr(x, 'parameterSet')
+    formattedList$parameters <- attr(x, 'parameters')
     formattedList$computationDetails <- attr(x, 'computationDetails')
     
     # App-specific attributes

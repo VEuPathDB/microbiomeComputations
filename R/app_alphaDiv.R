@@ -49,7 +49,7 @@ alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = 
     
     # Collect attributes
     attr <- list('computationDetails' = computeMessage,
-                 'parameterSet' = method)
+                 'parameters' = method)
     
     #### Make into a function? Need to get entity from variables
     attr$computedVariableDetails <- list('id' = names(dt[, -c('record')]),
@@ -70,23 +70,27 @@ alphaDiv <- function(otu, method = c('shannon','simpson','evenness'), verbose = 
 #' This function returns json with alpha diversity values for each sample.
 #' 
 #' @param otu data.frame with samples as rows, taxa as columns
+#' @param methods vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('shannon','simpson','evenness').
 #' @param verbose boolean indicating if timed logging is desired
 #' @return something that's useful. TBD
 #' @export
 #' @import data.table
 #' @import veupathUtils
-alphaDivApp <- function(otu, verbose = c(TRUE, FALSE)) {
+alphaDivApp <- function(otu, methods = c('shannon','simpson','evenness'), verbose = c(TRUE, FALSE)) {
 
     verbose <- veupathUtils::matchArg(verbose)
 
-    methods <- c('shannon','simpson','evenness')
+    # Allow any number of methods to be inputted
+    allMethods <- c('shannon','simpson','evenness')
+    if (is.null(methods)) methods <- allMethods
+    if (!all(methods %in% allMethods)) {
+      stop("Unaccepted method found in 'methods' argument. 'methods' must be a subset of c('shannon','simpson','evenness').")
+    }
 
     appResults <- lapply(methods, alphaDiv, otu=otu, verbose=verbose)
-    
-    names(appResults) <- methods
 
     # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
-    # outFileName <- writeAppResultsToJson(appResults, 'alphaDiv', verbose = T)
+    # outFileName <- writeAppResultsToJson(appResults, 'alphaDiv', verbose = verbose)
 
     return(appResults)
 }

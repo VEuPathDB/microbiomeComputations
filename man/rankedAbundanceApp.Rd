@@ -4,17 +4,24 @@
 \alias{rankedAbundanceApp}
 \title{Ranked abundance app}
 \usage{
-rankedAbundanceApp(otu, cutoff = 10, verbose = c(TRUE, FALSE))
+rankedAbundanceApp(
+  otu,
+  methods = c("median", "max", "q3", "var"),
+  cutoff = 10,
+  verbose = c(TRUE, FALSE)
+)
 }
 \arguments{
-\item{otu}{data.frame with samples as rows, taxa as columns}
+\item{otu}{data.frame with samples as rows, taxa as columns.}
+
+\item{methods}{vector of strings indicating ranking methods to use. Must be a subset of c('median','max','q3','var').}
 
 \item{cutoff}{integer indicating the maximium number of taxa to be kept after ranking.}
 
-\item{verbose}{boolean indicating if timed logging is desired}
+\item{verbose}{boolean indicating if timed logging is desired.}
 }
 \value{
-something that's useful. TBD
+TBD
 }
 \description{
 This function returns the name of a json file with ranked abundance results.

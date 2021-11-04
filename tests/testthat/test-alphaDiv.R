@@ -35,11 +35,19 @@ test_that("alphaDivApp doesn't fail", {
   
   otu <- testOTU
   
-  appResults <- alphaDivApp(otu, F)
-  expect_equal(names(appResults), c('shannon','simpson','evenness'))
+  appResults <- alphaDivApp(otu, verbose=F)
+  expect_equal(length(appResults), 3)
   outJson <- getAppJson(appResults)
   jsonList <- jsonlite::fromJSON(outJson)
-  expect_equal(names(jsonList), c('shannon','simpson','evenness'))
-  expect_equal(names(jsonList$shannon), c('data','computedVariableDetails','parameterSet','computationDetails'))
-  expect_equal(names(jsonList$shannon$computedVariableDetails), c('id','entity','displayLabel','defaultRange'))
+  expect_equal(NROW(jsonList), 3)
+  expect_equal(names(jsonList), c('data','computedVariableDetails','parameters','computationDetails'))
+  expect_equal(names(jsonList$computedVariableDetails), c('id','entity','displayLabel','defaultRange'))
+  
+  appResults <- alphaDivApp(otu, methods=c('evenness','simpson'), verbose=F)
+  expect_equal(length(appResults), 2)
+  outJson <- getAppJson(appResults)
+  jsonList <- jsonlite::fromJSON(outJson)
+  expect_equal(NROW(jsonList), 2)
+  expect_equal(names(jsonList), c('data','computedVariableDetails','parameters','computationDetails'))
+  expect_equal(names(jsonList$computedVariableDetails), c('id','entity','displayLabel','defaultRange'))
 })

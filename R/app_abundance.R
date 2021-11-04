@@ -43,7 +43,7 @@ rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=1
 
     # Collect attributes
     attr <- list('computationDetails' = computeMessage,
-                 'parameterSet' = method,
+                 'parameters' = method,
                  'isCutoff' = isCutoff)
     
     #### Make into a function? Need to get entity from variables
@@ -61,24 +61,28 @@ rankedAbundance <- function(otu, method = c('median','max','q3','var'), cutoff=1
 #'
 #' This function returns the name of a json file with ranked abundance results.
 #' 
-#' @param otu data.frame with samples as rows, taxa as columns
+#' @param otu data.frame with samples as rows, taxa as columns.
+#' @param methods vector of strings indicating ranking methods to use. Must be a subset of c('median','max','q3','var').
 #' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
-#' @param verbose boolean indicating if timed logging is desired
-#' @return something that's useful. TBD
+#' @param verbose boolean indicating if timed logging is desired.
+#' @return TBD
 #' @import veupathUtils
 #' @export
-rankedAbundanceApp <- function(otu, cutoff=10, verbose=c(TRUE, FALSE)) {
+rankedAbundanceApp <- function(otu, methods=c('median','max','q3','var'), cutoff=10, verbose=c(TRUE, FALSE)) {
 
     verbose <- veupathUtils::matchArg(verbose)
 
-    methods <- c('median','max','q3','var')
+    allMethods <- c('median','max','q3','var')
+    # Allow any number of methods to be inputted
+    if (is.null(methods)) methods <- allMethods
+    if (!all(methods %in% allMethods)) {
+      stop("Unaccepted method found in 'methods' argument. 'methods' must be a subset of c('median', 'max', 'q3','var').")
+    }
 
     appResults <- lapply(methods, rankedAbundance, otu=otu, cutoff=cutoff, verbose=verbose)
-    
-    names(appResults) <- methods
 
     # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
-    # outFileName <- writeAppResultsToJson(appResults, 'rankedAbundance', verbose = T)
+    # outFileName <- writeAppResultsToJson(appResults, 'rankedAbundance', verbose = verbose)
 
     return(appResults)
 

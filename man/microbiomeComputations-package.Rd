@@ -19,5 +19,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Danielle Callan \email{dcallan@upenn.edu}
 
+Authors:
+\itemize{
+  \item Ann Blevins \email{annsize@upenn.edu}
+}
+
 }
 \keyword{internal}

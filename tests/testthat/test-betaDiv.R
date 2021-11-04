@@ -18,11 +18,18 @@ test_that("betaDivApp doesn't fail", {
   
   otu <- testOTU
   
-  appResults <- betaDivApp(otu, 'bray', verbose=F)
-  expect_equal(names(appResults), c('bray'))
+  appResults <- betaDivApp(otu, methods=c('bray'), verbose=F)
+  expect_equal(length(appResults), 1)
   outJson <- getAppJson(appResults)
   jsonList <- jsonlite::fromJSON(outJson)
-  expect_equal(names(jsonList), c('bray'))
-  expect_equal(names(jsonList$bray), c('data','computedVariableDetails','parameterSet','computationDetails','pcoaVariance'))
+  expect_equal(names(jsonList), c('data','computedVariableDetails','parameters','computationDetails','pcoaVariance'))
+  expect_equal(names(jsonList$computedVariableDetails), c('id','entity','displayLabel','defaultRange','isCollection'))
+  
+  appResults <- betaDivApp(otu, methods = c('bray','jaccard'), verbose=F)
+  expect_equal(length(appResults), 2)
+  outJson <- getAppJson(appResults)
+  jsonList <- jsonlite::fromJSON(outJson)
+  expect_equal(names(jsonList), c('data','computedVariableDetails','parameters','computationDetails','pcoaVariance'))
+  expect_equal(names(jsonList$computedVariableDetails), c('id','entity','displayLabel','defaultRange','isCollection'))
   
 })

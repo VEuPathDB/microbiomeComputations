@@ -68,13 +68,13 @@ betaDiv <- function(otu,
     #### Need to add back computed Variable Labels
     # Collect attributes
     attr <- list('computationDetails' = computeMessage,
-                 'parameterSet' = c(method, as.character(k)),
+                 'parameters' = c(method, as.character(k)),
                  'pcoaVariance' = percentVar)
     
     #### Make into a function? Need to get entity from variables
     attr$computedVariableDetails <- list('id' = names(dt[, -c('record')]),
                                          'entity' = 'entity',
-                                         'displayLabel' = computedVarLabel,
+                                         'displayLabel' = 'computedVarLabel',
                                          'defaultRange' = c(0,1),
                                          'isCollection' = FALSE)
     
@@ -90,27 +90,32 @@ betaDiv <- function(otu,
 #' This function returns the name of a json file with beta diversity results.
 #' 
 #' @param otu data.frame with samples as rows, taxa as columns
-#' @param method string defining the the beta diversity dissimilarity method. Accepted values are 'bray','jaccard', and 'jsd'
+#' @param methods vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('bray','jaccard','jsd').
 #' @param k integer determining the number of pcoa dimensions to return
 #' @param verbose boolean indicating if timed logging is desired
 #' @return we'll see.
 #' @export
 betaDivApp <- function(otu,
-                    method = c('bray','jaccard','jsd'),
+                    methods = c('bray','jaccard','jsd'),
                     k = 2,
                     verbose = c(TRUE, FALSE)) {
 
     otu <- data.table::setDT(otu)
 
-    method <- veupathUtils::matchArg(method)
     verbose <- veupathUtils::matchArg(verbose)
-
-    appResults <- lapply(method, betaDiv, otu=otu, k=k, verbose=verbose)
     
-    names(appResults) <- method
+    # Allow any number of methods to be inputted
+    allMethods <- c('bray','jaccard','jsd')
+    if (is.null(methods)) methods <- allMethods
+    if (!all(methods %in% allMethods)) {
+      stop("Unaccepted method found in 'methods' argument. 'methods' must be a subset of c('bray','jaccard','jsd').")
+    }
+
+    appResults <- lapply(methods, betaDiv, otu=otu, k=k, verbose=verbose)
+    
 
     # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
-    # outFileName <- writeAppResultsToJson(appResults, 'betaDiv', verbose = T)
+    # outFileName <- writeAppResultsToJson(appResults, 'betaDiv', verbose = verbose)
 
     return(appResults)
 

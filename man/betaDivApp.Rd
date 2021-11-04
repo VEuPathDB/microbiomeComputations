@@ -6,7 +6,7 @@
 \usage{
 betaDivApp(
   otu,
-  method = c("bray", "jaccard", "jsd"),
+  methods = c("bray", "jaccard", "jsd"),
   k = 2,
   verbose = c(TRUE, FALSE)
 )
@@ -14,7 +14,7 @@ betaDivApp(
 \arguments{
 \item{otu}{data.frame with samples as rows, taxa as columns}
 
-\item{method}{string defining the the beta diversity dissimilarity method. Accepted values are 'bray','jaccard', and 'jsd'}
+\item{methods}{vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('bray','jaccard','jsd').}
 
 \item{k}{integer determining the number of pcoa dimensions to return}
 
