@@ -2,7 +2,8 @@
 #'
 #' This function returns pcoa coordinates calculated from the beta diversity dissimilarity matrix.
 #' 
-#' @param otu data.frame with samples as rows, taxa as columns
+#' @param df data.frame with samples as rows, taxa as columns
+#' @param sampleIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param method string defining the the beta diversity dissimilarity method. Accepted values are 'bray','jaccard', and 'jsd'
 #' @param k integer determining the number of pcoa dimensions to return
 #' @param verbose boolean indicating if timed logging is desired
@@ -14,7 +15,8 @@
 #' @import data.table
 #' @useDynLib microbiomeComputations
 #' @export
-betaDiv <- function(otu,
+betaDiv <- function(df,
+                    sampleIdColumn,
                     method = c('bray','jaccard','jsd'),
                     k = 2,
                     verbose = c(TRUE, FALSE)) {
@@ -24,17 +26,17 @@ betaDiv <- function(otu,
     verbose <- veupathUtils::matchArg(verbose)
 
     computeMessage <- ''
-    veupathUtils::logWithTime(paste("Received OTU table with", NROW(otu), "samples and", (NCOL(otu)-1), "taxa."), verbose)
+    veupathUtils::logWithTime(paste("Received df table with", NROW(df), "samples and", (NCOL(df)-1), "taxa."), verbose)
 
     # Compute beta diversity using given dissimilarity method
     if (identical(method, 'bray') | identical(method, 'jaccard')) {
 
-      dist <- vegan::vegdist(otu[, -c('SampleID')], method=method, binary=TRUE)
+      dist <- vegan::vegdist(df[, -..sampleIdColumn], method=method, binary=TRUE)
 
     } else if (identical(method, 'jsd')) {
 
-      otuMat <- matrix(as.numeric(unlist(otu[, -c("SampleID")])), nrow=NROW(otu))
-      dist <- jsd(t(otuMat))
+      dfMat <- matrix(as.numeric(unlist(df[, -..sampleIdColumn])), nrow=NROW(df))
+      dist <- jsd(t(dfMat))
       dist <- as.dist(dist)
 
     } else {
@@ -48,8 +50,9 @@ betaDiv <- function(otu,
     dt <- data.table::as.data.table(pcoa$vectors)
     computeMessage <- paste("PCoA returned results for", NCOL(dt), "dimensions.")
 
-    dt$SampleID <- otu[['SampleID']]
+    dt$SampleID <- df[[sampleIdColumn]]
     data.table::setcolorder(dt, c('SampleID'))
+    data.table::setnames(dt,'SampleID', sampleIdColumn)
     veupathUtils::logWithTime("Finished ordination step.", verbose)
 
     # Extract percent variance
@@ -60,10 +63,8 @@ betaDiv <- function(otu,
     # We should keep the same number of percentVar values as cols in the data table. However, i think we're letting the user download lots of columns? So perhaps we shouldn't have k at all? A plot can use however many it needs.
     # For now returning data and percentVar for how much is in the plot.
     percentVar <- percentVar[1:k]
-    keepCols <- c('SampleID',names(dt)[2:(k+1)])
+    keepCols <- c(sampleIdColumn,names(dt)[2:(k+1)])
     dt <- dt[, ..keepCols]
-    
-    data.table::setnames(dt, 'SampleID','record')
 
     #### Need to add back computed Variable Labels
     # Collect attributes
@@ -72,7 +73,7 @@ betaDiv <- function(otu,
                  'pcoaVariance' = percentVar)
     
     #### Make into a function? Need to get entity from variables
-    attr$computedVariableDetails <- list('id' = names(dt[, -c('record')]),
+    attr$computedVariableDetails <- list('id' = names(dt[, -..sampleIdColumn]),
                                          'entity' = 'entity',
                                          'displayLabel' = 'computedVarLabel',
                                          'defaultRange' = c(0,1),
@@ -80,7 +81,7 @@ betaDiv <- function(otu,
     
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
-    veupathUtils::logWithTime(paste('Beta diversity calculations completed with parameters method =', method, ', k =', k, ', verbose =', verbose), verbose)
+    veupathUtils::logWithTime(paste('Beta diversity computation completed with parameters sampleIdColumn=', sampleIdColumn, ', method =', method, ', k =', k, ', verbose =', verbose), verbose)
     
     return(dt)
 }
@@ -89,18 +90,20 @@ betaDiv <- function(otu,
 #'
 #' This function returns the name of a json file with beta diversity results.
 #' 
-#' @param otu data.frame with samples as rows, taxa as columns
+#' @param df data.frame with samples as rows, taxa as columns
+#' @param sampleIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param methods vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('bray','jaccard','jsd').
 #' @param k integer determining the number of pcoa dimensions to return
 #' @param verbose boolean indicating if timed logging is desired
 #' @return we'll see.
 #' @export
-betaDivApp <- function(otu,
-                    methods = c('bray','jaccard','jsd'),
-                    k = 2,
-                    verbose = c(TRUE, FALSE)) {
+betaDivApp <- function(df,
+                      sampleIdColumn,
+                      methods = c('bray','jaccard','jsd'),
+                      k = 2,
+                      verbose = c(TRUE, FALSE)) {
 
-    otu <- data.table::setDT(otu)
+    df <- data.table::setDT(df)
 
     verbose <- veupathUtils::matchArg(verbose)
     
@@ -111,7 +114,18 @@ betaDivApp <- function(otu,
       stop("Unaccepted method found in 'methods' argument. 'methods' must be a subset of c('bray','jaccard','jsd').")
     }
 
-    appResults <- lapply(methods, betaDiv, otu=otu, k=k, verbose=verbose)
+    # Check that incoming df meets requirements - consider moving to a validateOTU function or similar
+    if (!'data.table' %in% class(df)) {
+      data.table::setDT(df)
+    }
+    if (!sampleIdColumn %in% names(df)) {
+      stop("sampleIdColumn must exist as a column in df")
+    }
+    if (!all(unlist(lapply(df[, -..sampleIdColumn], is.numeric)))) {
+      stop("All columns except the sampleIdColumn must be numeric")
+    }
+
+    appResults <- lapply(methods, betaDiv, df=df, sampleIdColumn=sampleIdColumn, k=k, verbose=verbose)
     
 
     # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
