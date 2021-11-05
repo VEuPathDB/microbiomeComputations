@@ -70,19 +70,32 @@ writeAppResultsToJson <- function(appResults, pattern = NULL, dir = NULL, verbos
 #' @importFrom jsonlite toJSON
 getAppJson <- function(appResults) {
   
-  #### not unboxing yet..
-  outList <- lapply(appResults, function(x) {
-    formattedList <- list()
-    formattedList$data <- x
-    formattedList$computedVariableDetails <- attr(x, 'computedVariableDetails')
-    formattedList$parameters <- attr(x, 'parameters')
-    formattedList$computationDetails <- attr(x, 'computationDetails')
+  #### turn into some nice functions
+  parameterSets <- lapply(appResults, function(dt) {return(attr(dt,'parameters'))})
+  computations <- lapply(appResults, function(dt) {
+    computation <- list()
+    attr <- attributes(dt)
+    computation$computedVariableDetails <- attr$computedVariableDetails
+    computation$computationDetails <- attr$computationDetails
     
     # App-specific attributes
-    formattedList$isCutoff <- attr(x, 'isCutoff')
-    formattedList$pcoaVariance <- attr(x, 'pcoaVariance')
-    return(formattedList)
+    computation$isCutoff <- attr$isCutoff
+    computation$pcoaVariance <- attr$pcoaVariance
+    if ('recordVariable' %in% names(attr)) {
+      computation$recordVariableDetails <- list('variableId' = attr$recordVariable,
+                                                'entityId' = 'entity',
+                                                'values' = dt[[attr$recordVariable]])
+      dt[[attr$recordVariable]] <- NULL
+    }
+    
+    # Set computation values
+    computation$computedVariableDetails$values <- lapply(seq_along(dt), function(x) {return(dt[[x]])})
+    
+    return(computation)
   })
+  
+  outList <- list('computations' = computations,
+                  'parameterSets' = parameterSets)
   
   outJson <- jsonlite::toJSON(outList)
   return(outJson)
