@@ -82,8 +82,8 @@ getAppJson <- function(appResults) {
     computation$isCutoff <- attr$isCutoff
     computation$pcoaVariance <- attr$pcoaVariance
     if ('recordVariable' %in% names(attr)) {
-      computation$recordVariableDetails <- list('variableId' = attr$recordVariable,
-                                                'entityId' = 'entity',
+      computation$recordVariableDetails <- list('variableId' = veupathUtils::strSplit(attr$recordVariable,".", 4, 2),
+                                                'entityId' = veupathUtils::strSplit(attr$recordVariable,".", 4, 1),
                                                 'values' = dt[[attr$recordVariable]])
       dt[[attr$recordVariable]] <- NULL
     }

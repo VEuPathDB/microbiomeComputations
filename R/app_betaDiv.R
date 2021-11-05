@@ -68,6 +68,7 @@ betaDiv <- function(df,
 
     #### Need to add back computed Variable Labels
     # Collect attributes
+    entity <- veupathUtils::strSplit(sampleIdColumn,".", 4, 1)
     attr <- list('computationDetails' = computeMessage,
                  'parameters' = method,
                  'pcoaVariance' = percentVar,
@@ -75,9 +76,11 @@ betaDiv <- function(df,
     
     #### Make into a function? Need to get entity from variables and add display labels
     attr$computedVariableDetails <- list('id' = names(dt[, -..sampleIdColumn]),
-                                         'entity' = 'entity',
-                                         'displayLabel' = 'displayLabel',
+                                         'entity' = entity,
+                                         'displayLabel' = paste0(names(dt[, -..sampleIdColumn]), " ", percentVar, "%"),
                                          'isCollection' = FALSE)
+    # Add entity to column names
+    data.table::setnames(dt, names(dt[, -..sampleIdColumn]), paste0(entity,".",names(dt[, -..sampleIdColumn])))
     
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 

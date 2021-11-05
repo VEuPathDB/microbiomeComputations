@@ -48,15 +48,18 @@ alphaDiv <- function(df, sampleIdColumn, method = c('shannon','simpson','evennes
     data.table::setnames(dt, c(sampleIdColumn,'alphaDiversity'))
     
     # Collect attributes
+    entity <- veupathUtils::strSplit(sampleIdColumn,".", 4, 1)
     attr <- list('computationDetails' = computeMessage,
                  'parameters' = method,
                  'recordVariable' = sampleIdColumn)
     
     #### Make into a function? Need to get entity from variables
     attr$computedVariableDetails <- list('id' = names(dt[, -..sampleIdColumn]),
-                                         'entity' = 'entity',
+                                         'entity' = entity,
                                          'displayLabel' = computedVarLabel,
                                          'defaultRange' = c(0,1))
+    # Add entity to column names
+    data.table::setnames(dt, names(dt[, -..sampleIdColumn]), paste0(entity,".",names(dt[, -..sampleIdColumn])))
 
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
