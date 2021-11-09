@@ -1,42 +1,84 @@
 # Tests for alpha diversity functions
-test_that('alphaDiv returns something reasonable', {
+test_that('alphaDiv returns a correctly formatted data.table', {
+
+  df <- testOTU
   
-  otu <- testOTU
-  results <- alphaDiv(otu, "entity.SampleID", method='shannon', verbose=F)
-  expect_equal(NROW(results), 288)
+  results <- alphaDiv(df, "entity.SampleID", method='shannon', verbose=F)
+  expect_equal(NROW(results), NROW(df))
   expect_s3_class(results, 'data.table')
   expect_equal(names(results), c('entity.SampleID','entity.alphaDiversity'))
   expect_equal(c(typeof(results$entity.SampleID), typeof(results$entity.alphaDiversity)), c('character','double'))
+  
+  results <- alphaDiv(df, "entity.SampleID", method='simpson', verbose=F)
+  expect_equal(NROW(results), NROW(df))
+  expect_s3_class(results, 'data.table')
+  expect_equal(names(results), c('entity.SampleID','entity.alphaDiversity'))
+  expect_equal(c(typeof(results$entity.SampleID), typeof(results$entity.alphaDiversity)), c('character','double'))
+  
+  results <- alphaDiv(df, "entity.SampleID", method='evenness', verbose=F)
+  expect_equal(NROW(results), NROW(df))
+  expect_s3_class(results, 'data.table')
+  expect_equal(names(results), c('entity.SampleID','entity.alphaDiversity'))
+  expect_equal(c(typeof(results$entity.SampleID), typeof(results$entity.alphaDiversity)), c('character','double'))
+  
+})
+
+test_that("alphaDiv returns a data.table with the correct attributes", {
+  
+  df <- testOTU
+  
+  results <- alphaDiv(df, "entity.SampleID", method='shannon', verbose=F)
   attr <- attributes(results)
+  expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails') %in% names(attr)))
+  expect_equal(names(attr$computedVariableDetails), c('id','entity','displayLabel','defaultRange'))
   expect_equal(attr$computedVariableDetails$id, 'alphaDiversity')
+  expect_equal(attr$computedVariableDetails$entity, 'entity')
   expect_equal(attr$computedVariableDetails$displayLabel, 'Shannon')
   
-  results <- alphaDiv(otu, "entity.SampleID", method='simpson', verbose=F)
-  expect_equal(NROW(results), 288)
-  expect_s3_class(results, 'data.table')
-  expect_equal(names(results), c('entity.SampleID','entity.alphaDiversity'))
-  expect_equal(c(typeof(results$entity.SampleID), typeof(results$entity.alphaDiversity)), c('character','double'))
+  results <- alphaDiv(df, "entity.SampleID", method='simpson', verbose=F)
   attr <- attributes(results)
+  expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails') %in% names(attr)))
+  expect_equal(names(attr$computedVariableDetails), c('id','entity','displayLabel','defaultRange'))
   expect_equal(attr$computedVariableDetails$id, 'alphaDiversity')
+  expect_equal(attr$computedVariableDetails$entity, 'entity')
   expect_equal(attr$computedVariableDetails$displayLabel, 'Simpson')
   
-  results <- alphaDiv(otu, "entity.SampleID", method='evenness', verbose=F)
-  expect_equal(NROW(results), 288)
-  expect_s3_class(results, 'data.table')
-  expect_equal(names(results), c('entity.SampleID','entity.alphaDiversity'))
-  expect_equal(c(typeof(results$entity.SampleID), typeof(results$entity.alphaDiversity)), c('character','double'))
+  results <- alphaDiv(df, "entity.SampleID", method='evenness', verbose=F)
   attr <- attributes(results)
+  expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails') %in% names(attr)))
+  expect_equal(names(attr$computedVariableDetails), c('id','entity','displayLabel','defaultRange'))
   expect_equal(attr$computedVariableDetails$id, 'alphaDiversity')
+  expect_equal(attr$computedVariableDetails$entity, 'entity')
   expect_equal(attr$computedVariableDetails$displayLabel, 'Pielou\'s Evenness')
   
 })
 
-test_that("alphaDivApp doesn't fail", {
+test_that("alphaDivApp produces an appropriately structured list of computations", {
   
-  otu <- testOTU
+  df <- testOTU
   
-  appResults <- alphaDivApp(otu, "entity.SampleID", verbose=F)
+  # Default - use all methods
+  appResults <- alphaDivApp(df, "entity.SampleID", verbose=F)
   expect_equal(length(appResults), 3)
+  expect_equal(unique(unlist(lapply(appResults,names))), c('entity.SampleID','entity.alphaDiversity'))
+  expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
+  expect_equal(unique(unlist(lapply(appResults, NROW))), NROW(df))
+  
+  # Test using a subset of methods
+  appResults <- alphaDivApp(df, "entity.SampleID", methods=c('evenness','simpson'), verbose=F)
+  expect_equal(length(appResults), 2)
+  expect_equal(unique(unlist(lapply(appResults,names))), c('entity.SampleID','entity.alphaDiversity'))
+  expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
+  expect_equal(unique(unlist(lapply(appResults, NROW))), NROW(df))
+  
+})
+
+test_that("alphaDivApp output is correctly represented in json", {
+  
+  df <- testOTU
+  
+  # Default - use all methods
+  appResults <- alphaDivApp(df, "entity.SampleID", verbose=F)
   outJson <- getAppJson(appResults)
   jsonList <- jsonlite::fromJSON(outJson)
   expect_equal(names(jsonList), c('computations','parameterSets'))
@@ -44,13 +86,25 @@ test_that("alphaDivApp doesn't fail", {
   expect_equal(names(jsonList$computations), c('computedVariableDetails','computationDetails','recordVariableDetails'))
   expect_equal(names(jsonList$computations$computedVariableDetails), c('id','entity','displayLabel','defaultRange','values'))
   expect_equal(jsonList$computations$computedVariableDetails$id[[1]], 'alphaDiversity')
+
   
-  appResults <- alphaDivApp(otu, "entity.SampleID", methods=c('evenness','simpson'), verbose=F)
-  expect_equal(length(appResults), 2)
+  # Test using a subset of methods
+  appResults <- alphaDivApp(df, "entity.SampleID", methods=c('evenness','simpson'), verbose=F)
   outJson <- getAppJson(appResults)
   jsonList <- jsonlite::fromJSON(outJson)
   expect_equal(names(jsonList), c('computations','parameterSets'))
   expect_equal(NROW(jsonList$computations), 2)
   expect_equal(names(jsonList$computations), c('computedVariableDetails','computationDetails','recordVariableDetails'))
   expect_equal(names(jsonList$computations$computedVariableDetails), c('id','entity','displayLabel','defaultRange','values'))
+  expect_equal(jsonList$computations$computedVariableDetails$id[[1]], 'alphaDiversity')
+})
+
+
+test_that("alphaDiv results are consistent", {
+  
+  expect_snapshot_value({
+    df <- testOTU
+    appResults <- alphaDivApp(df, "entity.SampleID", verbose=F)
+  }, style = "serialize")
+  
 })

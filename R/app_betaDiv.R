@@ -2,12 +2,12 @@
 #'
 #' This function returns pcoa coordinates calculated from the beta diversity dissimilarity matrix.
 #' 
-#' @param df data.frame with samples as rows, taxa as columns
-#' @param sampleIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
+#' @param df data.table with rows corresponding to records, one column indicating the record id, and all other columns corresponding to taxa abundance.
+#' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param method string defining the the beta diversity dissimilarity method. Accepted values are 'bray','jaccard', and 'jsd'
-#' @param k integer determining the number of pcoa dimensions to return
+#' @param k integer determining the number of pcoa axes to return
 #' @param verbose boolean indicating if timed logging is desired
-#' @return who knows
+#' @return data.table with a column for the recordIdColumn, as well as columns corresponding to pcoa axes.
 #' @importFrom Rcpp sourceCpp
 #' @importFrom vegan vegdist
 #' @importFrom ape pcoa
@@ -16,7 +16,7 @@
 #' @useDynLib microbiomeComputations
 #' @export
 betaDiv <- function(df,
-                    sampleIdColumn,
+                    recordIdColumn,
                     method = c('bray','jaccard','jsd'),
                     k = 2,
                     verbose = c(TRUE, FALSE)) {
@@ -31,11 +31,11 @@ betaDiv <- function(df,
     # Compute beta diversity using given dissimilarity method
     if (identical(method, 'bray') | identical(method, 'jaccard')) {
 
-      dist <- vegan::vegdist(df[, -..sampleIdColumn], method=method, binary=TRUE)
+      dist <- vegan::vegdist(df[, -..recordIdColumn], method=method, binary=TRUE)
 
     } else if (identical(method, 'jsd')) {
 
-      dfMat <- matrix(as.numeric(unlist(df[, -..sampleIdColumn])), nrow=NROW(df))
+      dfMat <- matrix(as.numeric(unlist(df[, -..recordIdColumn])), nrow=NROW(df))
       dist <- jsd(t(dfMat))
       dist <- as.dist(dist)
 
@@ -50,9 +50,9 @@ betaDiv <- function(df,
     dt <- data.table::as.data.table(pcoa$vectors)
     computeMessage <- paste("PCoA returned results for", NCOL(dt), "dimensions.")
 
-    dt$SampleID <- df[[sampleIdColumn]]
+    dt$SampleID <- df[[recordIdColumn]]
     data.table::setcolorder(dt, c('SampleID'))
-    data.table::setnames(dt,'SampleID', sampleIdColumn)
+    data.table::setnames(dt,'SampleID', recordIdColumn)
     veupathUtils::logWithTime("Finished ordination step.", verbose)
 
     # Extract percent variance
@@ -63,28 +63,28 @@ betaDiv <- function(df,
     # We should keep the same number of percentVar values as cols in the data table. However, i think we're letting the user download lots of columns? So perhaps we shouldn't have k at all? A plot can use however many it needs.
     # For now returning data and percentVar for how much is in the plot.
     percentVar <- percentVar[1:k]
-    keepCols <- c(sampleIdColumn,names(dt)[2:(k+1)])
+    keepCols <- c(recordIdColumn,names(dt)[2:(k+1)])
     dt <- dt[, ..keepCols]
 
     #### Need to add back computed Variable Labels
     # Collect attributes
-    entity <- veupathUtils::strSplit(sampleIdColumn,".", 4, 1)
+    entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
     attr <- list('computationDetails' = computeMessage,
                  'parameters' = method,
                  'pcoaVariance' = percentVar,
-                 'recordVariable' = sampleIdColumn)
+                 'recordVariable' = recordIdColumn)
     
     #### Make into a function? Need to get entity from variables and add display labels
-    attr$computedVariableDetails <- list('id' = names(dt[, -..sampleIdColumn]),
+    attr$computedVariableDetails <- list('id' = names(dt[, -..recordIdColumn]),
                                          'entity' = entity,
-                                         'displayLabel' = paste0(names(dt[, -..sampleIdColumn]), " ", percentVar, "%"),
+                                         'displayLabel' = paste0(names(dt[, -..recordIdColumn]), " ", percentVar, "%"),
                                          'isCollection' = FALSE)
     # Add entity to column names
-    data.table::setnames(dt, names(dt[, -..sampleIdColumn]), paste0(entity,".",names(dt[, -..sampleIdColumn])))
+    data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))
     
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
-    veupathUtils::logWithTime(paste('Beta diversity computation completed with parameters sampleIdColumn=', sampleIdColumn, ', method =', method, ', k =', k, ', verbose =', verbose), verbose)
+    veupathUtils::logWithTime(paste('Beta diversity computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', k =', k, ', verbose =', verbose), verbose)
     
     return(dt)
 }
@@ -94,14 +94,14 @@ betaDiv <- function(df,
 #' This function returns the name of a json file with beta diversity results.
 #' 
 #' @param df data.frame with samples as rows, taxa as columns
-#' @param sampleIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
+#' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param methods vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('bray','jaccard','jsd').
 #' @param k integer determining the number of pcoa dimensions to return
 #' @param verbose boolean indicating if timed logging is desired
-#' @return we'll see.
+#' @return name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains a column for the recordIdColumn, as well as columns corresponding to pcoa axes.
 #' @export
 betaDivApp <- function(df,
-                      sampleIdColumn,
+                      recordIdColumn,
                       methods = c('bray','jaccard','jsd'),
                       k = 2,
                       verbose = c(TRUE, FALSE)) {
@@ -121,14 +121,14 @@ betaDivApp <- function(df,
     if (!'data.table' %in% class(df)) {
       data.table::setDT(df)
     }
-    if (!sampleIdColumn %in% names(df)) {
-      stop("sampleIdColumn must exist as a column in df")
+    if (!recordIdColumn %in% names(df)) {
+      stop("recordIdColumn must exist as a column in df")
     }
-    if (!all(unlist(lapply(df[, -..sampleIdColumn], is.numeric)))) {
-      stop("All columns except the sampleIdColumn must be numeric")
+    if (!all(unlist(lapply(df[, -..recordIdColumn], is.numeric)))) {
+      stop("All columns except the recordIdColumn must be numeric")
     }
 
-    appResults <- lapply(methods, betaDiv, df=df, sampleIdColumn=sampleIdColumn, k=k, verbose=verbose)
+    appResults <- lapply(methods, betaDiv, df=df, recordIdColumn=recordIdColumn, k=k, verbose=verbose)
     
 
     # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier

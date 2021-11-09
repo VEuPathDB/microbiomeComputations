@@ -1,28 +1,84 @@
 # Tests for beta diversity functions
-test_that('betaDiv returns something reasonable', {
+test_that('betaDiv returns a correctly formatted data.table', {
   
-  otu <- testOTU
-  results <- betaDiv(otu, "entity.SampleID", method='bray', verbose=F)
-  expect_equal(NROW(results), 288)
+  df <- testOTU
+  results <- betaDiv(df, "entity.SampleID", method='bray', verbose=F)
+  expect_equal(NROW(results), NROW(df))
+  expect_s3_class(results, 'data.table')
   expect_equal(names(results), c('entity.SampleID','entity.Axis.1','entity.Axis.2'))
+  expect_equal(unname(unlist(lapply(results, class))), c('character','numeric','numeric'))
   
-  results <- betaDiv(otu, "entity.SampleID", method='jaccard', verbose=F)
-  expect_equal(NROW(results), 288)
+  results <- betaDiv(df, "entity.SampleID", method='jaccard', verbose=F)
+  expect_equal(NROW(results), NROW(df))
+  expect_s3_class(results, 'data.table')
   expect_equal(names(results), c('entity.SampleID','entity.Axis.1','entity.Axis.2'))
+  expect_equal(unname(unlist(lapply(results, class))), c('character','numeric','numeric'))
   
-  results <- betaDiv(otu, "entity.SampleID", method='jsd', verbose=F)
-  expect_equal(NROW(results), 288)
+  results <- betaDiv(df, "entity.SampleID", method='jsd', verbose=F)
+  expect_equal(NROW(results), NROW(df))
+  expect_s3_class(results, 'data.table')
   expect_equal(names(results), c('entity.SampleID','entity.Axis.1','entity.Axis.2'))
+  expect_equal(unname(unlist(lapply(results, class))), c('character','numeric','numeric'))
   
   
 })
 
-test_that("betaDivApp doesn't fail", {
+test_that("betaDiv returns a data.table with the correct attributes" , {
   
-  otu <- testOTU
+  df <- testOTU
   
-  appResults <- betaDivApp(otu, "entity.SampleID", methods=c('bray'), verbose=F)
-  expect_equal(length(appResults), 1)
+  results <- betaDiv(df, "entity.SampleID", method='bray', verbose=F)
+  attr <- attributes(results)
+  expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','pcoaVariance') %in% names(attr)))
+  expect_equal(names(attr$computedVariableDetails), c('id','entity','displayLabel','isCollection'))
+  expect_equal(attr$computedVariableDetails$id, c('Axis.1','Axis.2'))
+  expect_equal(attr$computedVariableDetails$entity, 'entity')
+  expect_equal(attr$computedVariableDetails$displayLabel, c('Axis.1 15.3%','Axis.2 5.7%'))
+  
+  results <- betaDiv(df, "entity.SampleID", method='jaccard', verbose=F)
+  attr <- attributes(results)
+  expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','pcoaVariance') %in% names(attr)))
+  expect_equal(names(attr$computedVariableDetails), c('id','entity','displayLabel','isCollection'))
+  expect_equal(attr$computedVariableDetails$id, c('Axis.1','Axis.2'))
+  expect_equal(attr$computedVariableDetails$entity, 'entity')
+  expect_equal(attr$computedVariableDetails$displayLabel, c('Axis.1 10%','Axis.2 4.3%'))
+  
+  results <- betaDiv(df, "entity.SampleID", method='jsd', verbose=F)
+  attr <- attributes(results)
+  expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','pcoaVariance') %in% names(attr)))
+  expect_equal(names(attr$computedVariableDetails), c('id','entity','displayLabel','isCollection'))
+  expect_equal(attr$computedVariableDetails$id, c('Axis.1','Axis.2'))
+  expect_equal(attr$computedVariableDetails$entity, 'entity')
+  expect_equal(attr$computedVariableDetails$displayLabel, c('Axis.1 25.2%','Axis.2 17.5%'))
+})
+
+
+test_that("betaDivApp produces an appropriately structured list of computations", {
+  
+  df <- testOTU
+  
+  # Default - use all methods
+  appResults <- betaDivApp(df, "entity.SampleID", verbose=F)
+  expect_equal(length(appResults), 3)
+  expect_equal(unique(unlist(lapply(appResults,names))), c('entity.SampleID','entity.Axis.1','entity.Axis.2'))
+  expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
+  expect_equal(unique(unlist(lapply(appResults, NROW))), NROW(df))
+  
+  # Test using a subset of methods
+  appResults <- betaDivApp(df, "entity.SampleID", methods = c('jaccard','bray'), verbose=F)
+  expect_equal(length(appResults), 2)
+  expect_equal(unique(unlist(lapply(appResults,names))), c('entity.SampleID','entity.Axis.1','entity.Axis.2'))
+  expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
+  expect_equal(unique(unlist(lapply(appResults, NROW))), NROW(df))
+  
+})
+
+
+test_that("betaDivApp output is correctly represented in json", {
+  
+  df <- testOTU
+  
+  appResults <- betaDivApp(df, "entity.SampleID", methods=c('bray'), verbose=F)
   outJson <- getAppJson(appResults)
   jsonList <- jsonlite::fromJSON(outJson)
   expect_equal(names(jsonList), c('computations','parameterSets'))
@@ -31,8 +87,7 @@ test_that("betaDivApp doesn't fail", {
   expect_equal(names(jsonList$computations$computedVariableDetails), c('id','entity','displayLabel','isCollection','values'))
   expect_equal(jsonList$computations$computedVariableDetails$id[[1]], c('Axis.1','Axis.2'))
   
-  appResults <- betaDivApp(otu, "entity.SampleID", methods = c('bray','jaccard'), verbose=F)
-  expect_equal(length(appResults), 2)
+  appResults <- betaDivApp(df, "entity.SampleID", methods = c('bray','jaccard'), verbose=F)
   outJson <- getAppJson(appResults)
   jsonList <- jsonlite::fromJSON(outJson)
   expect_equal(names(jsonList), c('computations','parameterSets'))
@@ -40,5 +95,14 @@ test_that("betaDivApp doesn't fail", {
   expect_equal(names(jsonList$computations), c('computedVariableDetails','computationDetails','pcoaVariance','recordVariableDetails'))
   expect_equal(names(jsonList$computations$computedVariableDetails), c('id','entity','displayLabel','isCollection','values'))
   expect_equal(jsonList$computations$computedVariableDetails$id[[1]], c('Axis.1','Axis.2'))
+  
+})
+
+test_that("betaDiv results are consistent", {
+  
+  expect_snapshot_value({
+    df <- testOTU
+    appResults <- betaDivApp(df, "entity.SampleID", verbose=F)
+  }, style = "serialize")
   
 })
