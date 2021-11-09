@@ -11,6 +11,7 @@
 #' @importFrom Rcpp sourceCpp
 #' @importFrom vegan vegdist
 #' @importFrom ape pcoa
+#' @importFrom stringi stri_replace_all_fixed
 #' @import veupathUtils
 #' @import data.table
 #' @useDynLib microbiomeComputations
@@ -48,6 +49,8 @@ betaDiv <- function(df,
     ## Need to handle how this might err
     pcoa <- ape::pcoa(dist)
     dt <- data.table::as.data.table(pcoa$vectors)
+    # Remove dots from names
+    data.table::setnames(dt, stringi::stri_replace_all_fixed(names(dt),".",""))
     computeMessage <- paste("PCoA returned results for", NCOL(dt), "dimensions.")
 
     dt$SampleID <- df[[recordIdColumn]]

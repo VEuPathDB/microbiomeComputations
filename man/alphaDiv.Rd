@@ -5,20 +5,23 @@
 \title{Alpha diversity}
 \usage{
 alphaDiv(
-  otu,
+  df,
+  recordIdColumn,
   method = c("shannon", "simpson", "evenness"),
   verbose = c(TRUE, FALSE)
 )
 }
 \arguments{
-\item{otu}{data.frame with samples as rows, taxa as columns}
+\item{df}{data.table with rows corresponding to records, one column indicating the record id, and all other columns corresponding to taxa abundance.}
+
+\item{recordIdColumn}{string defining the name of the df column that specifies record ids. Note, all other columns must be numeric and will be treated as abundance values.}
 
 \item{method}{string defining the the alpha diversity method. Accepted values are 'shannon','simpson', and 'evenness'}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
-something that's useful. TBD
+data.table with columns recordIdColumn, "alphaDiversity".
 }
 \description{
 This function returns alpha diversity values for each sample.

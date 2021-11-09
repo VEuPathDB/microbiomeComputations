@@ -5,23 +5,26 @@
 \title{Beta diversity}
 \usage{
 betaDiv(
-  otu,
+  df,
+  recordIdColumn,
   method = c("bray", "jaccard", "jsd"),
   k = 2,
   verbose = c(TRUE, FALSE)
 )
 }
 \arguments{
-\item{otu}{data.frame with samples as rows, taxa as columns}
+\item{df}{data.table with rows corresponding to records, one column indicating the record id, and all other columns corresponding to taxa abundance.}
+
+\item{recordIdColumn}{string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.}
 
 \item{method}{string defining the the beta diversity dissimilarity method. Accepted values are 'bray','jaccard', and 'jsd'}
 
-\item{k}{integer determining the number of pcoa dimensions to return}
+\item{k}{integer determining the number of pcoa axes to return}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
-who knows
+data.table with a column for the recordIdColumn, as well as columns corresponding to pcoa axes.
 }
 \description{
 This function returns pcoa coordinates calculated from the beta diversity dissimilarity matrix.

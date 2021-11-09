@@ -5,20 +5,23 @@
 \title{Alpha diversity}
 \usage{
 alphaDivApp(
-  otu,
+  df,
+  recordIdColumn,
   methods = c("shannon", "simpson", "evenness"),
   verbose = c(TRUE, FALSE)
 )
 }
 \arguments{
-\item{otu}{data.frame with samples as rows, taxa as columns}
+\item{df}{data.frame with samples as rows, taxa as columns}
+
+\item{recordIdColumn}{string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.}
 
 \item{methods}{vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('shannon','simpson','evenness').}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
-something that's useful. TBD
+name of a jason file containing a list of data.tables, one for each method specified in methods. Each data.table contains columns recordIdColumn, "alphaDiversity", and an attribute "parameters" that records the method used.
 }
 \description{
 This function returns json with alpha diversity values for each sample.
