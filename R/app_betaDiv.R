@@ -32,30 +32,51 @@ betaDiv <- function(df,
     # Compute beta diversity using given dissimilarity method
     if (identical(method, 'bray') | identical(method, 'jaccard')) {
 
-      dist <- vegan::vegdist(df[, -..recordIdColumn], method=method, binary=TRUE)
+      dist <- try(vegan::vegdist(df[, -..recordIdColumn], method=method, binary=TRUE))
 
     } else if (identical(method, 'jsd')) {
 
       dfMat <- matrix(as.numeric(unlist(df[, -..recordIdColumn])), nrow=NROW(df))
-      dist <- jsd(t(dfMat))
-      dist <- as.dist(dist)
+      dist <- try({dist <- jsd(t(dfMat)); dist <- as.dist(dist)})
 
     } else {
       stop('Unaccepted dissimilarity method. Accepted methods are bray, jaccard, and jsd.')
     }
-    veupathUtils::logWithTime("Computed dissimilarity matrix.", verbose)
+    
+    # Handle errors or return positive computeMessage
+    if (veupathUtils::is.error(dist)) {
+      
+      computeMessage <- paste('Error: beta diversity', method, 'failed:', attr(dist,'condition')$message)
+      
+      # Return only recordIdColumn and expected attributes
+      dt <- df[, ..recordIdColumn]
+      
+      attr <- list('computationDetails' = computeMessage,
+                   'parameters' = character(),
+                   'recordVariable' = character(),
+                   'pcoaVariance' = numeric())
+      attr$computedVariableDetails <- list('id' = character(),
+                                           'entity' = character(),
+                                           'displayLabel' = character(),
+                                           'isCollection' = logical())
+      veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
+      veupathUtils::logWithTime(paste('Beta diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', k=', k , ', verbose =', verbose), verbose)
+      
+      return(dt)
+      
+    } else {
+      veupathUtils::logWithTime("Computed dissimilarity matrix.", verbose)
+    }
 
     # Ordination
-    ## Need to handle how this might err
     pcoa <- ape::pcoa(dist)
     dt <- data.table::as.data.table(pcoa$vectors)
     # Remove dots from names
     data.table::setnames(dt, stringi::stri_replace_all_fixed(names(dt),".",""))
     computeMessage <- paste("PCoA returned results for", NCOL(dt), "dimensions.")
 
-    dt$SampleID <- df[[recordIdColumn]]
-    data.table::setcolorder(dt, c('SampleID'))
-    data.table::setnames(dt,'SampleID', recordIdColumn)
+    dt[[recordIdColumn]] <- df[[recordIdColumn]]
+    data.table::setcolorder(dt, recordIdColumn)
     veupathUtils::logWithTime("Finished ordination step.", verbose)
 
     # Extract percent variance

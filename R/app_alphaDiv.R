@@ -34,9 +34,26 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
       computedVarLabel <- "Pielou\'s Evenness"
     }
 
+    # Handle errors or return positive computeMessage
     if (veupathUtils::is.error(alphaDivDT)) {
-      computeMessage <- paste('Error: alpha diversity', method, 'failed')
-      # Also handle dt, results? Or just fail?
+      
+      computeMessage <- paste('Error: alpha diversity', method, 'failed:', attr(alphaDivDT,'condition')$message)
+      
+      # Return only recordIdColumn and expected attributes
+      dt <- df[, ..recordIdColumn]
+      
+      attr <- list('computationDetails' = computeMessage,
+                   'parameters' = character(),
+                   'recordVariable' = character())
+      attr$computedVariableDetails <- list('id' = character(),
+                                           'entity' = character(),
+                                           'displayLabel' = character(),
+                                           'defaultRange' = numeric())
+      veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
+      veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', verbose =', verbose), verbose)
+      
+      return(dt)
+      
     } else {
       computeMessage <- paste('Computed', method, 'alpha diversity.')
     }

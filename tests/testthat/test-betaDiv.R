@@ -2,6 +2,7 @@
 test_that('betaDiv returns a correctly formatted data.table', {
   
   df <- testOTU
+
   results <- betaDiv(df, "entity.SampleID", method='bray', verbose=F)
   expect_equal(NROW(results), NROW(df))
   expect_s3_class(results, 'data.table')
@@ -104,5 +105,29 @@ test_that("betaDiv results are consistent", {
     df <- testOTU
     appResults <- betaDivApp(df, "entity.SampleID", verbose=F)
   }, style = "serialize")
+  
+})
+
+test_that("betaDiv fails gracefully", {
+  
+  df <- testOTU
+  df$entity.Abiotrophia <- NA
+  
+  results <- betaDiv(df, "entity.SampleID", method='bray', verbose=T)
+  expect_equal(NROW(results), NROW(df))
+  expect_s3_class(results, 'data.table')
+  expect_equal(names(results), 'entity.SampleID')
+  expect_equal(typeof(results$entity.SampleID), c('character'))
+  attr <- attributes(results)
+  expect_equal(attr$computationDetails, "Error: beta diversity bray failed: missing values are not allowed with argument 'na.rm = FALSE'")
+  expect_equal(typeof(attr$parameters), 'character')
+  expect_equal(typeof(attr$recordVariable), 'character')
+  expect_equal(typeof(attr$pcoaVariance), 'double')
+  expect_equal(typeof(attr$computedVariableDetails$id), 'character')
+  expect_equal(typeof(attr$computedVariableDetails$entity), 'character')
+  expect_equal(typeof(attr$computedVariableDetails$displayLabel), 'character')
+  expect_equal(typeof(attr$computedVariableDetails$isCollection), 'logical')
+  
+  
   
 })

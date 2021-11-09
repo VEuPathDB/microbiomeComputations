@@ -2,6 +2,7 @@
 test_that('rankedAbundance returns a correctly formatted data.table', {
   
   df <- testOTU
+
   results <- rankedAbundance(df, "entity.SampleID", method='max', verbose=F)
   expect_equal(NROW(results), NROW(df))
   expect_equal(names(results), paste0('entity.',c('SampleID','Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella')))
