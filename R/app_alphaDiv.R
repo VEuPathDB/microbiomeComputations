@@ -123,6 +123,10 @@ alphaDivApp <- function(df, recordIdColumn, methods = c('shannon','simpson','eve
     if (!all(unlist(lapply(df[, -..recordIdColumn], is.numeric)))) {
       stop("All columns except the recordIdColumn must be numeric")
     }
+    if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
+      stop("All entities must be identical")
+    }
+    
 
     appResults <- lapply(methods, alphaDiv, df=df, recordIdColumn=recordIdColumn, verbose=verbose)
 

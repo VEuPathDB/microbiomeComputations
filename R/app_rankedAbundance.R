@@ -95,6 +95,9 @@ rankedAbundanceApp <- function(df, recordIdColumn, methods=c('median','max','q3'
     if (!all(unlist(lapply(df[, -..recordIdColumn], is.numeric)))) {
       stop("All columns except the recordIdColumn must be numeric")
     }
+    if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
+      stop("All entities must be identical")
+    }
 
     appResults <- lapply(methods, rankedAbundance, df=df, recordIdColumn=recordIdColumn, cutoff=cutoff, verbose=verbose)
 
