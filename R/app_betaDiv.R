@@ -55,8 +55,10 @@ betaDiv <- function(df,
                    'parameters' = character(),
                    'recordVariable' = character(),
                    'pcoaVariance' = numeric())
-      attr$computedVariableDetails <- list('id' = character(),
-                                           'entity' = character(),
+      attr$computedVariableDetails <- list('variableId' = character(),
+                                           'entityId' = character(),
+                                           'dataType' = character(),
+                                           'dataShape' = character(),
                                            'displayLabel' = character(),
                                            'isCollection' = logical())
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
@@ -99,8 +101,10 @@ betaDiv <- function(df,
                  'recordVariable' = recordIdColumn)
     
     #### Make into a function? Need to get entity from variables and add display labels
-    attr$computedVariableDetails <- list('id' = names(dt[, -..recordIdColumn]),
-                                         'entity' = entity,
+    attr$computedVariableDetails <- list('variableId' = names(dt[, -..recordIdColumn]),
+                                         'entityId' = entity,
+                                         'dataType' = 'NUMBER',
+                                         'dataShape' = 'CONTINUOUS',
                                          'displayLabel' = paste0(names(dt[, -..recordIdColumn]), " ", sprintf(percentVar,fmt = '%#.1f'), "%"),
                                          'isCollection' = FALSE)
     # Add entity to column names

@@ -26,40 +26,40 @@ test_that('rankedAbundance returns a correctly formatted data.table', {
 })
 
 
-test_that("alphaDiv returns a data.table with the correct attributes", {
+test_that("rankedAbundance returns a data.table with the correct attributes", {
   
   df <- testOTU
   
   results <- rankedAbundance(df, "entity.SampleID", method='median', verbose=F)
   attr <- attributes(results)
   expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','isCutoff') %in% names(attr)))
-  expect_equal(names(attr$computedVariableDetails), c('id','entity','defaultRange', 'isCollection'))
-  expect_equal(attr$computedVariableDetails$id, c('Lactobacillus','Snodgrassella','Gilliamella','Bifidobacterium','Frischella','Commensalibacter','unclassified Mitochondria','unclassified Rhizobiaceae','unclassified Chloroplast','Bombella'))
-  expect_equal(attr$computedVariableDetails$entity, 'entity')
+  expect_equal(names(attr$computedVariableDetails), c('variableId','entityId','dataType','dataShape','defaultRange', 'isCollection'))
+  expect_equal(attr$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Bifidobacterium','Frischella','Commensalibacter','unclassified Mitochondria','unclassified Rhizobiaceae','unclassified Chloroplast','Bombella'))
+  expect_equal(attr$computedVariableDetails$entityId, 'entity')
   expect_true(attr$computedVariableDetails$isCollection)
   
   results <- rankedAbundance(df, "entity.SampleID", method='max', verbose=F)
   attr <- attributes(results)
   expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','isCutoff') %in% names(attr)))
-  expect_equal(names(attr$computedVariableDetails), c('id','entity','defaultRange', 'isCollection'))
-  expect_equal(attr$computedVariableDetails$id, c('Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella'))
-  expect_equal(attr$computedVariableDetails$entity, 'entity')
+  expect_equal(names(attr$computedVariableDetails), c('variableId','entityId','dataType','dataShape','defaultRange', 'isCollection'))
+  expect_equal(attr$computedVariableDetails$variableId, c('Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella'))
+  expect_equal(attr$computedVariableDetails$entityId, 'entity')
   expect_true(attr$computedVariableDetails$isCollection)
   
   results <- rankedAbundance(df, "entity.SampleID", method='q3', verbose=F)
   attr <- attributes(results)
   expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','isCutoff') %in% names(attr)))
-  expect_equal(names(attr$computedVariableDetails), c('id','entity','defaultRange', 'isCollection'))
-  expect_equal(attr$computedVariableDetails$id, c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
-  expect_equal(attr$computedVariableDetails$entity, 'entity')
+  expect_equal(names(attr$computedVariableDetails), c('variableId','entityId','dataType','dataShape','defaultRange', 'isCollection'))
+  expect_equal(attr$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
+  expect_equal(attr$computedVariableDetails$entityId, 'entity')
   expect_true(attr$computedVariableDetails$isCollection)
   
   results <- rankedAbundance(df, "entity.SampleID", method='var', verbose=F)
   attr <- attributes(results)
   expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','isCutoff') %in% names(attr)))
-  expect_equal(names(attr$computedVariableDetails), c('id','entity','defaultRange', 'isCollection'))
-  expect_equal(attr$computedVariableDetails$id, c('Lactobacillus','Gilliamella','Bombella','Snodgrassella','Klebsiella','unclassified Rhizobiaceae','unclassified Enterobacterales','Fructobacillus','Pseudomonas','unclassified Chloroplast'))
-  expect_equal(attr$computedVariableDetails$entity, 'entity')
+  expect_equal(names(attr$computedVariableDetails), c('variableId','entityId','dataType','dataShape','defaultRange', 'isCollection'))
+  expect_equal(attr$computedVariableDetails$variableId, c('Lactobacillus','Gilliamella','Bombella','Snodgrassella','Klebsiella','unclassified Rhizobiaceae','unclassified Enterobacterales','Fructobacillus','Pseudomonas','unclassified Chloroplast'))
+  expect_equal(attr$computedVariableDetails$entityId, 'entity')
   expect_true(attr$computedVariableDetails$isCollection)
   
 })
@@ -96,8 +96,8 @@ test_that("rankedAbundanceApp output is correctly represented in json", {
   expect_equal(names(jsonList), c('computations','parameterSets'))
   expect_equal(NROW(jsonList$computations), 4)
   expect_equal(names(jsonList$computations), c('computedVariableDetails','computationDetails','isCutoff','recordVariableDetails'))
-  expect_equal(names(jsonList$computations$computedVariableDetails), c('id','entity','defaultRange','isCollection','values'))
-  expect_equal(jsonList$computations$computedVariableDetails$id[[2]], c('Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella'))
+  expect_equal(names(jsonList$computations$computedVariableDetails), c('variableId','entityId','dataType','dataShape','defaultRange', 'isCollection','values'))
+  expect_equal(jsonList$computations$computedVariableDetails$variableId[[2]], c('Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella'))
   
   # Supply only two methods
   appResults <- rankedAbundanceApp(df, "entity.SampleID", methods = c('q3', 'median'), verbose=F)
@@ -106,8 +106,8 @@ test_that("rankedAbundanceApp output is correctly represented in json", {
   expect_equal(names(jsonList), c('computations','parameterSets'))
   expect_equal(NROW(jsonList$computations), 2)
   expect_equal(names(jsonList$computations), c('computedVariableDetails','computationDetails','isCutoff','recordVariableDetails'))
-  expect_equal(names(jsonList$computations$computedVariableDetails), c('id','entity','defaultRange','isCollection','values'))
-  expect_equal(jsonList$computations$computedVariableDetails$id[[1]], c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
+  expect_equal(names(jsonList$computations$computedVariableDetails), c('variableId','entityId','dataType','dataShape','defaultRange', 'isCollection','values'))
+  expect_equal(jsonList$computations$computedVariableDetails$variableId[[1]], c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
   
 })
 

@@ -45,8 +45,10 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
       attr <- list('computationDetails' = computeMessage,
                    'parameters' = character(),
                    'recordVariable' = character())
-      attr$computedVariableDetails <- list('id' = character(),
-                                           'entity' = character(),
+      attr$computedVariableDetails <- list('variableId' = character(),
+                                           'entityId' = character(),
+                                           'dataType' = character(),
+                                           'dataShape' = character(),
                                            'displayLabel' = character(),
                                            'defaultRange' = numeric())
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
@@ -71,8 +73,10 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
                  'recordVariable' = recordIdColumn)
     
     #### Make into a function? Need to get entity from variables
-    attr$computedVariableDetails <- list('id' = names(dt[, -..recordIdColumn]),
-                                         'entity' = entity,
+    attr$computedVariableDetails <- list('variableId' = names(dt[, -..recordIdColumn]),
+                                         'entityId' = entity,
+                                         'dataType' = 'NUMBER',
+                                         'dataShape' = 'CONTINUOUS',
                                          'displayLabel' = computedVarLabel,
                                          'defaultRange' = c(0,1))
     # Add entity to column names

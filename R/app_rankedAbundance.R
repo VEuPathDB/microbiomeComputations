@@ -48,8 +48,10 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     
     #### Make into a function? Need to get entity from variables
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
-    attr$computedVariableDetails <- list('id' = unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2)),
-                                         'entity' = entity,
+    attr$computedVariableDetails <- list('variableId' = unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2)),
+                                         'entityId' = entity,
+                                         'dataType' = 'NUMBER',
+                                         'dataShape' = 'CONTINUOUS',
                                          'defaultRange' = c(0,1),
                                          'isCollection' = TRUE)
 
