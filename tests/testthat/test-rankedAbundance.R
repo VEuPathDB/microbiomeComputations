@@ -35,7 +35,7 @@ test_that("rankedAbundance returns a data.table with the correct attributes", {
   expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','isCutoff') %in% names(attr)))
   expect_equal(names(attr$computedVariableDetails), c('variableId','entityId','dataType','dataShape','defaultRange', 'isCollection'))
   expect_equal(attr$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Bifidobacterium','Frischella','Commensalibacter','unclassified Mitochondria','unclassified Rhizobiaceae','unclassified Chloroplast','Bombella'))
-  expect_equal(attr$computedVariableDetails$entityId, 'entity')
+  expect_equal(attr$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariableDetails$isCollection)
   
   results <- rankedAbundance(df, "entity.SampleID", method='max', verbose=F)
@@ -43,7 +43,7 @@ test_that("rankedAbundance returns a data.table with the correct attributes", {
   expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','isCutoff') %in% names(attr)))
   expect_equal(names(attr$computedVariableDetails), c('variableId','entityId','dataType','dataShape','defaultRange', 'isCollection'))
   expect_equal(attr$computedVariableDetails$variableId, c('Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella'))
-  expect_equal(attr$computedVariableDetails$entityId, 'entity')
+  expect_equal(attr$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariableDetails$isCollection)
   
   results <- rankedAbundance(df, "entity.SampleID", method='q3', verbose=F)
@@ -51,7 +51,7 @@ test_that("rankedAbundance returns a data.table with the correct attributes", {
   expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','isCutoff') %in% names(attr)))
   expect_equal(names(attr$computedVariableDetails), c('variableId','entityId','dataType','dataShape','defaultRange', 'isCollection'))
   expect_equal(attr$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
-  expect_equal(attr$computedVariableDetails$entityId, 'entity')
+  expect_equal(attr$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariableDetails$isCollection)
   
   results <- rankedAbundance(df, "entity.SampleID", method='var', verbose=F)
@@ -59,7 +59,7 @@ test_that("rankedAbundance returns a data.table with the correct attributes", {
   expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','isCutoff') %in% names(attr)))
   expect_equal(names(attr$computedVariableDetails), c('variableId','entityId','dataType','dataShape','defaultRange', 'isCollection'))
   expect_equal(attr$computedVariableDetails$variableId, c('Lactobacillus','Gilliamella','Bombella','Snodgrassella','Klebsiella','unclassified Rhizobiaceae','unclassified Enterobacterales','Fructobacillus','Pseudomonas','unclassified Chloroplast'))
-  expect_equal(attr$computedVariableDetails$entityId, 'entity')
+  expect_equal(attr$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariableDetails$isCollection)
   
 })

@@ -33,7 +33,7 @@ test_that("betaDiv returns a data.table with the correct attributes" , {
   expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','pcoaVariance') %in% names(attr)))
   expect_equal(names(attr$computedVariableDetails), c('variableId','entityId','dataType','dataShape','displayLabel','isCollection'))
   expect_equal(attr$computedVariableDetails$variableId, c('Axis1','Axis2'))
-  expect_equal(attr$computedVariableDetails$entityId, 'entity')
+  expect_equal(attr$computedVariableDetails$entityId, rep('entity',2))
   expect_equal(attr$computedVariableDetails$displayLabel, c('Axis1 15.3%','Axis2 5.7%'))
   
   results <- betaDiv(df, "entity.SampleID", method='jaccard', verbose=F)
@@ -41,7 +41,7 @@ test_that("betaDiv returns a data.table with the correct attributes" , {
   expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','pcoaVariance') %in% names(attr)))
   expect_equal(names(attr$computedVariableDetails), c('variableId','entityId','dataType','dataShape','displayLabel','isCollection'))
   expect_equal(attr$computedVariableDetails$variableId, c('Axis1','Axis2'))
-  expect_equal(attr$computedVariableDetails$entityId, 'entity')
+  expect_equal(attr$computedVariableDetails$entityId, rep('entity',2))
   expect_equal(attr$computedVariableDetails$displayLabel, c('Axis1 10.0%','Axis2 4.3%'))
   
   results <- betaDiv(df, "entity.SampleID", method='jsd', verbose=F)
@@ -49,7 +49,7 @@ test_that("betaDiv returns a data.table with the correct attributes" , {
   expect_true(all(c('computationDetails','parameters','recordVariable','computedVariableDetails','pcoaVariance') %in% names(attr)))
   expect_equal(names(attr$computedVariableDetails), c('variableId','entityId','dataType','dataShape','displayLabel','isCollection'))
   expect_equal(attr$computedVariableDetails$variableId, c('Axis1','Axis2'))
-  expect_equal(attr$computedVariableDetails$entityId, 'entity')
+  expect_equal(attr$computedVariableDetails$entityId, rep('entity',2))
   expect_equal(attr$computedVariableDetails$displayLabel, c('Axis1 25.2%','Axis2 17.5%'))
 })
 

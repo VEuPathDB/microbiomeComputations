@@ -74,9 +74,9 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
     
     #### Make into a function? Need to get entity from variables
     attr$computedVariableDetails <- list('variableId' = names(dt[, -..recordIdColumn]),
-                                         'entityId' = entity,
-                                         'dataType' = 'NUMBER',
-                                         'dataShape' = 'CONTINUOUS',
+                                         'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
+                                         'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
+                                         'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
                                          'displayLabel' = computedVarLabel,
                                          'defaultRange' = c(0,1))
     # Add entity to column names
