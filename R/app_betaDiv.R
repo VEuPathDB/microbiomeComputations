@@ -101,7 +101,7 @@ betaDiv <- function(df,
     #### Make into a function? Need to get entity from variables and add display labels
     attr$computedVariableDetails <- list('id' = names(dt[, -..recordIdColumn]),
                                          'entity' = entity,
-                                         'displayLabel' = paste0(names(dt[, -..recordIdColumn]), " ", percentVar, "%"),
+                                         'displayLabel' = paste0(names(dt[, -..recordIdColumn]), " ", sprintf(percentVar,fmt = '%#.1f'), "%"),
                                          'isCollection' = FALSE)
     # Add entity to column names
     data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))

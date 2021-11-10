@@ -42,7 +42,7 @@ test_that("betaDiv returns a data.table with the correct attributes" , {
   expect_equal(names(attr$computedVariableDetails), c('id','entity','displayLabel','isCollection'))
   expect_equal(attr$computedVariableDetails$id, c('Axis1','Axis2'))
   expect_equal(attr$computedVariableDetails$entity, 'entity')
-  expect_equal(attr$computedVariableDetails$displayLabel, c('Axis1 10%','Axis2 4.3%'))
+  expect_equal(attr$computedVariableDetails$displayLabel, c('Axis1 10.0%','Axis2 4.3%'))
   
   results <- betaDiv(df, "entity.SampleID", method='jsd', verbose=F)
   attr <- attributes(results)
