@@ -53,14 +53,20 @@ betaDiv <- function(df,
       
       attr <- list('computationDetails' = computeMessage,
                    'parameters' = character(),
-                   'recordVariable' = character(),
                    'pcoaVariance' = numeric())
-      attr$computedVariableDetails <- list('variableId' = character(),
-                                           'entityId' = character(),
-                                           'dataType' = character(),
-                                           'dataShape' = character(),
-                                           'displayLabel' = character(),
-                                           'isCollection' = logical())
+      
+      attr$computedVariables <- list() 
+      computedVariableDetails <- list('variableId' = character(),
+                                       'entityId' = character(),
+                                       'dataType' = character(),
+                                       'dataShape' = character(),
+                                       'values' = numeric())
+      
+      computedVariableMetadata <- list('displayLabel' = character())
+      
+      attr$computedVariables[[1]] <- list('computedVariableDetails' = computedVariableDetails,
+                                          'computedVariableMetadata' = computedVariableMetadata)
+
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
       veupathUtils::logWithTime(paste('Beta diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', k=', k , ', verbose =', verbose), verbose)
       
@@ -97,16 +103,21 @@ betaDiv <- function(df,
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
     attr <- list('computationDetails' = computeMessage,
                  'parameters' = method,
-                 'pcoaVariance' = percentVar,
-                 'recordVariable' = recordIdColumn)
+                 'pcoaVariance' = percentVar)
     
     #### Make into a function? Need to get entity from variables and add display labels
-    attr$computedVariableDetails <- list('variableId' = names(dt[, -..recordIdColumn]),
-                                         'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
-                                         'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
-                                         'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
-                                         'displayLabel' = paste0(names(dt[, -..recordIdColumn]), " ", sprintf(percentVar,fmt = '%#.1f'), "%"),
-                                         'isCollection' = FALSE)
+    computedVariableDetailsPcoa <- list('variableId' = unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2)),
+                                    'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
+                                    'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
+                                    'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
+                                    'isCollection' = FALSE)
+    
+    computedVariableMetadataPcoa <- list('displayLabel' = paste0(names(dt[, -..recordIdColumn]), " ", sprintf(percentVar,fmt = '%#.1f'), "%"))
+      
+    attr$computedVariables <- list()
+    attr$computedVariables[[1]] <- list('computedVariableDetails' = computedVariableDetailsPcoa,
+                                        'computedVariableMetadata' = computedVariableMetadataPcoa)
+    
     # Add entity to column names
     data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))
     
@@ -163,7 +174,7 @@ betaDivApp <- function(df,
     
 
     # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
-    # outFileName <- writeAppResultsToJson(appResults, 'betaDiv', verbose = verbose)
+    # outFileName <- writeAppResultsToJson(appResults, recordIdColumn = recordIdColumn, pattern='betaDiv', verbose = verbose)
 
     return(appResults)
 

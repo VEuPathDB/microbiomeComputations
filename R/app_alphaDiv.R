@@ -43,14 +43,21 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
       dt <- df[, ..recordIdColumn]
       
       attr <- list('computationDetails' = computeMessage,
-                   'parameters' = character(),
-                   'recordVariable' = character())
-      attr$computedVariableDetails <- list('variableId' = character(),
-                                           'entityId' = character(),
-                                           'dataType' = character(),
-                                           'dataShape' = character(),
-                                           'displayLabel' = character(),
-                                           'defaultRange' = numeric())
+                   'parameters' = character())
+      
+      attr$computedVariables <- list() 
+      computedVariableDetails <- list('variableId' = character(),
+                                       'entityId' = character(),
+                                       'dataType' = character(),
+                                       'dataShape' = character(),
+                                       'values' = numeric())
+      
+      computedVariableMetadata <- list('displayLabel' = character(),
+                                       'defaultRange' = numeric())
+      
+      attr$computedVariables[[1]] <- list('computedVariableDetails' = computedVariableDetails,
+                                          'computedVariableMetadata' = computedVariableMetadata)
+      
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
       veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', verbose =', verbose), verbose)
       
@@ -69,16 +76,20 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
     # Collect attributes
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
     attr <- list('computationDetails' = computeMessage,
-                 'parameters' = method,
-                 'recordVariable' = recordIdColumn)
+                 'parameters' = method)
     
     #### Make into a function? Need to get entity from variables
-    attr$computedVariableDetails <- list('variableId' = names(dt[, -..recordIdColumn]),
-                                         'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
-                                         'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
-                                         'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
-                                         'displayLabel' = computedVarLabel,
-                                         'defaultRange' = c(0,1))
+    computedVariableDetails <- list('variableId' = unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2)),
+                                    'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
+                                    'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
+                                    'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))))
+    
+    computedVariableMetadata <- list('displayLabel' = computedVarLabel,
+                                     'defaultRange' = c(0,1))
+      
+    attr$computedVariables <- list()
+    attr$computedVariables[[1]] <- list('computedVariableDetails' = computedVariableDetails,
+                                        'computedVariableMetadata' = computedVariableMetadata)
     
     
     # Add entity to column names
@@ -133,7 +144,8 @@ alphaDivApp <- function(df, recordIdColumn, methods = c('shannon','simpson','eve
     appResults <- lapply(methods, alphaDiv, df=df, recordIdColumn=recordIdColumn, verbose=verbose)
 
     # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
-    # outFileName <- writeAppResultsToJson(appResults, 'alphaDiv', verbose = verbose)
+    # Note need to handle failures in here, too
+    # outFileName <- writeAppResultsToJson(appResults, recordIdColumn=recordIdColumn, 'alphaDiv', verbose = verbose)
 
     return(appResults)
 }

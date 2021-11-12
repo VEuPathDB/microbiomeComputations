@@ -39,22 +39,25 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
 
     veupathUtils::logWithTime("Finished ranking taxa", verbose)
     
-
     # Collect attributes
+    entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
     attr <- list('computationDetails' = computeMessage,
                  'parameters' = method,
-                 'isCutoff' = isCutoff,
-                 'recordVariable' = recordIdColumn)
+                 'isCutoff' = isCutoff)
     
     #### Make into a function? Need to get entity from variables
-    entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
-    attr$computedVariableDetails <- list('variableId' = unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2)),
-                                         'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
-                                         'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
-                                         'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
-                                         'defaultRange' = c(0,1),
-                                         'isCollection' = TRUE)
-
+    computedVariableDetails <- list('variableId' = unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2)),
+                                    'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
+                                    'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
+                                    'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
+                                    'isCollection' = TRUE)
+    
+    computedVariableMetadata <- list('defaultRange' = c(0,1))
+    
+    attr$computedVariables <- list()
+    attr$computedVariables[[1]] <- list('computedVariableDetails' = computedVariableDetails,
+                                        'computedVariableMetadata' = computedVariableMetadata)
+    
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
     veupathUtils::logWithTime(paste('Ranked abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', cutoff =', cutoff, ', verbose =', verbose), verbose)
@@ -102,7 +105,7 @@ rankedAbundanceApp <- function(df, recordIdColumn, methods=c('median','max','q3'
     appResults <- lapply(methods, rankedAbundance, df=df, recordIdColumn=recordIdColumn, cutoff=cutoff, verbose=verbose)
 
     # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
-    # outFileName <- writeAppResultsToJson(appResults, 'rankedAbundance', verbose = verbose)
+    # outFileName <- writeAppResultsToJson(appResults, recordIdColumn = recordIdColumn, 'rankedAbundance', verbose = verbose)
 
     return(appResults)
 
