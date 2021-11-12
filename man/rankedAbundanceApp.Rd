@@ -7,7 +7,7 @@
 rankedAbundanceApp(
   df,
   recordIdColumn,
-  methods = c("median", "max", "q3", "var"),
+  methods = c("median", "max", "q3", "variance"),
   cutoff = 10,
   verbose = c(TRUE, FALSE)
 )
@@ -17,14 +17,14 @@ rankedAbundanceApp(
 
 \item{recordIdColumn}{string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.}
 
-\item{methods}{vector of strings indicating ranking methods to use. Must be a subset of c('median','max','q3','var').}
+\item{methods}{vector of strings indicating ranking methods to use. Must be a subset of c('median','max','q3','variance').}
 
 \item{cutoff}{integer indicating the maximium number of taxa to be kept after ranking.}
 
 \item{verbose}{boolean indicating if timed logging is desired.}
 }
 \value{
-name of a jason file containing a list of data.tables, one for each method specified in methods. Each data.table contains a column for the recordIdColumn, top taxa columns, and an attribute "parameters" that records the method used.
+name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains a column for the recordIdColumn, top taxa columns, and an attribute "parameters" that records the method used.
 }
 \description{
 This function returns the name of a json file with ranked abundance results.

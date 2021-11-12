@@ -21,7 +21,7 @@ alphaDivApp(
 \item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
-name of a jason file containing a list of data.tables, one for each method specified in methods. Each data.table contains columns recordIdColumn, "alphaDiversity", and an attribute "parameters" that records the method used.
+name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains columns recordIdColumn, "alphaDiversity", and an attribute "parameters" that records the method used.
 }
 \description{
 This function returns json with alpha diversity values for each sample.
