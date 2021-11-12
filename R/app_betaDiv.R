@@ -27,7 +27,7 @@ betaDiv <- function(df,
     verbose <- veupathUtils::matchArg(verbose)
 
     computeMessage <- ''
-    veupathUtils::logWithTime(paste("Received df table with", NROW(df), "samples and", (NCOL(df)-1), "taxa."), verbose)
+    veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
 
     # Compute beta diversity using given dissimilarity method
     if (identical(method, 'bray') | identical(method, 'jaccard')) {
@@ -36,7 +36,7 @@ betaDiv <- function(df,
 
     } else if (identical(method, 'jsd')) {
 
-      dfMat <- matrix(as.numeric(unlist(df[, -..recordIdColumn])), nrow=NROW(df))
+      dfMat <- matrix(as.numeric(unlist(df[, -..recordIdColumn])), nrow=nrow(df))
       dist <- try({dist <- jsd(t(dfMat)); dist <- as.dist(dist)})
 
     } else {
@@ -75,7 +75,7 @@ betaDiv <- function(df,
     dt <- data.table::as.data.table(pcoa$vectors)
     # Remove dots from names
     data.table::setnames(dt, stringi::stri_replace_all_fixed(names(dt),".",""))
-    computeMessage <- paste("PCoA returned results for", NCOL(dt), "dimensions.")
+    computeMessage <- paste("PCoA returned results for", ncol(dt), "dimensions.")
 
     dt[[recordIdColumn]] <- df[[recordIdColumn]]
     data.table::setcolorder(dt, recordIdColumn)

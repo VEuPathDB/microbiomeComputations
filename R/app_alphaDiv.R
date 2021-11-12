@@ -19,14 +19,14 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
     verbose <- veupathUtils::matchArg(verbose)
 
     computeMessage <- ''
-    veupathUtils::logWithTime(paste("Received df table with", NROW(df), "samples and", (NCOL(df)-1), "taxa."), verbose)
+    veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
     
 
     # Compute alpha diversity
     if (identical(method, 'shannon') | identical(method, 'simpson')){
 
       alphaDivDT <- try(vegan::diversity(df[, -..recordIdColumn], method))
-      computedVarLabel <- stringi::stri_trans_totitle(method)
+      computedVarLabel <- paste(stringi::stri_trans_totitle(method), 'Diversity')
 
     } else if (identical(method, 'evenness')) {
 
@@ -79,6 +79,8 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
                                          'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
                                          'displayLabel' = computedVarLabel,
                                          'defaultRange' = c(0,1))
+    
+    
     # Add entity to column names
     data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))
 
@@ -98,7 +100,7 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
 #' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param methods vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('shannon','simpson','evenness').
 #' @param verbose boolean indicating if timed logging is desired
-#' @return name of a jason file containing a list of data.tables, one for each method specified in methods. Each data.table contains columns recordIdColumn, "alphaDiversity", and an attribute "parameters" that records the method used.
+#' @return name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains columns recordIdColumn, "alphaDiversity", and an attribute "parameters" that records the method used.
 #' @export
 #' @import data.table
 #' @import veupathUtils

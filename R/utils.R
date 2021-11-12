@@ -5,7 +5,7 @@
 ## NOT phase 1 - leaving for a later phase
 # makeDefaultTree <- function(taxonomy_df) {
   
-#     #### Eventually needs to be only the actual var details
+#     #### Eventually needs to be only the actual variance details
 #     #### Eventually needs to make the formula based on col names
 #     # phylo.formula <- ...
 #     tree <- ape::as.phylo.formula(~Kingdom/Phylum/Class/Order, tax_df)
@@ -27,7 +27,7 @@
 
 #' @import data.table
 #' @import veupathUtils
-rankTaxa <- function(df, method=c('median','max','q3','var')) {
+rankTaxa <- function(df, method=c('median','max','q3','variance')) {
 
     method <- veupathUtils::matchArg(method)
     #### Notes: Assume df has rows as samples and at least columns Abundance and TaxonomicLevel
@@ -38,7 +38,7 @@ rankTaxa <- function(df, method=c('median','max','q3','var')) {
       ranked <- df[, list(Abundance=max(Abundance)), by="TaxonomicLevel"]
     } else if (identical(method, 'q3')) {
       ranked <- df[, list(Abundance=quantile(Abundance, 0.75)), by="TaxonomicLevel"]
-    } else if (identical(method, 'var')) {
+    } else if (identical(method, 'variance')) {
       ranked <- df[, list(Abundance=var(Abundance)), by="TaxonomicLevel"]
     } else {
       stop("Unsupported ranking method.")
@@ -47,58 +47,6 @@ rankTaxa <- function(df, method=c('median','max','q3','var')) {
     data.table::setorderv(ranked, c("Abundance", "TaxonomicLevel"), c(-1, 1))
     
     return(ranked)
-}
-
-
-writeAppResultsToJson <- function(appResults, pattern = NULL, dir = NULL, verbose = c(TRUE, FALSE)) {
-  verbose <- matchArg(verbose)
-  
-  if (is.null(pattern)) pattern <- 'file'
-  if (is.null(dir)) dir <- tempdir()
-  
-  # Simple formatting
-  outJson <- getAppJson(appResults)
-  
-  outFileName <- basename(tempfile(pattern = pattern, tmpdir = dir, fileext = ".json"))
-  write(outJson, outFileName)
-  veupathUtils::logWithTime(paste('New json file written:', outFileName), verbose)
-  
-  return(outFileName)
-}
-
-#' @importFrom jsonlite unbox
-#' @importFrom jsonlite toJSON
-getAppJson <- function(appResults) {
-  
-  #### turn into some nice functions
-  parameterSets <- lapply(appResults, function(dt) {return(attr(dt,'parameters'))})
-  computations <- lapply(appResults, function(dt) {
-    computation <- list()
-    attr <- attributes(dt)
-    computation$computedVariableDetails <- attr$computedVariableDetails
-    computation$computationDetails <- attr$computationDetails
-    
-    # App-specific attributes
-    computation$isCutoff <- attr$isCutoff
-    computation$pcoaVariance <- attr$pcoaVariance
-    if ('recordVariable' %in% names(attr)) {
-      computation$recordVariableDetails <- list('variableId' = veupathUtils::strSplit(attr$recordVariable,".", 4, 2),
-                                                'entityId' = veupathUtils::strSplit(attr$recordVariable,".", 4, 1),
-                                                'values' = dt[[attr$recordVariable]])
-      dt[[attr$recordVariable]] <- NULL
-    }
-    
-    # Set computation values
-    computation$computedVariableDetails$values <- lapply(seq_along(dt), function(x) {return(dt[[x]])})
-    
-    return(computation)
-  })
-  
-  outList <- list('computations' = computations,
-                  'parameterSets' = parameterSets)
-  
-  outJson <- jsonlite::toJSON(outList)
-  return(outJson)
 }
 
 # Proof of principle. Needs additional nice inputs and tmp directories and such.

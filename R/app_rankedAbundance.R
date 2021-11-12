@@ -4,21 +4,21 @@
 #' 
 #' @param df data.table with rows corresponding to records, one column indicating the record id, and all other columns corresponding to taxa abundance.
 #' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
-#' @param method string defining the ranking strategy by which to order the taxa. Accepted values are 'median','max','q3',and 'var'. Note that taxa that return a value of 0 for a given method will not be included in the results.
+#' @param method string defining the ranking strategy by which to order the taxa. Accepted values are 'median','max','q3',and 'variance'. Note that taxa that return a value of 0 for a given method will not be included in the results.
 #' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.table with columns recordIdColumn, followed by the top taxa as ranked by the given method, with no more taxa columns than specified by the cutoff argument.
 #' @import veupathUtils
 #' @import data.table
 #' @export
-rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','var'), cutoff=10, verbose = c(TRUE, FALSE)) {
+rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','variance'), cutoff=10, verbose = c(TRUE, FALSE)) {
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
     verbose <- veupathUtils::matchArg(verbose)
 
     computeMessage <- ''
-    veupathUtils::logWithTime(paste("Received df table with", NROW(df), "samples and", (NCOL(df)-1), "taxa."), verbose)
+    veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
 
     # Reshape back to sample, taxonomicLevel, abundance
     formattedDT <- data.table::melt(df, measure.vars=colnames(df)[-1], variable.factor=F, variable.name='TaxonomicLevel', value.name="Abundance")
@@ -28,7 +28,7 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     # Extract top N taxa
     topN <- rankedTaxa[Abundance > 0, TaxonomicLevel]
     isCutoff <- FALSE
-    if (NROW(topN) > cutoff) {
+    if (length(topN) > cutoff) {
       topN <- topN[1:cutoff]
       computeMessage <- "Applied cutoff"
       isCutoff <- TRUE
@@ -68,21 +68,21 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
 #' 
 #' @param df data.frame with samples as rows, taxa as columns.
 #' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
-#' @param methods vector of strings indicating ranking methods to use. Must be a subset of c('median','max','q3','var').
+#' @param methods vector of strings indicating ranking methods to use. Must be a subset of c('median','max','q3','variance').
 #' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
 #' @param verbose boolean indicating if timed logging is desired.
-#' @return name of a jason file containing a list of data.tables, one for each method specified in methods. Each data.table contains a column for the recordIdColumn, top taxa columns, and an attribute "parameters" that records the method used.
+#' @return name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains a column for the recordIdColumn, top taxa columns, and an attribute "parameters" that records the method used.
 #' @import veupathUtils
 #' @export
-rankedAbundanceApp <- function(df, recordIdColumn, methods=c('median','max','q3','var'), cutoff=10, verbose=c(TRUE, FALSE)) {
+rankedAbundanceApp <- function(df, recordIdColumn, methods=c('median','max','q3','variance'), cutoff=10, verbose=c(TRUE, FALSE)) {
 
     verbose <- veupathUtils::matchArg(verbose)
 
-    allMethods <- c('median','max','q3','var')
+    allMethods <- c('median','max','q3','variance')
     # Allow any number of methods to be inputted
     if (is.null(methods)) methods <- allMethods
     if (!all(methods %in% allMethods)) {
-      stop("Unaccepted method found in 'methods' argument. 'methods' must be a subset of c('median', 'max', 'q3','var').")
+      stop("Unaccepted method found in 'methods' argument. 'methods' must be a subset of c('median', 'max', 'q3','variance').")
     }
     
     # Check that incoming df meets requirements
