@@ -5,7 +5,7 @@ on microbiome data. The results are available as json, or optionally in a `data.
 
 ## Installation
 
-Use the R package [remotes](https://cran.r-project.org/web/packages/remotes/index.html) to install plot.data. From the R command prompt:
+Use the R package [remotes](https://cran.r-project.org/web/packages/remotes/index.html) to install microbiomeComputations. From the R command prompt:
 
 ```R
 remotes::install_github('VEuPathDB/microbiomeComputations')

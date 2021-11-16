@@ -2,14 +2,26 @@ Package: microbiomeComputations
 Title: Compute Results for Microbiome Analyses
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "Danielle",
+    c(person(given = "Danielle",
            family = "Callan",
            role = c("aut", "cre"),
-           email = "dcallan@upenn.edu")
+           email = "dcallan@upenn.edu"),
+      person(given = "Ann",
+           family = "Blevins",
+           role = "aut",
+           email = "annsize@upenn.edu"))
 Imports:
+    ape,
     data.table,
     jsonlite,
-    stringi
+    phytools,
+    Rcpp (>= 0.11.0),
+    stringi,
+    vegan,
+    veupathUtils,
+Remotes:
+    VEuPathDB/veupathUtils
+LinkingTo: Rcpp
 URL: https://github.com/VEuPathDB/microbiomeComputations
 BugReports: https://github.com/VEuPathDB/microbiomeComputations/issues
 Description: microbiomeComputations provides helper functions for performing common analyses on microbiome data. The results are available as json, or optionally in a `data.table`. This package is intended to be compliant with the API specified in the VEuPathDB EdaComputeService.
