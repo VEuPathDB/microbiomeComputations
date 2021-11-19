@@ -52,7 +52,8 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
                                     'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
                                     'isCollection' = TRUE)
     
-    computedVariableMetadata <- list('defaultRange' = c(0,1))
+    computedVariableMetadata <- list('displayRangeMin' = '0',
+                                     'displayRangeMax' = '1')
     
     attr$computedVariables <- list()
     attr$computedVariables[[1]] <- list('computedVariableDetails' = computedVariableDetails,
