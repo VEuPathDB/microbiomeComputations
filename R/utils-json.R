@@ -46,6 +46,8 @@ getAppJson <- function(appResults, recordIdColumn) {
       
       columnNames <- veupathUtils::toColNameOrNull(computedVariable$computedVariableDetails)
       computedVariable$computedVariableDetails$values <- lapply(seq_along(columnNames), function(x,dt) {return(dt[[x]])}, dt=dt)
+
+      if (!is.null(computedVariable$computedVariableMetadata$collectionVariable)) {computedVariable$computedVariableMetadata$collectionVariable$collectionType <- jsonlite::unbox(as.character(computedVariable$computedVariableMetadata$collectionVariable$collectionType))}
       
       return(computedVariable)
     }, dt=dt)

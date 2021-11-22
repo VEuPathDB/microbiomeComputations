@@ -41,7 +41,7 @@ test_that("rankedAbundance returns a data.table with the correct attributes", {
   expect_true(attr$isCutoff)
   expect_equal(names(attr$computedVariables[[1]]), c('computedVariableDetails','computedVariableMetadata'))
   expect_equal(names(attr$computedVariables[[1]]$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariables[[1]]$computedVariableMetadata), c('defaultRange'))
+  expect_equal(names(attr$computedVariables[[1]]$computedVariableMetadata), c('defaultRange','collectionVariable'))
   expect_equal(attr$computedVariables[[1]]$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Bifidobacterium','Frischella','Commensalibacter','unclassified Mitochondria','unclassified Rhizobiaceae','unclassified Chloroplast','Bombella'))
   expect_equal(attr$computedVariables[[1]]$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariables[[1]]$computedVariableDetails$isCollection)
@@ -54,7 +54,7 @@ test_that("rankedAbundance returns a data.table with the correct attributes", {
   expect_true(attr$isCutoff)
   expect_equal(names(attr$computedVariables[[1]]), c('computedVariableDetails','computedVariableMetadata'))
 expect_equal(names(attr$computedVariables[[1]]$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariables[[1]]$computedVariableMetadata), c('defaultRange'))
+  expect_equal(names(attr$computedVariables[[1]]$computedVariableMetadata), c('defaultRange','collectionVariable'))
   expect_equal(attr$computedVariables[[1]]$computedVariableDetails$variableId, c('Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella'))
   expect_equal(attr$computedVariables[[1]]$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariables[[1]]$computedVariableDetails$isCollection)
@@ -67,7 +67,7 @@ expect_equal(names(attr$computedVariables[[1]]$computedVariableDetails), c('vari
   expect_true(attr$isCutoff)
   expect_equal(names(attr$computedVariables[[1]]), c('computedVariableDetails','computedVariableMetadata'))
 expect_equal(names(attr$computedVariables[[1]]$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariables[[1]]$computedVariableMetadata), c('defaultRange'))
+  expect_equal(names(attr$computedVariables[[1]]$computedVariableMetadata), c('defaultRange','collectionVariable'))
   expect_equal(attr$computedVariables[[1]]$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
   expect_equal(attr$computedVariables[[1]]$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariables[[1]]$computedVariableDetails$isCollection)
@@ -80,7 +80,7 @@ expect_equal(names(attr$computedVariables[[1]]$computedVariableDetails), c('vari
   expect_true(attr$isCutoff)
   expect_equal(names(attr$computedVariables[[1]]), c('computedVariableDetails','computedVariableMetadata'))
 expect_equal(names(attr$computedVariables[[1]]$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariables[[1]]$computedVariableMetadata), c('defaultRange'))
+  expect_equal(names(attr$computedVariables[[1]]$computedVariableMetadata), c('defaultRange','collectionVariable'))
   expect_equal(attr$computedVariables[[1]]$computedVariableDetails$variableId, c('Lactobacillus','Gilliamella','Bombella','Snodgrassella','Klebsiella','unclassified Rhizobiaceae','unclassified Enterobacterales','Fructobacillus','Pseudomonas','unclassified Chloroplast'))
   expect_equal(attr$computedVariables[[1]]$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariables[[1]]$computedVariableDetails$isCollection)
@@ -144,8 +144,9 @@ test_that("rankedAbundanceApp output is correctly represented in json", {
   expect_equal(nrow(jsonList$computations$computedVariables[[1]]$computedVariableDetails$values[[1]]), 10)
   expect_true(jsonList$computations$computedVariables[[1]]$computedVariableDetails$isCollection[[1]])
   # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariables[[1]]$computedVariableMetadata), c('defaultRange'))
+  expect_equal(names(jsonList$computations$computedVariables[[1]]$computedVariableMetadata), c('defaultRange','collectionVariable'))
   expect_equal(jsonList$computations$computedVariables[[1]]$computedVariableMetadata$defaultRange[[1]], c(0, 1))
+  expect_equal(jsonList$computations$computedVariables[[1]]$computedVariableMetadata$collectionVariable$collectionType[[1]], 'abundance')
   
   # Supply only two methods
   nMethods <- 2
@@ -178,8 +179,9 @@ test_that("rankedAbundanceApp output is correctly represented in json", {
   expect_equal(nrow(jsonList$computations$computedVariables[[1]]$computedVariableDetails$values[[1]]), 10)
   expect_true(jsonList$computations$computedVariables[[1]]$computedVariableDetails$isCollection[[1]])
   # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariables[[1]]$computedVariableMetadata), c('defaultRange'))
+  expect_equal(names(jsonList$computations$computedVariables[[1]]$computedVariableMetadata), c('defaultRange','collectionVariable'))
   expect_equal(jsonList$computations$computedVariables[[1]]$computedVariableMetadata$defaultRange[[1]], c(0, 1))
+  expect_equal(jsonList$computations$computedVariables[[1]]$computedVariableMetadata$collectionVariable$collectionType[[1]], 'abundance')
   
 })
 
