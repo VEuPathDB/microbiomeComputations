@@ -53,11 +53,11 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
                                     'isCollection' = TRUE)
     
     computedVariableMetadata <- list('displayRangeMin' = '0',
-                                     'displayRangeMax' = '1')
+                                     'displayRangeMax' = '1',
+                                     'collectionVariable' = list('collectionType' = 'abundance'))
     
-    attr$computedVariables <- list()
-    attr$computedVariables[[1]] <- list('computedVariableDetails' = computedVariableDetails,
-                                        'computedVariableMetadata' = computedVariableMetadata)
+    attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
+                                  'computedVariableMetadata' = computedVariableMetadata)
     
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 

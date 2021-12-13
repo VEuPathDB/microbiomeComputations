@@ -45,7 +45,6 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
       attr <- list('computationDetails' = computeMessage,
                    'parameters' = character())
       
-      attr$computedVariables <- list() 
       computedVariableDetails <- list('variableId' = character(),
                                        'entityId' = character(),
                                        'dataType' = character(),
@@ -56,8 +55,8 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
                                        'displayRangeMin' = character(),
                                        'displayRangeMax' = character())
       
-      attr$computedVariables[[1]] <- list('computedVariableDetails' = computedVariableDetails,
-                                          'computedVariableMetadata' = computedVariableMetadata)
+      attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
+                                     'computedVariableMetadata' = computedVariableMetadata)
       
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
       veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', verbose =', verbose), verbose)
@@ -89,9 +88,8 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
                                      'displayRangeMin' = '0',
                                      'displayRangeMax' = '1')
       
-    attr$computedVariables <- list()
-    attr$computedVariables[[1]] <- list('computedVariableDetails' = computedVariableDetails,
-                                        'computedVariableMetadata' = computedVariableMetadata)
+    attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
+                                  'computedVariableMetadata' = computedVariableMetadata)
     
     
     # Add entity to column names
