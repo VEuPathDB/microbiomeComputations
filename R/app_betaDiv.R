@@ -55,7 +55,6 @@ betaDiv <- function(df,
                    'parameters' = character(),
                    'pcoaVariance' = numeric())
       
-      attr$computedVariables <- list() 
       computedVariableDetails <- list('variableId' = character(),
                                        'entityId' = character(),
                                        'dataType' = character(),
@@ -64,8 +63,8 @@ betaDiv <- function(df,
       
       computedVariableMetadata <- list('displayLabel' = character())
       
-      attr$computedVariables[[1]] <- list('computedVariableDetails' = computedVariableDetails,
-                                          'computedVariableMetadata' = computedVariableMetadata)
+      attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
+                                     'computedVariableMetadata' = computedVariableMetadata)
 
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
       veupathUtils::logWithTime(paste('Beta diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', k=', k , ', verbose =', verbose), verbose)
@@ -114,9 +113,8 @@ betaDiv <- function(df,
     
     computedVariableMetadataPcoa <- list('displayLabel' = paste0(names(dt[, -..recordIdColumn]), " ", sprintf(percentVar,fmt = '%#.1f'), "%"))
       
-    attr$computedVariables <- list()
-    attr$computedVariables[[1]] <- list('computedVariableDetails' = computedVariableDetailsPcoa,
-                                        'computedVariableMetadata' = computedVariableMetadataPcoa)
+    attr$computedVariable <- list('computedVariableDetails' = computedVariableDetailsPcoa,
+                                  'computedVariableMetadata' = computedVariableMetadataPcoa)
     
     # Add entity to column names
     data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))

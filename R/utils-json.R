@@ -40,17 +40,22 @@ getAppJson <- function(appResults, recordIdColumn) {
     computation$isCutoff <- jsonlite::unbox(attr$isCutoff)
     computation$pcoaVariance <- attr$pcoaVariance
 
-    # Set computation values
-    dt[[recordIdColumn]] <- NULL
-    computation$computedVariables <- lapply(attr$computedVariables, function(computedVariable, dt) {
-      
-      columnNames <- veupathUtils::toColNameOrNull(computedVariable$computedVariableDetails)
-      computedVariable$computedVariableDetails$values <- lapply(seq_along(columnNames), function(x,dt) {return(dt[[x]])}, dt=dt)
+    # Set computation variable
+    computation$computedVariable <- attr$computedVariable
 
-      if (!is.null(computedVariable$computedVariableMetadata$collectionVariable)) {computedVariable$computedVariableMetadata$collectionVariable$collectionType <- jsonlite::unbox(as.character(computedVariable$computedVariableMetadata$collectionVariable$collectionType))}
-      
-      return(computedVariable)
-    }, dt=dt)
+    # Set computation values. Assuming only one computed variable for now.
+    columnNames <- veupathUtils::toColNameOrNull(attr$computedVariable$computedVariableDetails)
+    dt[[recordIdColumn]] <- NULL
+    computation$computedVariable$computedVariableDetails$values <- lapply(seq_along(columnNames), function(x,dt) {return(dt[[x]])}, dt=dt)
+    
+    # Handle collection variable if present
+    if (!is.null(attr$computedVariable$computedVariableMetadata$collectionVariable)) {
+      computation$computedVariable$computedVariableMetadata$collectionVariable$collectionType <- jsonlite::unbox(as.character(attr$computedVariable$computedVariableMetadata$collectionVariable$collectionType))
+    }
+
+    # computation$computedVariable$values <- lapply(attr$computedVariable, function(computedVariable, dt) {
+    #   return(computedVariable)
+    # }, dt=dt)
     
     return(computation)
   }, recordIdColumn=recordIdColumn)
