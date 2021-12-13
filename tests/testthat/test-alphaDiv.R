@@ -3,23 +3,23 @@ test_that('alphaDiv returns a correctly formatted data.table', {
 
   df <- testOTU
   
-  results <- alphaDiv(df, "entity.SampleID", method='shannon', verbose=F)
-  expect_equal(nrow(results), nrow(df))
-  expect_s3_class(results, 'data.table')
-  expect_equal(names(results), c('entity.SampleID','entity.alphaDiversity'))
-  expect_equal(c(class(results$entity.SampleID), class(results$entity.alphaDiversity)), c('character','numeric'))
+  dt <- alphaDiv(df, "entity.SampleID", method='shannon', verbose=F)
+  expect_equal(nrow(dt), nrow(df))
+  expect_s3_class(dt, 'data.table')
+  expect_equal(names(dt), c('entity.SampleID','entity.alphaDiversity'))
+  expect_equal(c(class(dt$entity.SampleID), class(dt$entity.alphaDiversity)), c('character','numeric'))
   
-  results <- alphaDiv(df, "entity.SampleID", method='simpson', verbose=F)
-  expect_equal(nrow(results), nrow(df))
-  expect_s3_class(results, 'data.table')
-  expect_equal(names(results), c('entity.SampleID','entity.alphaDiversity'))
-  expect_equal(c(class(results$entity.SampleID), class(results$entity.alphaDiversity)), c('character','numeric'))
+  dt <- alphaDiv(df, "entity.SampleID", method='simpson', verbose=F)
+  expect_equal(nrow(dt), nrow(df))
+  expect_s3_class(dt, 'data.table')
+  expect_equal(names(dt), c('entity.SampleID','entity.alphaDiversity'))
+  expect_equal(c(class(dt$entity.SampleID), class(dt$entity.alphaDiversity)), c('character','numeric'))
   
-  results <- alphaDiv(df, "entity.SampleID", method='evenness', verbose=F)
-  expect_equal(nrow(results), nrow(df))
-  expect_s3_class(results, 'data.table')
-  expect_equal(names(results), c('entity.SampleID','entity.alphaDiversity'))
-  expect_equal(c(class(results$entity.SampleID), class(results$entity.alphaDiversity)), c('character','numeric'))
+  dt <- alphaDiv(df, "entity.SampleID", method='evenness', verbose=F)
+  expect_equal(nrow(dt), nrow(df))
+  expect_s3_class(dt, 'data.table')
+  expect_equal(names(dt), c('entity.SampleID','entity.alphaDiversity'))
+  expect_equal(c(class(dt$entity.SampleID), class(dt$entity.alphaDiversity)), c('character','numeric'))
   
 })
 
@@ -27,41 +27,44 @@ test_that("alphaDiv returns a data.table with the correct attributes", {
   
   df <- testOTU
   
-  results <- alphaDiv(df, "entity.SampleID", method='shannon', verbose=F)
-  attr <- attributes(results)
+  dt <- alphaDiv(df, "entity.SampleID", method='shannon', verbose=F)
+  attr <- attributes(dt)
   expect_true(all(c('computationDetails','parameters','computedVariable') %in% names(attr)))
   expect_equal(attr$parameters, 'shannon')
   expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
   expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayLabel','defaultRange'))
+  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayName','displayRangeMin','displayRangeMax'))
   expect_equal(attr$computedVariable$computedVariableDetails$variableId, 'alphaDiversity')
   expect_equal(attr$computedVariable$computedVariableDetails$entityId, 'entity')
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayLabel, 'Shannon Diversity')
-  expect_equal(attr$computedVariable$computedVariableMetadata$defaultRange, c(0, 1))
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayName, 'Shannon Diversity')
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMin, '0')
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMax, '1')
   
-  results <- alphaDiv(df, "entity.SampleID", method='simpson', verbose=F)
-  attr <- attributes(results)
+  dt <- alphaDiv(df, "entity.SampleID", method='simpson', verbose=F)
+  attr <- attributes(dt)
   expect_true(all(c('computationDetails','parameters','computedVariable') %in% names(attr)))
   expect_equal(attr$parameters, 'simpson')
   expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
   expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayLabel','defaultRange'))
+  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayName','displayRangeMin','displayRangeMax'))
   expect_equal(attr$computedVariable$computedVariableDetails$variableId, 'alphaDiversity')
   expect_equal(attr$computedVariable$computedVariableDetails$entityId, 'entity')
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayLabel, 'Simpson Diversity')
-  expect_equal(attr$computedVariable$computedVariableMetadata$defaultRange, c(0, 1))
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayName, 'Simpson Diversity')
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMin, '0')
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMax, '1')
   
-  results <- alphaDiv(df, "entity.SampleID", method='evenness', verbose=F)
-  attr <- attributes(results)
+  dt <- alphaDiv(df, "entity.SampleID", method='evenness', verbose=F)
+  attr <- attributes(dt)
   expect_true(all(c('computationDetails','parameters','computedVariable') %in% names(attr)))
   expect_equal(attr$parameters, 'evenness')
   expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
   expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayLabel','defaultRange'))
+  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayName','displayRangeMin','displayRangeMax'))
   expect_equal(attr$computedVariable$computedVariableDetails$variableId, 'alphaDiversity')
   expect_equal(attr$computedVariable$computedVariableDetails$entityId, 'entity')
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayLabel, 'Pielou\'s Evenness')
-  expect_equal(attr$computedVariable$computedVariableMetadata$defaultRange, c(0, 1))
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayName, 'Pielou\'s Evenness')
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMin, '0')
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMax, '1')
   
 })
 
@@ -117,9 +120,10 @@ test_that("alphaDivApp output is correctly represented in json", {
   expect_equal(jsonList$computations$computedVariable$computedVariableDetails$dataShape[[1]], 'CONTINUOUS')
   expect_equal(length(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), nrow(df))
   # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayLabel','defaultRange'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayLabel[[1]], 'Shannon Diversity')
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$defaultRange[[1]], c(0, 1))
+  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayName','displayRangeMin','displayRangeMax'))
+  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayName[[1]], 'Shannon Diversity')
+  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMin[[1]], '0')
+  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMax[[1]], '1')
   
   
 
@@ -152,9 +156,10 @@ test_that("alphaDivApp output is correctly represented in json", {
   expect_equal(jsonList$computations$computedVariable$computedVariableDetails$dataShape[[1]], 'CONTINUOUS')
   expect_equal(length(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), nrow(df))
   # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayLabel','defaultRange'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayLabel[[1]], 'Pielou\'s Evenness')
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$defaultRange[[1]], c(0, 1))
+  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayName','displayRangeMin','displayRangeMax'))
+  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayName[[1]], 'Pielou\'s Evenness')
+  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMin[[1]], '0')
+  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMax[[1]], '1')
 })
 
 test_that("alphaDiv results are consistent", {
@@ -171,20 +176,21 @@ test_that("alphaDiv fails gracefully", {
   df <- testOTU
   df$entity.Abiotrophia <- -1
   
-  results <- alphaDiv(df, "entity.SampleID", method='evenness', verbose=T)
-  expect_equal(nrow(results), nrow(df))
-  expect_s3_class(results, 'data.table')
-  expect_equal(names(results), 'entity.SampleID')
-  expect_equal(typeof(results$entity.SampleID), c('character'))
-  attr <- attributes(results)
+  dt <- alphaDiv(df, "entity.SampleID", method='evenness', verbose=T)
+  expect_equal(nrow(dt), nrow(df))
+  expect_s3_class(dt, 'data.table')
+  expect_equal(names(dt), 'entity.SampleID')
+  expect_equal(typeof(dt$entity.SampleID), c('character'))
+  attr <- attributes(dt)
   expect_equal(attr$computationDetails, "Error: alpha diversity evenness failed: input data must be non-negative")
   expect_equal(typeof(attr$parameters), 'character')
   expect_equal(typeof(attr$computedVariable$computedVariableDetails$variableId), 'character')
   expect_equal(typeof(attr$computedVariable$computedVariableDetails$entityId), 'character')
   expect_equal(typeof(attr$computedVariable$computedVariableDetails$dataType), 'character')
   expect_equal(typeof(attr$computedVariable$computedVariableDetails$dataShape), 'character')
-  expect_equal(typeof(attr$computedVariable$computedVariableMetadata$displayLabel), 'character')
-  expect_equal(typeof(attr$computedVariable$computedVariableMetadata$defaultRange), 'double')
+  expect_equal(typeof(attr$computedVariable$computedVariableMetadata$displayName), 'character')
+  expect_equal(typeof(attr$computedVariable$computedVariableMetadata$displayRangeMin), 'character')
+  expect_equal(typeof(attr$computedVariable$computedVariableMetadata$displayRangeMax), 'character')
   
   
 })

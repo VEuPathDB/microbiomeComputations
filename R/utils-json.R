@@ -48,14 +48,15 @@ getAppJson <- function(appResults, recordIdColumn) {
     dt[[recordIdColumn]] <- NULL
     computation$computedVariable$computedVariableDetails$values <- lapply(seq_along(columnNames), function(x,dt) {return(dt[[x]])}, dt=dt)
     
+    # Match computedVariableMetadata to api
+    if (!is.null(attr$computedVariable$computedVariableMetadata$displayRangeMin)) {computation$computedVariable$computedVariableMetadata$displayRangeMin <- jsonlite::unbox(as.character(attr$computedVariable$computedVariableMetadata$displayRangeMin))}
+    if (!is.null(attr$computedVariable$computedVariableMetadata$displayRangeMax)) {computation$computedVariable$computedVariableMetadata$displayRangeMax <- jsonlite::unbox(as.character(attr$computedVariable$computedVariableMetadata$displayRangeMax))}
+    if (!is.null(attr$computedVariable$computedVariableMetadata$displayName)) {computation$computedVariable$computedVariableMetadata$displayName <- as.character(attr$computedVariable$computedVariableMetadata$displayName)}
+    
     # Handle collection variable if present
     if (!is.null(attr$computedVariable$computedVariableMetadata$collectionVariable)) {
       computation$computedVariable$computedVariableMetadata$collectionVariable$collectionType <- jsonlite::unbox(as.character(attr$computedVariable$computedVariableMetadata$collectionVariable$collectionType))
     }
-
-    # computation$computedVariable$values <- lapply(attr$computedVariable, function(computedVariable, dt) {
-    #   return(computedVariable)
-    # }, dt=dt)
     
     return(computation)
   }, recordIdColumn=recordIdColumn)

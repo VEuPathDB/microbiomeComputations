@@ -51,8 +51,9 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
                                        'dataShape' = character(),
                                        'values' = numeric())
       
-      computedVariableMetadata <- list('displayLabel' = character(),
-                                       'defaultRange' = numeric())
+      computedVariableMetadata <- list('displayName' = character(),
+                                       'displayRangeMin' = character(),
+                                       'displayRangeMax' = character())
       
       attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
                                      'computedVariableMetadata' = computedVariableMetadata)
@@ -83,8 +84,9 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
                                     'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
                                     'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))))
     
-    computedVariableMetadata <- list('displayLabel' = computedVarLabel,
-                                     'defaultRange' = c(0, 1))
+    computedVariableMetadata <- list('displayName' = computedVarLabel,
+                                     'displayRangeMin' = '0',
+                                     'displayRangeMax' = '1')
       
     attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
                                   'computedVariableMetadata' = computedVariableMetadata)

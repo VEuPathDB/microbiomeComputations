@@ -61,7 +61,7 @@ betaDiv <- function(df,
                                        'dataShape' = character(),
                                        'values' = numeric())
       
-      computedVariableMetadata <- list('displayLabel' = character())
+      computedVariableMetadata <- list('displayName' = character())
       
       attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
                                      'computedVariableMetadata' = computedVariableMetadata)
@@ -111,7 +111,7 @@ betaDiv <- function(df,
                                     'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
                                     'isCollection' = FALSE)
     
-    computedVariableMetadataPcoa <- list('displayLabel' = paste0(names(dt[, -..recordIdColumn]), " ", sprintf(percentVar,fmt = '%#.1f'), "%"))
+    computedVariableMetadataPcoa <- list('displayName' = paste0(names(dt[, -..recordIdColumn]), " ", sprintf(percentVar,fmt = '%#.1f'), "%"))
       
     attr$computedVariable <- list('computedVariableDetails' = computedVariableDetailsPcoa,
                                   'computedVariableMetadata' = computedVariableMetadataPcoa)

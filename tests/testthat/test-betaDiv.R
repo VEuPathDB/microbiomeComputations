@@ -3,23 +3,23 @@ test_that('betaDiv returns a correctly formatted data.table', {
   
   df <- testOTU
 
-  results <- betaDiv(df, "entity.SampleID", method='bray', verbose=F)
-  expect_equal(nrow(results), nrow(df))
-  expect_s3_class(results, 'data.table')
-  expect_equal(names(results), c('entity.SampleID','entity.Axis1','entity.Axis2'))
-  expect_equal(unname(unlist(lapply(results, class))), c('character','numeric','numeric'))
+  dt <- betaDiv(df, "entity.SampleID", method='bray', verbose=F)
+  expect_equal(nrow(dt), nrow(df))
+  expect_s3_class(dt, 'data.table')
+  expect_equal(names(dt), c('entity.SampleID','entity.Axis1','entity.Axis2'))
+  expect_equal(unname(unlist(lapply(dt, class))), c('character','numeric','numeric'))
   
-  results <- betaDiv(df, "entity.SampleID", method='jaccard', verbose=F)
-  expect_equal(nrow(results), nrow(df))
-  expect_s3_class(results, 'data.table')
-  expect_equal(names(results), c('entity.SampleID','entity.Axis1','entity.Axis2'))
-  expect_equal(unname(unlist(lapply(results, class))), c('character','numeric','numeric'))
+  dt <- betaDiv(df, "entity.SampleID", method='jaccard', verbose=F)
+  expect_equal(nrow(dt), nrow(df))
+  expect_s3_class(dt, 'data.table')
+  expect_equal(names(dt), c('entity.SampleID','entity.Axis1','entity.Axis2'))
+  expect_equal(unname(unlist(lapply(dt, class))), c('character','numeric','numeric'))
   
-  results <- betaDiv(df, "entity.SampleID", method='jsd', verbose=F)
-  expect_equal(nrow(results), nrow(df))
-  expect_s3_class(results, 'data.table')
-  expect_equal(names(results), c('entity.SampleID','entity.Axis1','entity.Axis2'))
-  expect_equal(unname(unlist(lapply(results, class))), c('character','numeric','numeric'))
+  dt <- betaDiv(df, "entity.SampleID", method='jsd', verbose=F)
+  expect_equal(nrow(dt), nrow(df))
+  expect_s3_class(dt, 'data.table')
+  expect_equal(names(dt), c('entity.SampleID','entity.Axis1','entity.Axis2'))
+  expect_equal(unname(unlist(lapply(dt, class))), c('character','numeric','numeric'))
   
   
 })
@@ -34,10 +34,10 @@ test_that("betaDiv returns a data.table with the correct attributes" , {
   expect_equal(attr$parameters, 'bray')
   expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
   expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayLabel'))
+  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayName'))
   expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Axis1','Axis2'))
   expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',2))
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayLabel, c('Axis1 15.3%','Axis2 5.7%'))
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayName, c('Axis1 15.3%','Axis2 5.7%'))
   
   results <- betaDiv(df, "entity.SampleID", method='jaccard', verbose=F)
   attr <- attributes(results)
@@ -45,10 +45,10 @@ test_that("betaDiv returns a data.table with the correct attributes" , {
   expect_equal(attr$parameters, 'jaccard')
   expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
   expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayLabel'))
+  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayName'))
   expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Axis1','Axis2'))
   expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',2))
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayLabel, c('Axis1 10.0%','Axis2 4.3%'))
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayName, c('Axis1 10.0%','Axis2 4.3%'))
   
   results <- betaDiv(df, "entity.SampleID", method='jsd', verbose=F)
   attr <- attributes(results)
@@ -56,10 +56,10 @@ test_that("betaDiv returns a data.table with the correct attributes" , {
   expect_equal(attr$parameters, 'jsd')
   expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
   expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayLabel'))
+  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayName'))
   expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Axis1','Axis2'))
   expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',2))
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayLabel,c('Axis1 25.2%','Axis2 17.5%'))
+  expect_equal(attr$computedVariable$computedVariableMetadata$displayName,c('Axis1 25.2%','Axis2 17.5%'))
 
 })
 
@@ -118,8 +118,8 @@ test_that("betaDivApp output is correctly represented in json", {
   expect_equal(ncol(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), nrow(df))
   expect_false(jsonList$computations$computedVariable$computedVariableDetails$isCollection[[1]])
   # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayLabel'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayLabel[[1]], c('Axis1 15.3%','Axis2 5.7%'))
+  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayName'))
+  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayName[[1]], c('Axis1 15.3%','Axis2 5.7%'))
   
   
   nMethods <- 2
@@ -151,8 +151,8 @@ test_that("betaDivApp output is correctly represented in json", {
   expect_equal(ncol(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), nrow(df))
   expect_false(jsonList$computations$computedVariable$computedVariableDetails$isCollection[[1]])
   # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayLabel'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayLabel[[1]], c('Axis1 15.3%','Axis2 5.7%'))
+  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayName'))
+  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayName[[1]], c('Axis1 15.3%','Axis2 5.7%'))
   
   
 })
@@ -171,19 +171,19 @@ test_that("betaDiv fails gracefully", {
   df <- testOTU
   df$entity.Abiotrophia <- NA
   
-  results <- betaDiv(df, "entity.SampleID", method='bray', verbose=T)
-  expect_equal(nrow(results), nrow(df))
-  expect_s3_class(results, 'data.table')
-  expect_equal(names(results), 'entity.SampleID')
-  expect_equal(typeof(results$entity.SampleID), c('character'))
-  attr <- attributes(results)
+  dt <- betaDiv(df, "entity.SampleID", method='bray', verbose=T)
+  expect_equal(nrow(dt), nrow(df))
+  expect_s3_class(dt, 'data.table')
+  expect_equal(names(dt), 'entity.SampleID')
+  expect_equal(typeof(dt$entity.SampleID), c('character'))
+  attr <- attributes(dt)
   expect_equal(attr$computationDetails, "Error: beta diversity bray failed: missing values are not allowed with argument 'na.rm = FALSE'")
   expect_equal(typeof(attr$parameters), 'character')
   expect_equal(typeof(attr$computedVariable$computedVariableDetails$variableId), 'character')
   expect_equal(typeof(attr$computedVariable$computedVariableDetails$entityId), 'character')
   expect_equal(typeof(attr$computedVariable$computedVariableDetails$dataType), 'character')
   expect_equal(typeof(attr$computedVariable$computedVariableDetails$dataShape), 'character')
-  expect_equal(typeof(attr$computedVariable$computedVariableMetadata$displayLabel), 'character')
+  expect_equal(typeof(attr$computedVariable$computedVariableMetadata$displayName), 'character')
   expect_equal(typeof(attr$pcoaVariance), 'double')
   
 })
