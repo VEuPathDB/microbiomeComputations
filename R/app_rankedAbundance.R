@@ -30,7 +30,7 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     isCutoff <- FALSE
     if (length(topN) > cutoff) {
       topN <- topN[1:cutoff]
-      computeMessage <- "Applied cutoff"
+      computeMessage <- paste("Only returning top", cutoff, "results.")
       isCutoff <- TRUE
     }
 
@@ -105,7 +105,7 @@ rankedAbundanceApp <- function(df, recordIdColumn, methods=c('median','max','q3'
 
     appResults <- lapply(methods, rankedAbundance, df=df, recordIdColumn=recordIdColumn, cutoff=cutoff, verbose=verbose)
 
-    # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
+    # Write to json file
     # outFileName <- writeAppResultsToJson(appResults, recordIdColumn = recordIdColumn, 'rankedAbundance', verbose = verbose)
 
     return(appResults)

@@ -65,6 +65,7 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
       
     } else {
       computeMessage <- paste('Computed', method, 'alpha diversity.')
+      veupathUtils::logWithTime(paste(method, 'alpha diversity computation complete.'), verbose)
     }
 
     # Assemble data table
@@ -74,7 +75,7 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
     data.table::setnames(dt, c(recordIdColumn,'alphaDiversity'))
     
     # Collect attributes
-    entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
+    entity <- veupathUtils::strSplit(recordIdColumn, ".", 4, 1)
     attr <- list('computationDetails' = computeMessage,
                  'parameters' = method)
     
@@ -143,8 +144,7 @@ alphaDivApp <- function(df, recordIdColumn, methods = c('shannon','simpson','eve
 
     appResults <- lapply(methods, alphaDiv, df=df, recordIdColumn=recordIdColumn, verbose=verbose)
 
-    # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
-    # Note need to handle failures in here, too
+    # Write to json. Note need to handle failures in here, too
     # outFileName <- writeAppResultsToJson(appResults, recordIdColumn=recordIdColumn, 'alphaDiv', verbose = verbose)
 
     return(appResults)

@@ -73,6 +73,7 @@ betaDiv <- function(df,
       
     } else {
       veupathUtils::logWithTime("Computed dissimilarity matrix.", verbose)
+      computeMessage <- paste(method, "dissimilarity matrix computation successful.")
     }
 
     # Ordination
@@ -80,7 +81,7 @@ betaDiv <- function(df,
     dt <- data.table::as.data.table(pcoa$vectors)
     # Remove dots from names
     data.table::setnames(dt, stringi::stri_replace_all_fixed(names(dt),".",""))
-    computeMessage <- paste("PCoA returned results for", ncol(dt), "dimensions.")
+    computeMessage <- paste(computeMessage, "PCoA returned results for", ncol(dt), "dimensions.")
 
     dt[[recordIdColumn]] <- df[[recordIdColumn]]
     data.table::setcolorder(dt, recordIdColumn)
@@ -97,7 +98,6 @@ betaDiv <- function(df,
     keepCols <- c(recordIdColumn,names(dt)[2:(k+1)])
     dt <- dt[, ..keepCols]
 
-    #### Need to add back computed Variable Labels
     # Collect attributes
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
     attr <- list('computationDetails' = computeMessage,
@@ -171,7 +171,7 @@ betaDivApp <- function(df,
     appResults <- lapply(methods, betaDiv, df=df, recordIdColumn=recordIdColumn, k=k, verbose=verbose)
     
 
-    # Write to json file - debating whether to keep this in here or move elsewhere. Makes testing easier
+    # Write to json file
     # outFileName <- writeAppResultsToJson(appResults, recordIdColumn = recordIdColumn, pattern='betaDiv', verbose = verbose)
 
     return(appResults)
