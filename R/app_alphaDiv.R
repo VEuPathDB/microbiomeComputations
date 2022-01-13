@@ -21,6 +21,11 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
     
+    # Convert to numeric
+    abundanceColumns = colnames(df[, -..recordIdColumn])
+    df[, (abundanceColumns) := lapply(.SD, as.numeric), .SDcols = abundanceColumns]
+
+    # Need to remove NAs?
 
     # Compute alpha diversity
     if (identical(method, 'shannon') | identical(method, 'simpson')){

@@ -3,7 +3,7 @@ test_that('alphaDiv returns a correctly formatted data.table', {
 
   df <- testOTU
   
-  dt <- alphaDiv(df, "entity.SampleID", method='shannon', verbose=F)
+  dt <- alphaDiv(df, "entity.SampleID", method='shannon', verbose=T)
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
   expect_equal(names(dt), c('entity.SampleID','entity.alphaDiversity'))
