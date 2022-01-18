@@ -2,10 +2,12 @@
 test_that('rankedAbundance returns a correctly formatted data.table', {
   
   df <- testOTU
+  df <- fread("../real_data/clinepiGems1ABox.tab")
+  df <- df[, -2:-3]
   # cols <- "entity.966-1"
   # df[, (cols) := lapply(.SD, as.character), .SDcols = cols]
 
-  dt <- rankedAbundance(df, "entity.SampleID", method='max', verbose=F)
+  dt <- rankedAbundance(df, "EUPATH_0000738.Observation_stable_id", method='max', verbose=F)
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
   expect_equal(names(dt), paste0('entity.',c('SampleID','Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella')))
