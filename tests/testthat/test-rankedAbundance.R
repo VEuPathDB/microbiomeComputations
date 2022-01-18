@@ -2,6 +2,8 @@
 test_that('rankedAbundance returns a correctly formatted data.table', {
   
   df <- testOTU
+  # cols <- "entity.966-1"
+  # df[, (cols) := lapply(.SD, as.character), .SDcols = cols]
 
   dt <- rankedAbundance(df, "entity.SampleID", method='max', verbose=F)
   expect_equal(nrow(dt), nrow(df))

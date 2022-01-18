@@ -69,7 +69,7 @@ test_that("alphaDiv returns a data.table with the correct attributes", {
 })
 
 test_that("alphaDivApp produces an appropriately structured list of computations", {
-  
+
   df <- testOTU
   
   # Default - use all methods
