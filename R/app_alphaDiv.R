@@ -25,7 +25,8 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
     abundanceColumns = colnames(df[, -..recordIdColumn])
     df[, (abundanceColumns) := lapply(.SD, as.numeric), .SDcols = abundanceColumns]
 
-    # Need to remove NAs?
+    # NAs to 0s
+    veupathUtils::setNaToValue(df, value = 0, cols = abundanceColumns)
 
     # Compute alpha diversity
     if (identical(method, 'shannon') | identical(method, 'simpson')){

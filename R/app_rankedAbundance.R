@@ -20,10 +20,11 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
 
-    # Convert to numeric and handle 0s (for testing only!)
+    # Convert to numeric (for testing only!)
     abundanceColumns = colnames(df[, -..recordIdColumn])
     df[, (abundanceColumns) := lapply(.SD, as.numeric), .SDcols = abundanceColumns]
-    df[is.na(df)] <- 0
+    
+    veupathUtils::setNaToValue(df, value = 0, cols = abundanceColumns)
 
     # Reshape back to sample, taxonomicLevel, abundance
     formattedDT <- data.table::melt(df, measure.vars=colnames(df)[-1], variable.factor=F, variable.name='TaxonomicLevel', value.name="Abundance")
