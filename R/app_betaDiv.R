@@ -6,6 +6,7 @@
 #' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param method string defining the the beta diversity dissimilarity method. Accepted values are 'bray','jaccard', and 'jsd'
 #' @param k integer determining the number of pcoa axes to return
+#' @param naToValue number or NULL. If a number, any NA found in the numeric columns of df will be replaced with this number.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.table with a column for the recordIdColumn, as well as columns corresponding to pcoa axes.
 #' @importFrom Rcpp sourceCpp
@@ -20,6 +21,7 @@ betaDiv <- function(df,
                     recordIdColumn,
                     method = c('bray','jaccard','jsd'),
                     k = 2,
+                    naToValue = NULL,
                     verbose = c(TRUE, FALSE)) {
 
     # Initialize and check inputs
@@ -28,6 +30,12 @@ betaDiv <- function(df,
 
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
+
+    # Replace NA values if naToValue is given
+    if (!is.null(naToValue)) {
+      veupathUtils::setNaToValue(df, value = naToValue, cols = colnames(df[, -..recordIdColumn]))
+      veupathUtils::logWithTime(paste("Replaced NAs with", naToValue), verbose)
+    }
 
     # Compute beta diversity using given dissimilarity method
     if (identical(method, 'bray') | identical(method, 'jaccard')) {
@@ -134,6 +142,7 @@ betaDiv <- function(df,
 #' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param methods vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('bray','jaccard','jsd').
 #' @param k integer determining the number of pcoa dimensions to return
+#' @param naToValue number or NULL. If a number, any NA found in the numeric columns of df will be replaced with this number.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains a column for the recordIdColumn, as well as columns corresponding to pcoa axes.
 #' @export
@@ -141,6 +150,7 @@ betaDivApp <- function(df,
                       recordIdColumn,
                       methods = c('bray','jaccard','jsd'),
                       k = 2,
+                      naToValue = NULL,
                       verbose = c(TRUE, FALSE)) {
 
     df <- data.table::setDT(df)
@@ -168,7 +178,7 @@ betaDivApp <- function(df,
       stop("All entities must be identical")
     }
 
-    appResults <- lapply(methods, betaDiv, df=df, recordIdColumn=recordIdColumn, k=k, verbose=verbose)
+    appResults <- lapply(methods, betaDiv, df=df, recordIdColumn=recordIdColumn, k=k, naToValue=naToValue, verbose=verbose)
     
 
     # Write to json file

@@ -9,6 +9,7 @@ betaDivApp(
   recordIdColumn,
   methods = c("bray", "jaccard", "jsd"),
   k = 2,
+  naToValue = NULL,
   verbose = c(TRUE, FALSE)
 )
 }
@@ -20,6 +21,8 @@ betaDivApp(
 \item{methods}{vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('bray','jaccard','jsd').}
 
 \item{k}{integer determining the number of pcoa dimensions to return}
+
+\item{naToValue}{number or NULL. If a number, any NA found in the numeric columns of df will be replaced with this number.}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

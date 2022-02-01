@@ -8,6 +8,7 @@ alphaDivApp(
   df,
   recordIdColumn,
   methods = c("shannon", "simpson", "evenness"),
+  naToValue = NULL,
   verbose = c(TRUE, FALSE)
 )
 }
@@ -17,6 +18,8 @@ alphaDivApp(
 \item{recordIdColumn}{string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.}
 
 \item{methods}{vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('shannon','simpson','evenness').}
+
+\item{naToValue}{number or NULL. If a number, any NA found in the numeric columns of df will be replaced with this number.}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

@@ -9,6 +9,7 @@ betaDiv(
   recordIdColumn,
   method = c("bray", "jaccard", "jsd"),
   k = 2,
+  naToValue = NULL,
   verbose = c(TRUE, FALSE)
 )
 }
@@ -20,6 +21,8 @@ betaDiv(
 \item{method}{string defining the the beta diversity dissimilarity method. Accepted values are 'bray','jaccard', and 'jsd'}
 
 \item{k}{integer determining the number of pcoa axes to return}
+
+\item{naToValue}{number or NULL. If a number, any NA found in the numeric columns of df will be replaced with this number.}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }
