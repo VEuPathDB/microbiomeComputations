@@ -5,7 +5,7 @@
 #' @param df data.table with rows corresponding to records, one column indicating the record id, and all other columns corresponding to taxa abundance.
 #' @param recordIdColumn string defining the name of the df column that specifies record ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param method string defining the the alpha diversity method. Accepted values are 'shannon','simpson', and 'evenness'
-#' @param naToValue number or NULL. If a number, any NA found in the numeric columns of df will be replaced with this number.
+#' @param naToZero boolean indicating if NAs in numeric columns should be replaced with 0
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.table with columns recordIdColumn, "alphaDiversity".
 #' @importFrom vegan diversity
@@ -13,19 +13,20 @@
 #' @import veupathUtils
 #' @import data.table
 #' @export
-alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evenness'), naToValue = NULL, verbose = c(TRUE, FALSE)) {
+alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evenness'), naToZero = c(FALSE, TRUE), verbose = c(TRUE, FALSE)) {
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
+    naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
 
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
     
-    # Replace NA values if naToValue is given
-    if (!is.null(naToValue)) {
-      veupathUtils::setNaToValue(df, value = naToValue, cols = colnames(df[, -..recordIdColumn]))
-      veupathUtils::logWithTime(paste("Replaced NAs with", naToValue), verbose)
+    if (naToZero) {
+      # Replace NA values with 0
+      veupathUtils::setNaToZero(df, cols = colnames(df[, -..recordIdColumn]))
+      veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
     # Compute alpha diversity
@@ -65,7 +66,7 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
                                      'computedVariableMetadata' = computedVariableMetadata)
       
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
-      veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', verbose =', verbose), verbose)
+      veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
       
       return(dt)
       
@@ -117,14 +118,15 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
 #' @param df data.frame with samples as rows, taxa as columns
 #' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param methods vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('shannon','simpson','evenness').
-#' @param naToValue number or NULL. If a number, any NA found in the numeric columns of df will be replaced with this number.
+#' @param naToZero boolean indicating if NAs in numeric columns should be replaced with 0
 #' @param verbose boolean indicating if timed logging is desired
 #' @return name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains columns recordIdColumn, "alphaDiversity", and an attribute "parameters" that records the method used.
 #' @export
 #' @import data.table
 #' @import veupathUtils
-alphaDivApp <- function(df, recordIdColumn, methods = c('shannon','simpson','evenness'), naToValue=NULL, verbose = c(TRUE, FALSE)) {
+alphaDivApp <- function(df, recordIdColumn, methods = c('shannon','simpson','evenness'), naToZero = c(FALSE, TRUE), verbose = c(TRUE, FALSE)) {
 
+    naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
 
     # Allow any number of methods to be inputted
@@ -149,7 +151,7 @@ alphaDivApp <- function(df, recordIdColumn, methods = c('shannon','simpson','eve
     }
     
 
-    appResults <- lapply(methods, alphaDiv, df=df, recordIdColumn=recordIdColumn, naToValue=naToValue, verbose=verbose)
+    appResults <- lapply(methods, alphaDiv, df=df, recordIdColumn=recordIdColumn, naToZero=naToZero, verbose=verbose)
 
     # Write to json. Note need to handle failures in here, too
     # outFileName <- writeAppResultsToJson(appResults, recordIdColumn=recordIdColumn, 'alphaDiv', verbose = verbose)

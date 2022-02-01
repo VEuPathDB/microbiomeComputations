@@ -9,7 +9,7 @@ rankedAbundance(
   recordIdColumn,
   method = c("median", "max", "q3", "variance"),
   cutoff = 10,
-  naToValue = NULL,
+  naToZero = c(FALSE, TRUE),
   verbose = c(TRUE, FALSE)
 )
 }
@@ -22,7 +22,7 @@ rankedAbundance(
 
 \item{cutoff}{integer indicating the maximium number of taxa to be kept after ranking.}
 
-\item{naToValue}{number or NULL. If a number, any NA found in the numeric columns of df will be replaced with this number.}
+\item{naToZero}{boolean indicating if NAs in numeric columns should be replaced with 0}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

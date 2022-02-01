@@ -8,7 +8,7 @@ alphaDivApp(
   df,
   recordIdColumn,
   methods = c("shannon", "simpson", "evenness"),
-  naToValue = NULL,
+  naToZero = c(FALSE, TRUE),
   verbose = c(TRUE, FALSE)
 )
 }
@@ -19,7 +19,7 @@ alphaDivApp(
 
 \item{methods}{vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('shannon','simpson','evenness').}
 
-\item{naToValue}{number or NULL. If a number, any NA found in the numeric columns of df will be replaced with this number.}
+\item{naToZero}{boolean indicating if NAs in numeric columns should be replaced with 0}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

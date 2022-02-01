@@ -8,7 +8,7 @@ alphaDiv(
   df,
   recordIdColumn,
   method = c("shannon", "simpson", "evenness"),
-  naToValue = NULL,
+  naToZero = c(FALSE, TRUE),
   verbose = c(TRUE, FALSE)
 )
 }
@@ -19,7 +19,7 @@ alphaDiv(
 
 \item{method}{string defining the the alpha diversity method. Accepted values are 'shannon','simpson', and 'evenness'}
 
-\item{naToValue}{number or NULL. If a number, any NA found in the numeric columns of df will be replaced with this number.}
+\item{naToZero}{boolean indicating if NAs in numeric columns should be replaced with 0}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

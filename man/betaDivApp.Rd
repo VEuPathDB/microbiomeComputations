@@ -9,7 +9,7 @@ betaDivApp(
   recordIdColumn,
   methods = c("bray", "jaccard", "jsd"),
   k = 2,
-  naToValue = NULL,
+  naToZero = c(FALSE, TRUE),
   verbose = c(TRUE, FALSE)
 )
 }
@@ -22,7 +22,7 @@ betaDivApp(
 
 \item{k}{integer determining the number of pcoa dimensions to return}
 
-\item{naToValue}{number or NULL. If a number, any NA found in the numeric columns of df will be replaced with this number.}
+\item{naToZero}{boolean indicating if NAs in numeric columns should be replaced with 0}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

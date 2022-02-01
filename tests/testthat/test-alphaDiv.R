@@ -26,7 +26,7 @@ test_that('alphaDiv returns a correctly formatted data.table', {
   df[sample(1:nrow(df), size=nNAs, replace = F), 2] <- NA
   dt <- alphaDiv(df, "entity.SampleID", method='shannon', verbose=F)  # vegan diversity sets output to NA if input has NA. See issue #187
   expect_equal(sum(is.na(dt)), nNAs)
-  dt <- alphaDiv(df, "entity.SampleID", method='shannon', naToValue=0, verbose=F)
+  dt <- alphaDiv(df, "entity.SampleID", method='shannon', naToZero=T, verbose=F)
   expect_equal(sum(is.na(dt)), 0)
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
@@ -101,7 +101,7 @@ test_that("alphaDivApp produces an appropriately structured list of computations
   # With NAs
   nNAs <- 20
   df[sample(1:nrow(df), size=nNAs, replace = F), 2] <- NA
-  appResults <- alphaDivApp(df, "entity.SampleID", naToValue = 0, verbose=F)
+  appResults <- alphaDivApp(df, "entity.SampleID", naToZero = T, verbose=F)
   expect_equal(length(appResults), 3)
   expect_equal(unique(unlist(lapply(appResults,names))), c('entity.SampleID','entity.alphaDiversity'))
   expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
