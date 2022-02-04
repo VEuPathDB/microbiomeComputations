@@ -8,7 +8,7 @@ alphaDivApp(
   df,
   recordIdColumn,
   methods = c("shannon", "simpson", "evenness"),
-  naToZero = c(FALSE, TRUE),
+  naToZero = c(TRUE, FALSE),
   verbose = c(TRUE, FALSE)
 )
 }

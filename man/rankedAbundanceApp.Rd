@@ -9,7 +9,7 @@ rankedAbundanceApp(
   recordIdColumn,
   methods = c("median", "max", "q3", "variance"),
   cutoff = 10,
-  naToZero = c(FALSE, TRUE),
+  naToZero = c(TRUE, FALSE),
   verbose = c(TRUE, FALSE)
 )
 }

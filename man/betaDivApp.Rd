@@ -9,7 +9,7 @@ betaDivApp(
   recordIdColumn,
   methods = c("bray", "jaccard", "jsd"),
   k = 2,
-  naToZero = c(FALSE, TRUE),
+  naToZero = c(TRUE, FALSE),
   verbose = c(TRUE, FALSE)
 )
 }

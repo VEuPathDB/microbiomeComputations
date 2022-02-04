@@ -21,7 +21,7 @@ betaDiv <- function(df,
                     recordIdColumn,
                     method = c('bray','jaccard','jsd'),
                     k = 2,
-                    naToZero = c(FALSE, TRUE),
+                    naToZero = c(TRUE, FALSE),
                     verbose = c(TRUE, FALSE)) {
 
     # Initialize and check inputs
@@ -34,7 +34,7 @@ betaDiv <- function(df,
 
     if (naToZero) {
       # Replace NA values with 0
-      veupathUtils::setNaToZero(df, cols = colnames(df[, -..recordIdColumn]))
+      veupathUtils::setNaToZero(df)
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
@@ -151,7 +151,7 @@ betaDivApp <- function(df,
                       recordIdColumn,
                       methods = c('bray','jaccard','jsd'),
                       k = 2,
-                      naToZero = c(FALSE, TRUE),
+                      naToZero = c(TRUE, FALSE),
                       verbose = c(TRUE, FALSE)) {
 
     df <- data.table::setDT(df)

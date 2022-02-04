@@ -24,8 +24,8 @@ test_that('betaDiv returns a correctly formatted data.table', {
   # With NAs
   nNAs <- 20
   df[sample(1:nrow(df), size=nNAs, replace = F), 2] <- NA
-  expect_error(betaDiv(df, "entity.SampleID", method='jsd', verbose=F))  # all three methods err
-  dt <- betaDiv(df, "entity.SampleID", method='bray', naToZero=T, verbose=F) 
+  expect_error(betaDiv(df, "entity.SampleID", method='jsd', naToZero=F, verbose=F))  # all three methods err
+  dt <- betaDiv(df, "entity.SampleID", method='bray', verbose=F) 
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
   expect_equal(names(dt), c('entity.SampleID','entity.Axis1','entity.Axis2'))
@@ -95,7 +95,7 @@ test_that("betaDivApp produces an appropriately structured list of computations"
   # With NAs
   nNAs <- 20
   df[sample(1:nrow(df), size=nNAs, replace = F), 2] <- NA
-  appResults <- betaDivApp(df, "entity.SampleID", methods = c('jaccard','bray'), naToZero = T, verbose=F)
+  appResults <- betaDivApp(df, "entity.SampleID", methods = c('jaccard','bray'), verbose=F)
   expect_equal(length(appResults), 2)
   expect_equal(unique(unlist(lapply(appResults,names))), c('entity.SampleID','entity.Axis1','entity.Axis2'))
   expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
@@ -190,7 +190,7 @@ test_that("betaDiv fails gracefully", {
   df <- testOTU
   df$entity.Abiotrophia <- NA
   
-  dt <- betaDiv(df, "entity.SampleID", method='bray', verbose=T)
+  dt <- betaDiv(df, "entity.SampleID", method='bray', naToZero=F, verbose=T)
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
   expect_equal(names(dt), 'entity.SampleID')

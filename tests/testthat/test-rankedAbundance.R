@@ -30,8 +30,8 @@ test_that('rankedAbundance returns a correctly formatted data.table', {
   # With NAs
   nNAs <- 20
   df[sample(1:nrow(df), size=nNAs, replace = F), 2] <- NA
-  expect_error(rankedAbundance(df, "entity.SampleID", method='q3', verbose=F))
-  dt <- rankedAbundance(df, "entity.SampleID", method='q3', naToZero = T, verbose=F)
+  expect_error(rankedAbundance(df, "entity.SampleID", method='q3', naToZero=F, verbose=F))
+  dt <- rankedAbundance(df, "entity.SampleID", method='q3', verbose=F)
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
   expect_equal(names(dt), paste0('entity.',c('SampleID','Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella')))
@@ -126,7 +126,7 @@ test_that("rankedAbundanceApp produces an appropriately structured list of compu
   # With NAs
   nNAs <- 20
   df[sample(1:nrow(df), size=nNAs, replace = F), 2] <- NA
-  appResults <- rankedAbundanceApp(df, "entity.SampleID", methods = c('q3', 'median'), naToZero = T, verbose=F)
+  appResults <- rankedAbundanceApp(df, "entity.SampleID", methods = c('q3', 'median'), verbose=F)
   expect_equal(length(appResults), 2)
   expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
   expect_equal(unique(unlist(lapply(appResults, ncol))), 11)

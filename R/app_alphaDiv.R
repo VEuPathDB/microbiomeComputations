@@ -13,7 +13,7 @@
 #' @import veupathUtils
 #' @import data.table
 #' @export
-alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evenness'), naToZero = c(FALSE, TRUE), verbose = c(TRUE, FALSE)) {
+alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evenness'), naToZero = c(TRUE, FALSE), verbose = c(TRUE, FALSE)) {
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
@@ -25,7 +25,7 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
     
     if (naToZero) {
       # Replace NA values with 0
-      veupathUtils::setNaToZero(df, cols = colnames(df[, -..recordIdColumn]))
+      veupathUtils::setNaToZero(df)
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
@@ -124,7 +124,7 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
 #' @export
 #' @import data.table
 #' @import veupathUtils
-alphaDivApp <- function(df, recordIdColumn, methods = c('shannon','simpson','evenness'), naToZero = c(FALSE, TRUE), verbose = c(TRUE, FALSE)) {
+alphaDivApp <- function(df, recordIdColumn, methods = c('shannon','simpson','evenness'), naToZero = c(TRUE, FALSE), verbose = c(TRUE, FALSE)) {
 
     naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)

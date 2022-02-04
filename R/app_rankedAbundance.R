@@ -12,7 +12,7 @@
 #' @import veupathUtils
 #' @import data.table
 #' @export
-rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','variance'), cutoff=10, naToZero=c(FALSE, TRUE), verbose = c(TRUE, FALSE)) {
+rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','variance'), cutoff=10, naToZero=c(TRUE, FALSE), verbose = c(TRUE, FALSE)) {
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
@@ -24,7 +24,7 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
 
     if (naToZero) {
       # Replace NA values with 0
-      veupathUtils::setNaToZero(df, cols = colnames(df[, -..recordIdColumn]))
+      veupathUtils::setNaToZero(df)
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
@@ -87,7 +87,7 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
 #' @return name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains a column for the recordIdColumn, top taxa columns, and an attribute "parameters" that records the method used.
 #' @import veupathUtils
 #' @export
-rankedAbundanceApp <- function(df, recordIdColumn, methods=c('median','max','q3','variance'), cutoff=10, naToZero=c(FALSE, TRUE), verbose=c(TRUE, FALSE)) {
+rankedAbundanceApp <- function(df, recordIdColumn, methods=c('median','max','q3','variance'), cutoff=10, naToZero=c(TRUE, FALSE), verbose=c(TRUE, FALSE)) {
 
     naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
