@@ -103,6 +103,7 @@ test_that("alphaDivApp produces an appropriately structured list of computations
   df[sample(1:nrow(df), size=nNAs, replace = F), 2] <- NA
   appResults <- alphaDivApp(df, "entity.SampleID", verbose=F)
   expect_equal(length(appResults), 3)
+  expect_true(all(unlist(lapply(appResults, function(x) {!is.na(x$entity.alphaDiversity)})))) # Should be no NAs
   expect_equal(unique(unlist(lapply(appResults,names))), c('entity.SampleID','entity.alphaDiversity'))
   expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
   expect_equal(unique(unlist(lapply(appResults, nrow))), nrow(df))
@@ -195,15 +196,16 @@ test_that("alphaDiv results are consistent", {
 test_that("alphaDiv fails gracefully", {
   
   df <- testOTU
-  df$entity.Abiotrophia <- -1
+  df$entity.Abiotrophia <- NA
   
-  dt <- alphaDiv(df, "entity.SampleID", method='evenness', verbose=T)
+  dt <- alphaDiv(df, "entity.SampleID", method='simpson', naToZero=F, verbose=T)
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), 'entity.SampleID')
+  expect_equal(names(dt), c('entity.SampleID', 'entity.alphaDiversity'))
+  expect_true(all(is.na(dt[['entity.alphaDiversity']])))
   expect_equal(typeof(dt$entity.SampleID), c('character'))
   attr <- attributes(dt)
-  expect_equal(attr$computationDetails, "Error: alpha diversity evenness failed: input data must be non-negative")
+  # expect_equal(attr$computationDetails, "Error: alpha diversity evenness failed: input data must be non-negative")
   expect_equal(typeof(attr$parameters), 'character')
   expect_equal(typeof(attr$computedVariable$computedVariableDetails$variableId), 'character')
   expect_equal(typeof(attr$computedVariable$computedVariableDetails$entityId), 'character')

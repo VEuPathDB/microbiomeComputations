@@ -154,8 +154,6 @@ betaDivApp <- function(df,
                       naToZero = c(TRUE, FALSE),
                       verbose = c(TRUE, FALSE)) {
 
-    df <- data.table::setDT(df)
-
     naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
     
