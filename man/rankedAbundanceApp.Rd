@@ -9,6 +9,7 @@ rankedAbundanceApp(
   recordIdColumn,
   methods = c("median", "max", "q3", "variance"),
   cutoff = 10,
+  naToZero = c(TRUE, FALSE),
   verbose = c(TRUE, FALSE)
 )
 }
@@ -20,6 +21,8 @@ rankedAbundanceApp(
 \item{methods}{vector of strings indicating ranking methods to use. Must be a subset of c('median','max','q3','variance').}
 
 \item{cutoff}{integer indicating the maximium number of taxa to be kept after ranking.}
+
+\item{naToZero}{boolean indicating if NAs in numeric columns should be replaced with 0}
 
 \item{verbose}{boolean indicating if timed logging is desired.}
 }

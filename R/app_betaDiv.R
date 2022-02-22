@@ -6,6 +6,7 @@
 #' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param method string defining the the beta diversity dissimilarity method. Accepted values are 'bray','jaccard', and 'jsd'
 #' @param k integer determining the number of pcoa axes to return
+#' @param naToZero boolean indicating if NAs in numeric columns should be replaced with 0
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.table with a column for the recordIdColumn, as well as columns corresponding to pcoa axes.
 #' @importFrom Rcpp sourceCpp
@@ -20,14 +21,22 @@ betaDiv <- function(df,
                     recordIdColumn,
                     method = c('bray','jaccard','jsd'),
                     k = 2,
+                    naToZero = c(TRUE, FALSE),
                     verbose = c(TRUE, FALSE)) {
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
+    naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
 
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
+
+    if (naToZero) {
+      # Replace NA values with 0
+      veupathUtils::setNaToZero(df)
+      veupathUtils::logWithTime("Replaced NAs with 0", verbose)
+    }
 
     # Compute beta diversity using given dissimilarity method
     if (identical(method, 'bray') | identical(method, 'jaccard')) {
@@ -67,7 +76,7 @@ betaDiv <- function(df,
                                      'computedVariableMetadata' = computedVariableMetadata)
 
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
-      veupathUtils::logWithTime(paste('Beta diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', k=', k , ', verbose =', verbose), verbose)
+      veupathUtils::logWithTime(paste('Beta diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', k=', k , ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
       
       return(dt)
       
@@ -134,6 +143,7 @@ betaDiv <- function(df,
 #' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param methods vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('bray','jaccard','jsd').
 #' @param k integer determining the number of pcoa dimensions to return
+#' @param naToZero boolean indicating if NAs in numeric columns should be replaced with 0
 #' @param verbose boolean indicating if timed logging is desired
 #' @return name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains a column for the recordIdColumn, as well as columns corresponding to pcoa axes.
 #' @export
@@ -141,10 +151,10 @@ betaDivApp <- function(df,
                       recordIdColumn,
                       methods = c('bray','jaccard','jsd'),
                       k = 2,
+                      naToZero = c(TRUE, FALSE),
                       verbose = c(TRUE, FALSE)) {
 
-    df <- data.table::setDT(df)
-
+    naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
     
     # Allow any number of methods to be inputted
@@ -168,7 +178,7 @@ betaDivApp <- function(df,
       stop("All entities must be identical")
     }
 
-    appResults <- lapply(methods, betaDiv, df=df, recordIdColumn=recordIdColumn, k=k, verbose=verbose)
+    appResults <- lapply(methods, betaDiv, df=df, recordIdColumn=recordIdColumn, k=k, naToZero=naToZero, verbose=verbose)
     
 
     # Write to json file

@@ -9,6 +9,7 @@ rankedAbundance(
   recordIdColumn,
   method = c("median", "max", "q3", "variance"),
   cutoff = 10,
+  naToZero = c(TRUE, FALSE),
   verbose = c(TRUE, FALSE)
 )
 }
@@ -20,6 +21,8 @@ rankedAbundance(
 \item{method}{string defining the ranking strategy by which to order the taxa. Accepted values are 'median','max','q3',and 'variance'. Note that taxa that return a value of 0 for a given method will not be included in the results.}
 
 \item{cutoff}{integer indicating the maximium number of taxa to be kept after ranking.}
+
+\item{naToZero}{boolean indicating if NAs in numeric columns should be replaced with 0}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

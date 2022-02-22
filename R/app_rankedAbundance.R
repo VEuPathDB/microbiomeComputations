@@ -6,22 +6,30 @@
 #' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param method string defining the ranking strategy by which to order the taxa. Accepted values are 'median','max','q3',and 'variance'. Note that taxa that return a value of 0 for a given method will not be included in the results.
 #' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
+#' @param naToZero boolean indicating if NAs in numeric columns should be replaced with 0
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.table with columns recordIdColumn, followed by the top taxa as ranked by the given method, with no more taxa columns than specified by the cutoff argument.
 #' @import veupathUtils
 #' @import data.table
 #' @export
-rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','variance'), cutoff=10, verbose = c(TRUE, FALSE)) {
+rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','variance'), cutoff=10, naToZero=c(TRUE, FALSE), verbose = c(TRUE, FALSE)) {
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
+    naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
 
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
 
+    if (naToZero) {
+      # Replace NA values with 0
+      veupathUtils::setNaToZero(df)
+      veupathUtils::logWithTime("Replaced NAs with 0", verbose)
+    }
+
     # Reshape back to sample, taxonomicLevel, abundance
-    formattedDT <- data.table::melt(df, measure.vars=colnames(df)[-1], variable.factor=F, variable.name='TaxonomicLevel', value.name="Abundance")
+    formattedDT <- data.table::melt(df, measure.vars=colnames(df[, -..recordIdColumn]), variable.factor=F, variable.name='TaxonomicLevel', value.name="Abundance")
 
     rankedTaxa <- rankTaxa(formattedDT, method)
 
@@ -61,7 +69,7 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
-    veupathUtils::logWithTime(paste('Ranked abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', cutoff =', cutoff, ', verbose =', verbose), verbose)
+    veupathUtils::logWithTime(paste('Ranked abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', cutoff =', cutoff, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
 
     return(dt)
 }
@@ -74,12 +82,14 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
 #' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
 #' @param methods vector of strings indicating ranking methods to use. Must be a subset of c('median','max','q3','variance').
 #' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
+#' @param naToZero boolean indicating if NAs in numeric columns should be replaced with 0
 #' @param verbose boolean indicating if timed logging is desired.
 #' @return name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains a column for the recordIdColumn, top taxa columns, and an attribute "parameters" that records the method used.
 #' @import veupathUtils
 #' @export
-rankedAbundanceApp <- function(df, recordIdColumn, methods=c('median','max','q3','variance'), cutoff=10, verbose=c(TRUE, FALSE)) {
+rankedAbundanceApp <- function(df, recordIdColumn, methods=c('median','max','q3','variance'), cutoff=10, naToZero=c(TRUE, FALSE), verbose=c(TRUE, FALSE)) {
 
+    naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
 
     allMethods <- c('median','max','q3','variance')
@@ -103,7 +113,7 @@ rankedAbundanceApp <- function(df, recordIdColumn, methods=c('median','max','q3'
       stop("All entities must be identical")
     }
 
-    appResults <- lapply(methods, rankedAbundance, df=df, recordIdColumn=recordIdColumn, cutoff=cutoff, verbose=verbose)
+    appResults <- lapply(methods, rankedAbundance, df=df, recordIdColumn=recordIdColumn, cutoff=cutoff, naToZero=naToZero, verbose=verbose)
 
     # Write to json file
     # outFileName <- writeAppResultsToJson(appResults, recordIdColumn = recordIdColumn, 'rankedAbundance', verbose = verbose)

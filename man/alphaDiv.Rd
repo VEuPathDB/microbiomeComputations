@@ -8,6 +8,7 @@ alphaDiv(
   df,
   recordIdColumn,
   method = c("shannon", "simpson", "evenness"),
+  naToZero = c(TRUE, FALSE),
   verbose = c(TRUE, FALSE)
 )
 }
@@ -17,6 +18,8 @@ alphaDiv(
 \item{recordIdColumn}{string defining the name of the df column that specifies record ids. Note, all other columns must be numeric and will be treated as abundance values.}
 
 \item{method}{string defining the the alpha diversity method. Accepted values are 'shannon','simpson', and 'evenness'}
+
+\item{naToZero}{boolean indicating if NAs in numeric columns should be replaced with 0}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

@@ -26,6 +26,18 @@ test_that('rankedAbundance returns a correctly formatted data.table', {
   expect_s3_class(dt, 'data.table')
   expect_equal(names(dt), paste0('entity.',c('SampleID','Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella')))
   expect_equal(unname(unlist(lapply(dt, class))), c('character', rep('numeric',10)))
+
+  # With NAs
+  nNAs <- 20
+  df[sample(1:nrow(df), size=nNAs, replace = F), 2] <- NA
+  expect_error(rankedAbundance(df, "entity.SampleID", method='q3', naToZero=F, verbose=F))
+  dt <- rankedAbundance(df, "entity.SampleID", method='q3', verbose=F)
+  expect_equal(nrow(dt), nrow(df))
+  expect_s3_class(dt, 'data.table')
+  expect_equal(names(dt), paste0('entity.',c('SampleID','Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella')))
+  expect_equal(unname(unlist(lapply(dt, class))), c('character', rep('numeric',10)))
+  expect_equal(sum(dt > 0), 2847)   # ensure output is not all 0s.
+
   
 })
 
@@ -105,6 +117,15 @@ test_that("rankedAbundanceApp produces an appropriately structured list of compu
   expect_equal(unique(unlist(lapply(appResults, nrow))), nrow(df))
   
   # Test using a subset of methods
+  appResults <- rankedAbundanceApp(df, "entity.SampleID", methods = c('q3', 'median'), verbose=F)
+  expect_equal(length(appResults), 2)
+  expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
+  expect_equal(unique(unlist(lapply(appResults, ncol))), 11)
+  expect_equal(unique(unlist(lapply(appResults, nrow))), nrow(df))
+
+  # With NAs
+  nNAs <- 20
+  df[sample(1:nrow(df), size=nNAs, replace = F), 2] <- NA
   appResults <- rankedAbundanceApp(df, "entity.SampleID", methods = c('q3', 'median'), verbose=F)
   expect_equal(length(appResults), 2)
   expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
