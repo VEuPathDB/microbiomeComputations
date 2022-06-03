@@ -37,7 +37,6 @@ getAppJson <- function(appResults, recordIdColumn) {
     computation$computationDetails <- jsonlite::unbox(attr$computationDetails)
     
     # App/computation-specific attributes
-    computation$isCutoff <- jsonlite::unbox(attr$isCutoff)
     computation$pcoaVariance <- attr$pcoaVariance
 
     # Set computation variable
@@ -52,6 +51,7 @@ getAppJson <- function(appResults, recordIdColumn) {
     if (!is.null(attr$computedVariable$computedVariableMetadata$displayRangeMin)) {computation$computedVariable$computedVariableMetadata$displayRangeMin <- jsonlite::unbox(as.character(attr$computedVariable$computedVariableMetadata$displayRangeMin))}
     if (!is.null(attr$computedVariable$computedVariableMetadata$displayRangeMax)) {computation$computedVariable$computedVariableMetadata$displayRangeMax <- jsonlite::unbox(as.character(attr$computedVariable$computedVariableMetadata$displayRangeMax))}
     if (!is.null(attr$computedVariable$computedVariableMetadata$displayName)) {computation$computedVariable$computedVariableMetadata$displayName <- as.character(attr$computedVariable$computedVariableMetadata$displayName)}
+    if (!is.null(attr$computedVariable$computedVariableMetadata$isCutoff)) {computation$computedVariable$computedVariableMetadata$isCutoff <- jsonlite::unbox(attr$computedVariable$computedVariableMetadata$isCutoff)}
     
     # Handle collection variable if present
     if (!is.null(attr$computedVariable$computedVariableMetadata$collectionVariable)) {
