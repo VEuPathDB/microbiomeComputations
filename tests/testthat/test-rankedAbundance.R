@@ -48,59 +48,59 @@ test_that("rankedAbundance returns a data.table with the correct attributes", {
   
   dt <- rankedAbundance(df, "entity.SampleID", method='median', verbose=F)
   attr <- attributes(dt)
-  expect_true(all(c('computationDetails','parameters','computedVariable','isCutoff') %in% names(attr)))
+  expect_true(all(c('computationDetails','parameters','computedVariable') %in% names(attr)))
   expect_equal(attr$parameters, 'median')
-  expect_true(attr$isCutoff)
   expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
   expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
+  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable','isCutoff'))
   expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Bifidobacterium','Frischella','Commensalibacter','unclassified Mitochondria','unclassified Rhizobiaceae','unclassified Chloroplast','Bombella'))
   expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariable$computedVariableDetails$isCollection)
   expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMin, '0')
   expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMax, '1')
+  expect_true(attr$computedVariable$computedVariableMetadata$isCutoff)
   
   dt <- rankedAbundance(df, "entity.SampleID", method='max', verbose=F)
   attr <- attributes(dt)
-  expect_true(all(c('computationDetails','parameters','computedVariable','isCutoff') %in% names(attr)))
+  expect_true(all(c('computationDetails','parameters','computedVariable') %in% names(attr)))
   expect_equal(attr$parameters, 'max')
-  expect_true(attr$isCutoff)
   expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
   expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
+  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable','isCutoff'))
   expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella'))
   expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariable$computedVariableDetails$isCollection)
   expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMin, '0')
   expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMax, '1')
+  expect_true(attr$computedVariable$computedVariableMetadata$isCutoff)
   
   dt <- rankedAbundance(df, "entity.SampleID", method='q3', verbose=F)
   attr <- attributes(dt)
-  expect_true(all(c('computationDetails','parameters','computedVariable','isCutoff') %in% names(attr)))
+  expect_true(all(c('computationDetails','parameters','computedVariable') %in% names(attr)))
   expect_equal(attr$parameters, 'q3')
-  expect_true(attr$isCutoff)
   expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
   expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
+  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable','isCutoff'))
   expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
   expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariable$computedVariableDetails$isCollection)
   expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMin, '0')
   expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMax, '1')
+  expect_true(attr$computedVariable$computedVariableMetadata$isCutoff)
   
   dt <- rankedAbundance(df, "entity.SampleID", method='variance', verbose=F)
   attr <- attributes(dt)
-  expect_true(all(c('computationDetails','parameters','computedVariable','isCutoff') %in% names(attr)))
+  expect_true(all(c('computationDetails','parameters','computedVariable') %in% names(attr)))
   expect_equal(attr$parameters, 'variance')
-  expect_true(attr$isCutoff)
   expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
   expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
+  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable','isCutoff'))
   expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Lactobacillus','Gilliamella','Bombella','Snodgrassella','Klebsiella','unclassified Rhizobiaceae','unclassified Enterobacterales','Fructobacillus','Pseudomonas','unclassified Chloroplast'))
   expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',10))
   expect_true(attr$computedVariable$computedVariableDetails$isCollection)
   expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMin, '0')
   expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMax, '1')
+  expect_true(attr$computedVariable$computedVariableMetadata$isCutoff)
   
 })
 
@@ -151,9 +151,8 @@ test_that("rankedAbundanceApp output is correctly represented in json", {
   expect_equal(jsonList$recordVariableDetails$entityId[[1]], 'entity')
   expect_equal(length(jsonList$recordVariableDetails$values), nrow(df))
   # computations
-  expect_equal(names(jsonList$computations), c('computationDetails', 'isCutoff', 'computedVariable'))
+  expect_equal(names(jsonList$computations), c('computationDetails', 'computedVariable'))
   expect_equal(nrow(jsonList$computations), nMethods)
-  expect_true(jsonList$computations$isCutoff[[1]])
   # computationDetails
   expect_equal(length(jsonList$computations$computationDetails), nMethods)
   # computedVariable
@@ -169,9 +168,10 @@ test_that("rankedAbundanceApp output is correctly represented in json", {
   expect_equal(nrow(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), 10)
   expect_true(jsonList$computations$computedVariable$computedVariableDetails$isCollection[[1]])
   # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
+  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable','isCutoff'))
   expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMin[[1]], '0')
   expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMax[[1]], '1')
+  expect_true(jsonList$computations$computedVariable$computedVariableMetadata$isCutoff[[1]])
   
   # Supply only two methods
   nMethods <- 2
@@ -186,9 +186,8 @@ test_that("rankedAbundanceApp output is correctly represented in json", {
   expect_equal(jsonList$recordVariableDetails$entityId[[1]], 'entity')
   expect_equal(length(jsonList$recordVariableDetails$values), nrow(df))
   # computations
-  expect_equal(names(jsonList$computations), c('computationDetails', 'isCutoff', 'computedVariable'))
+  expect_equal(names(jsonList$computations), c('computationDetails', 'computedVariable'))
   expect_equal(nrow(jsonList$computations), nMethods)
-  expect_true(jsonList$computations$isCutoff[[1]])
   # computationDetails
   expect_equal(length(jsonList$computations$computationDetails), nMethods)
   # computedVariable
@@ -204,9 +203,10 @@ test_that("rankedAbundanceApp output is correctly represented in json", {
   expect_equal(nrow(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), 10)
   expect_true(jsonList$computations$computedVariable$computedVariableDetails$isCollection[[1]])
   # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
+  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable','isCutoff'))
   expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMin[[1]], '0')
   expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMax[[1]], '1')
+  expect_true(jsonList$computations$computedVariable$computedVariableMetadata$isCutoff[[1]])
   
 })
 

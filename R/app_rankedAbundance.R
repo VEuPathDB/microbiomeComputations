@@ -50,8 +50,7 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     # Collect attributes
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
     attr <- list('computationDetails' = computeMessage,
-                 'parameters' = method,
-                 'isCutoff' = isCutoff)
+                 'parameters' = method)
     
     #### Make into a function? Need to get entity from variables
     computedVariableDetails <- list('variableId' = unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2)),
@@ -62,7 +61,8 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     
     computedVariableMetadata <- list('displayRangeMin' = '0',
                                      'displayRangeMax' = '1',
-                                     'collectionVariable' = list('collectionType' = 'abundance'))
+                                     'collectionVariable' = list('collectionType' = 'abundance'),
+                                     'isCutoff' = isCutoff)
     
     attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
                                   'computedVariableMetadata' = computedVariableMetadata)
