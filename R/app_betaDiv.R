@@ -29,6 +29,20 @@ betaDiv <- function(df,
     naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
 
+    # Check that incoming df meets requirements - consider moving to a validateOTU function or similar
+    if (!'data.table' %in% class(df)) {
+      data.table::setDT(df)
+    }
+    if (!recordIdColumn %in% names(df)) {
+      stop("recordIdColumn must exist as a column in df")
+    }
+    if (!all(unlist(lapply(df[, -..recordIdColumn], is.numeric)))) {
+      stop("All columns except the recordIdColumn must be numeric")
+    }
+    if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
+      stop("All entities must be identical")
+    }
+
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
 
@@ -118,7 +132,7 @@ betaDiv <- function(df,
                                     'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
                                     'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
                                     'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
-                                    'isCollection' = FALSE)
+                                    'isCollection' = jsonlite::unbox(FALSE))
     
     computedVariableMetadataPcoa <- list('displayName' = paste0(names(dt[, -..recordIdColumn]), " ", sprintf(percentVar,fmt = '%#.1f'), "%"))
       
@@ -134,56 +148,19 @@ betaDiv <- function(df,
     
     return(dt)
 }
-
-#' Beta diversity app
+ 
+# for now ill assume ComputedVariableMetadata exists in an attr 'computedVariable'
+# once we have a second compute through the compute service, should enforce that
+# this will likely mean refactoring into S3/ S4 classes, parent class 'computation'
+# this helper would then become a method of the parent class
+#' Extract Computed Variable
 #'
-#' This function returns the name of a json file with beta diversity results.
+#' This function, for any given computation, 
+#' will return Computed Variable Metadata and Details.
 #' 
-#' @param df data.frame with samples as rows, taxa as columns
-#' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
-#' @param methods vector of strings defining the the beta diversity dissimilarity methods to use. Must be a subset of c('bray','jaccard','jsd').
-#' @param k integer determining the number of pcoa dimensions to return
-#' @param naToZero boolean indicating if NAs in numeric columns should be replaced with 0
-#' @param verbose boolean indicating if timed logging is desired
-#' @return name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains a column for the recordIdColumn, as well as columns corresponding to pcoa axes.
+#' @param df a computation which contains an attribute called 'computedVariable'
+#' @return json string of Computed Variable Metadata and Details
 #' @export
-betaDivApp <- function(df,
-                      recordIdColumn,
-                      methods = c('bray','jaccard','jsd'),
-                      k = 2,
-                      naToZero = c(TRUE, FALSE),
-                      verbose = c(TRUE, FALSE)) {
-
-    naToZero <- veupathUtils::matchArg(naToZero)
-    verbose <- veupathUtils::matchArg(verbose)
-    
-    # Allow any number of methods to be inputted
-    allMethods <- c('bray','jaccard','jsd')
-    if (is.null(methods)) methods <- allMethods
-    if (!all(methods %in% allMethods)) {
-      stop("Unaccepted method found in 'methods' argument. 'methods' must be a subset of c('bray','jaccard','jsd').")
-    }
-
-    # Check that incoming df meets requirements - consider moving to a validateOTU function or similar
-    if (!'data.table' %in% class(df)) {
-      data.table::setDT(df)
-    }
-    if (!recordIdColumn %in% names(df)) {
-      stop("recordIdColumn must exist as a column in df")
-    }
-    if (!all(unlist(lapply(df[, -..recordIdColumn], is.numeric)))) {
-      stop("All columns except the recordIdColumn must be numeric")
-    }
-    if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
-      stop("All entities must be identical")
-    }
-
-    appResults <- lapply(methods, betaDiv, df=df, recordIdColumn=recordIdColumn, k=k, naToZero=naToZero, verbose=verbose)
-    
-
-    # Write to json file
-    # outFileName <- writeAppResultsToJson(appResults, recordIdColumn = recordIdColumn, pattern='betaDiv', verbose = verbose)
-
-    return(appResults)
-
+getMetadata <- function(computation) {
+  return(jsonlite::toJSON(attr(computation, 'computedVariable')))
 }
