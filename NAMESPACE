@@ -3,7 +3,7 @@
 export(alphaDiv)
 export(alphaDivApp)
 export(betaDiv)
-export(betaDivApp)
+export(getMetadata)
 export(rankedAbundance)
 export(rankedAbundanceApp)
 import(data.table)
