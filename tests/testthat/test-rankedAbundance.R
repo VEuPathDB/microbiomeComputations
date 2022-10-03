@@ -105,116 +105,27 @@ test_that("rankedAbundance returns a data.table with the correct attributes", {
 })
 
 
-test_that("rankedAbundanceApp produces an appropriately structured list of computations", {
+test_that("getMetadata() output is correctly represented in json", {
   
   df <- testOTU
   
-  # Default - use all methods
-  appResults <- rankedAbundanceApp(df, "entity.SampleID", verbose=F)
-  expect_equal(length(appResults), 4)
-  expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
-  expect_equal(unique(unlist(lapply(appResults, ncol))), 11)
-  expect_equal(unique(unlist(lapply(appResults, nrow))), nrow(df))
-  
-  # Test using a subset of methods
-  appResults <- rankedAbundanceApp(df, "entity.SampleID", methods = c('q3', 'median'), verbose=F)
-  expect_equal(length(appResults), 2)
-  expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
-  expect_equal(unique(unlist(lapply(appResults, ncol))), 11)
-  expect_equal(unique(unlist(lapply(appResults, nrow))), nrow(df))
-
-  # With NAs
-  nNAs <- 20
-  df[sample(1:nrow(df), size=nNAs, replace = F), 2] <- NA
-  appResults <- rankedAbundanceApp(df, "entity.SampleID", methods = c('q3', 'median'), verbose=F)
-  expect_equal(length(appResults), 2)
-  expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
-  expect_equal(unique(unlist(lapply(appResults, ncol))), 11)
-  expect_equal(unique(unlist(lapply(appResults, nrow))), nrow(df))
-  
-})
-
-test_that("rankedAbundanceApp output is correctly represented in json", {
-  
-  df <- testOTU
-  
-  # Default all methods
-  nMethods <- 4
-  appResults <- rankedAbundanceApp(df, "entity.SampleID", verbose=F)
-  outJson <- getAppJson(appResults, "entity.SampleID")
+  nMethods <- 1
+  results <- rankedAbundance(df, "entity.SampleID", method= 'q3', verbose=F)
+  outJson <- getMetadata(results)
   jsonList <- jsonlite::fromJSON(outJson)
-  expect_equal(names(jsonList), c('computations','parameterSets','recordVariableDetails'))
-  expect_equal(length(jsonList$parameterSets), nMethods)
-  # recordVariableDetails
-  expect_equal(names(jsonList$recordVariableDetails), c('variableId','entityId','values'))
-  expect_equal(jsonList$recordVariableDetails$variableId[[1]], 'SampleID')
-  expect_equal(jsonList$recordVariableDetails$entityId[[1]], 'entity')
-  expect_equal(length(jsonList$recordVariableDetails$values), nrow(df))
-  # computations
-  expect_equal(names(jsonList$computations), c('computationDetails', 'isCutoff', 'computedVariable'))
-  expect_equal(nrow(jsonList$computations), nMethods)
-  expect_true(jsonList$computations$isCutoff[[1]])
-  # computationDetails
-  expect_equal(length(jsonList$computations$computationDetails), nMethods)
-  # computedVariable
-  expect_equal(nrow(jsonList$computations$computedVariable), nMethods)
-  expect_equal(names(jsonList$computations$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
+  expect_equal(names(jsonList), c('computedVariableDetails','computedVariableMetadata'))
   # computedVariableDetails
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection','values'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$variableId[[1]], c('Lactobacillus','Snodgrassella','Gilliamella','Bifidobacterium','Frischella','Commensalibacter','unclassified Mitochondria','unclassified Rhizobiaceae','unclassified Chloroplast','Bombella'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$entityId[[1]], rep('entity', 10))
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$dataType[[1]], rep('NUMBER', 10))
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$dataShape[[1]], rep('CONTINUOUS', 10))
-  expect_equal(ncol(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), nrow(df))
-  expect_equal(nrow(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), 10)
-  expect_true(jsonList$computations$computedVariable$computedVariableDetails$isCollection[[1]])
+  expect_equal(names(jsonList$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
+  expect_equal(jsonList$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
+  expect_equal(jsonList$computedVariableDetails$entityId, rep('entity', 10))
+  expect_equal(jsonList$computedVariableDetails$dataType, rep('NUMBER', 10))
+  expect_equal(jsonList$computedVariableDetails$dataShape, rep('CONTINUOUS', 10))
+  #expect_equal(ncol(jsonListi$computedVariableDetails$values), nrow(df))
+  #expect_equal(nrow(jsonList$computedVariableDetails$values), 10)
+  expect_true(jsonList$computedVariableDetails$isCollection)
   # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMin[[1]], '0')
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMax[[1]], '1')
-  
-  # Supply only two methods
-  nMethods <- 2
-  appResults <- rankedAbundanceApp(df, "entity.SampleID", methods = c('q3', 'median'), verbose=F)
-  outJson <- getAppJson(appResults, "entity.SampleID")
-  jsonList <- jsonlite::fromJSON(outJson)
-  expect_equal(names(jsonList), c('computations','parameterSets','recordVariableDetails'))
-  expect_equal(length(jsonList$parameterSets), nMethods)
-  # recordVariableDetails
-  expect_equal(names(jsonList$recordVariableDetails), c('variableId','entityId','values'))
-  expect_equal(jsonList$recordVariableDetails$variableId[[1]], 'SampleID')
-  expect_equal(jsonList$recordVariableDetails$entityId[[1]], 'entity')
-  expect_equal(length(jsonList$recordVariableDetails$values), nrow(df))
-  # computations
-  expect_equal(names(jsonList$computations), c('computationDetails', 'isCutoff', 'computedVariable'))
-  expect_equal(nrow(jsonList$computations), nMethods)
-  expect_true(jsonList$computations$isCutoff[[1]])
-  # computationDetails
-  expect_equal(length(jsonList$computations$computationDetails), nMethods)
-  # computedVariable
-  expect_equal(nrow(jsonList$computations$computedVariable), nMethods)
-  expect_equal(names(jsonList$computations$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
-  # computedVariableDetails
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection','values'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$variableId[[1]], c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$entityId[[1]], rep('entity', 10))
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$dataType[[1]], rep('NUMBER', 10))
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$dataShape[[1]], rep('CONTINUOUS', 10))
-  expect_equal(ncol(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), nrow(df))
-  expect_equal(nrow(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), 10)
-  expect_true(jsonList$computations$computedVariable$computedVariableDetails$isCollection[[1]])
-  # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMin[[1]], '0')
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMax[[1]], '1')
-  
-})
-
-test_that("rankedAbundance results are consistent", {
-  
-  expect_snapshot_value({
-    df <- testOTU
-    appResults <- rankedAbundanceApp(df, "entity.SampleID", verbose=F)
-  }, style = "serialize")
+  expect_equal(names(jsonList$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
+  expect_equal(jsonList$computedVariableMetadata$displayRangeMin, '0')
+  expect_equal(jsonList$computedVariableMetadata$displayRangeMax, '1')
   
 })

@@ -80,118 +80,30 @@ test_that("alphaDiv returns a data.table with the correct attributes", {
   
 })
 
-test_that("alphaDivApp produces an appropriately structured list of computations", {
+
+test_that("getMetadata() output is correctly represented in json", {
   
   df <- testOTU
   
-  # Default - use all methods
-  appResults <- alphaDivApp(df, "entity.SampleID", verbose=F)
-  expect_equal(length(appResults), 3)
-  expect_equal(unique(unlist(lapply(appResults,names))), c('entity.SampleID','entity.alphaDiversity'))
-  expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
-  expect_equal(unique(unlist(lapply(appResults, nrow))), nrow(df))
-  
-  # Test using a subset of methods
-  appResults <- alphaDivApp(df, "entity.SampleID", methods=c('evenness','simpson'), verbose=F)
-  expect_equal(length(appResults), 2)
-  expect_equal(unique(unlist(lapply(appResults,names))), c('entity.SampleID','entity.alphaDiversity'))
-  expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
-  expect_equal(unique(unlist(lapply(appResults, nrow))), nrow(df))
-
-  # With NAs
-  nNAs <- 20
-  df[sample(1:nrow(df), size=nNAs, replace = F), 2] <- NA
-  appResults <- alphaDivApp(df, "entity.SampleID", verbose=F)
-  expect_equal(length(appResults), 3)
-  expect_true(all(unlist(lapply(appResults, function(x) {!is.na(x$entity.alphaDiversity)})))) # Should be no NAs
-  expect_equal(unique(unlist(lapply(appResults,names))), c('entity.SampleID','entity.alphaDiversity'))
-  expect_equal(unique(unlist(lapply(appResults, class))), c('data.table','data.frame'))
-  expect_equal(unique(unlist(lapply(appResults, nrow))), nrow(df))
-  
-})
-
-test_that("alphaDivApp output is correctly represented in json", {
-  
-  df <- testOTU
-  
-  # Default - use all methods
-  nMethods <- 3
-  appResults <- alphaDivApp(df, 'entity.SampleID', verbose=F)
-  outJson <- getAppJson(appResults, 'entity.SampleID')
+  nMethods <- 1
+  results <- alphaDiv(df, 'entity.SampleID', method='evenness', verbose=F)
+  outJson <- getMetadata(results)
   jsonList <- jsonlite::fromJSON(outJson)
-  expect_equal(names(jsonList), c('computations','parameterSets','recordVariableDetails'))
-  expect_equal(length(jsonList$parameterSets), nMethods)
-  # recordVariableDetails
-  expect_equal(names(jsonList$recordVariableDetails), c('variableId','entityId','values'))
-  expect_equal(jsonList$recordVariableDetails$variableId[[1]], 'SampleID')
-  expect_equal(jsonList$recordVariableDetails$entityId[[1]], 'entity')
-  expect_equal(length(jsonList$recordVariableDetails$values), nrow(df))
-  # computations
-  expect_equal(names(jsonList$computations), c('computationDetails', 'computedVariable'))
-  expect_equal(nrow(jsonList$computations), nMethods)
-  # computationDetails
-  expect_equal(length(jsonList$computations$computationDetails), nMethods)
-  # computedVariable
-  expect_equal(nrow(jsonList$computations$computedVariable), nMethods)
-  expect_equal(names(jsonList$computations$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
+  expect_equal(names(jsonList), c('computedVariableDetails','computedVariableMetadata'))
   # computedVariableDetails
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','values'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$variableId[[1]], 'alphaDiversity')
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$entityId[[1]], 'entity')
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$dataType[[1]], 'NUMBER')
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$dataShape[[1]], 'CONTINUOUS')
-  expect_equal(length(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), nrow(df))
+  expect_equal(names(jsonList$computedVariableDetails), c('variableId','entityId','dataType','dataShape'))
+  expect_equal(jsonList$computedVariableDetails$variableId, 'alphaDiversity')
+  expect_equal(jsonList$computedVariableDetails$entityId, 'entity')
+  expect_equal(jsonList$computedVariableDetails$dataType, 'NUMBER')
+  expect_equal(jsonList$computedVariableDetails$dataShape, 'CONTINUOUS')
+  #expect_equal(length(jsonList$computedVariableDetails$values), nrow(df))
   # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayName','displayRangeMin','displayRangeMax'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayName[[1]], 'Shannon Diversity')
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMin[[1]], '0')
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMax[[1]], '1')
-  
-  
-
-  
-  # Test using a subset of methods
-  nMethods <- 2
-  appResults <- alphaDivApp(df, 'entity.SampleID', methods=c('evenness','simpson'), verbose=F)
-  outJson <- getAppJson(appResults, 'entity.SampleID')
-  jsonList <- jsonlite::fromJSON(outJson)
-  expect_equal(names(jsonList), c('computations','parameterSets','recordVariableDetails'))
-  expect_equal(length(jsonList$parameterSets), nMethods)
-  # recordVariableDetails
-  expect_equal(names(jsonList$recordVariableDetails), c('variableId','entityId','values'))
-  expect_equal(jsonList$recordVariableDetails$variableId[[1]], 'SampleID')
-  expect_equal(jsonList$recordVariableDetails$entityId[[1]], 'entity')
-  expect_equal(length(jsonList$recordVariableDetails$values), nrow(df))
-  # computations
-  expect_equal(names(jsonList$computations), c('computationDetails', 'computedVariable'))
-  expect_equal(nrow(jsonList$computations), nMethods)
-  # computationDetails
-  expect_equal(length(jsonList$computations$computationDetails), nMethods)
-  # computedVariable
-  expect_equal(nrow(jsonList$computations$computedVariable), nMethods)
-  expect_equal(names(jsonList$computations$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
-  # computedVariableDetails
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','values'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$variableId[[1]], 'alphaDiversity')
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$entityId[[1]], 'entity')
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$dataType[[1]], 'NUMBER')
-  expect_equal(jsonList$computations$computedVariable$computedVariableDetails$dataShape[[1]], 'CONTINUOUS')
-  expect_equal(length(jsonList$computations$computedVariable$computedVariableDetails$values[[1]]), nrow(df))
-  # computedVariableMetadata
-  expect_equal(names(jsonList$computations$computedVariable$computedVariableMetadata), c('displayName','displayRangeMin','displayRangeMax'))
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayName[[1]], 'Pielou\'s Evenness')
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMin[[1]], '0')
-  expect_equal(jsonList$computations$computedVariable$computedVariableMetadata$displayRangeMax[[1]], '1')
+  expect_equal(names(jsonList$computedVariableMetadata), c('displayName','displayRangeMin','displayRangeMax'))
+  expect_equal(jsonList$computedVariableMetadata$displayName, 'Pielou\'s Evenness')
+  expect_equal(jsonList$computedVariableMetadata$displayRangeMin, '0')
+  expect_equal(jsonList$computedVariableMetadata$displayRangeMax, '1')
 })
 
-test_that("alphaDiv results are consistent", {
-  
-  expect_snapshot_value({
-    df <- testOTU
-    appResults <- alphaDivApp(df, "entity.SampleID", verbose=F)
-  }, style = "serialize")
-  
-})
 
 test_that("alphaDiv fails gracefully", {
   

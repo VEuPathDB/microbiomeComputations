@@ -19,6 +19,20 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
 
+    # Check that incoming df meets requirements
+    if (!'data.table' %in% class(df)) {
+      data.table::setDT(df)
+    }
+    if (!recordIdColumn %in% names(df)) {
+      stop("recordIdColumn must exist as a column in df")
+    }
+    if (!all(unlist(lapply(df[, -..recordIdColumn], is.numeric)))) {
+      stop("All columns except the recordIdColumn must be numeric")
+    }
+    if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
+      stop("All entities must be identical")
+    }
+
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
 
@@ -72,52 +86,4 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     veupathUtils::logWithTime(paste('Ranked abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', cutoff =', cutoff, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
 
     return(dt)
-}
-
-#' Ranked abundance app
-#'
-#' This function returns the name of a json file with ranked abundance results.
-#' 
-#' @param df data.frame with samples as rows, taxa as columns.
-#' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
-#' @param methods vector of strings indicating ranking methods to use. Must be a subset of c('median','max','q3','variance').
-#' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
-#' @param naToZero boolean indicating if NAs in numeric columns should be replaced with 0
-#' @param verbose boolean indicating if timed logging is desired.
-#' @return name of a json file containing a list of data.tables, one for each method specified in methods. Each data.table contains a column for the recordIdColumn, top taxa columns, and an attribute "parameters" that records the method used.
-#' @import veupathUtils
-#' @export
-rankedAbundanceApp <- function(df, recordIdColumn, methods=c('median','max','q3','variance'), cutoff=10, naToZero=c(TRUE, FALSE), verbose=c(TRUE, FALSE)) {
-
-    naToZero <- veupathUtils::matchArg(naToZero)
-    verbose <- veupathUtils::matchArg(verbose)
-
-    allMethods <- c('median','max','q3','variance')
-    # Allow any number of methods to be inputted
-    if (is.null(methods)) methods <- allMethods
-    if (!all(methods %in% allMethods)) {
-      stop("Unaccepted method found in 'methods' argument. 'methods' must be a subset of c('median', 'max', 'q3','variance').")
-    }
-    
-    # Check that incoming df meets requirements
-    if (!'data.table' %in% class(df)) {
-      data.table::setDT(df)
-    }
-    if (!recordIdColumn %in% names(df)) {
-      stop("recordIdColumn must exist as a column in df")
-    }
-    if (!all(unlist(lapply(df[, -..recordIdColumn], is.numeric)))) {
-      stop("All columns except the recordIdColumn must be numeric")
-    }
-    if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
-      stop("All entities must be identical")
-    }
-
-    appResults <- lapply(methods, rankedAbundance, df=df, recordIdColumn=recordIdColumn, cutoff=cutoff, naToZero=naToZero, verbose=verbose)
-
-    # Write to json file
-    # outFileName <- writeAppResultsToJson(appResults, recordIdColumn = recordIdColumn, 'rankedAbundance', verbose = verbose)
-
-    return(appResults)
-
 }
