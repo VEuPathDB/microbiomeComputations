@@ -66,20 +66,25 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     attr <- list('computationDetails' = computeMessage,
                  'parameters' = method,
                  'isCutoff' = isCutoff)
+
+    collectionMemberVariableIds <- unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2))
+
+    makeVariableSpecs <- function(variableId) {
+      new("VariableSpec", variableId = variableId, entityId = entity)
+    }
+
+    computedVariableMetadata <- new("VariableMetadata",
+                 variableClass = new("VariableClass", value = c("computed", "collection")),
+                 variableSpec = new("VariableSpec", variableId = "rankedAbundance", entityId = entity),
+                 displayName = "To be found by client",
+                 displayRangeMin = 0,
+                 displayRangeMax = 1,
+                 dataType = new("DataType", value = "NUMBER"),
+                 dataShape = new("DataShape", value = "CONTINUOUS"),
+                 members = new("VariableSpecList", lapply(collectionMemberVariableIds, makeVariableSpecs))
+      )
     
-    #### Make into a function? Need to get entity from variables
-    computedVariableDetails <- list('variableId' = unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2)),
-                                    'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
-                                    'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
-                                    'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
-                                    'isCollection' = TRUE)
-    
-    computedVariableMetadata <- list('displayRangeMin' = '0',
-                                     'displayRangeMax' = '1',
-                                     'collectionVariable' = list('collectionType' = 'abundance'))
-    
-    attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
-                                  'computedVariableMetadata' = computedVariableMetadata)
+    attr$computedVariable <- computedVariableMetadata
     
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 

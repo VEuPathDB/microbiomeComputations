@@ -77,17 +77,18 @@ betaDiv <- function(df,
       attr <- list('computationDetails' = computeMessage,
                    'parameters' = character(),
                    'pcoaVariance' = numeric())
+
+      computedVariableMetadata <- new("VariableMetadata",
+                 variableClass = new("VariableClass", value = "computed"),
+                 variableSpec = new("VariableSpec", variableId = "placeholder", entityId = "placeholder"),
+                 displayName = "Empty computed variable",
+                 displayRangeMin = 1,
+                 displayRangeMax = 10,
+                 dataType = new("DataType", value = "NUMBER"),
+                 dataShape = new("DataShape", value = "CONTINUOUS")
+      )
       
-      computedVariableDetails <- list('variableId' = character(),
-                                       'entityId' = character(),
-                                       'dataType' = character(),
-                                       'dataShape' = character(),
-                                       'values' = numeric())
-      
-      computedVariableMetadata <- list('displayName' = character())
-      
-      attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
-                                     'computedVariableMetadata' = computedVariableMetadata)
+      attr$computedVariable <- computedVariableMetadata
 
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
       veupathUtils::logWithTime(paste('Beta diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', k=', k , ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
@@ -127,17 +128,27 @@ betaDiv <- function(df,
                  'parameters' = method,
                  'pcoaVariance' = percentVar)
     
-    #### Make into a function? Need to get entity from variables and add display labels
-    computedVariableDetailsPcoa <- list('variableId' = unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2)),
-                                    'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
-                                    'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
-                                    'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
-                                    'isCollection' = jsonlite::unbox(FALSE))
     
-    computedVariableMetadataPcoa <- list('displayName' = paste0(names(dt[, -..recordIdColumn]), " ", sprintf(percentVar,fmt = '%#.1f'), "%"))
-      
-    attr$computedVariable <- list('computedVariableDetails' = computedVariableDetailsPcoa,
-                                  'computedVariableMetadata' = computedVariableMetadataPcoa)
+    axesNames <- names(dt[, -..recordIdColumn])
+    displayNames <- paste0(axesNames, " ", sprintf(percentVar,fmt = '%#.1f'), "%")
+
+    makeVariableMetadataObject <- function(displayName) {
+      axisName <- veupathUtils::strSplit(displayName, " ")
+
+      new("VariableMetadata",
+                 variableClass = new("VariableClass", value = "computed"),
+                 variableSpec = new("VariableSpec", variableId = axisName, entityId = entity),
+                 displayName = displayName,
+                 displayRangeMin = min(dt[[axisName]]),
+                 displayRangeMax = max(dt[[axisName]]),
+                 dataType = new("DataType", value = "NUMBER"),
+                 dataShape = new("DataShape", value = "CONTINUOUS")
+      )
+    }
+          
+    computedVariableMetadata <- new("VariableMetadataList", lapply(displayNames, makeVariableMetadataObject))
+
+    attr$computedVariable <- computedVariableMetadata
     
     # Add entity to column names
     data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))
@@ -162,5 +173,5 @@ betaDiv <- function(df,
 #' @return json string of Computed Variable Metadata and Details
 #' @export
 getMetadata <- function(computation) {
-  return(jsonlite::toJSON(attr(computation, 'computedVariable')))
+  return(veupathUtils::toJSON(attr(computation, 'computedVariable')))
 }

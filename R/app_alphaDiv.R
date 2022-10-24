@@ -99,20 +99,18 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
     entity <- veupathUtils::strSplit(recordIdColumn, ".", 4, 1)
     attr <- list('computationDetails' = computeMessage,
                  'parameters' = method)
-    
-    #### Make into a function? Need to get entity from variables
-    computedVariableDetails <- list('variableId' = unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2)),
-                                    'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
-                                    'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
-                                    'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))))
-    
-    computedVariableMetadata <- list('displayName' = computedVarLabel,
-                                     'displayRangeMin' = '0',
-                                     'displayRangeMax' = '1')
+
+    computedVariableMetadata <- new("VariableMetadata",
+                 variableClass = new("VariableClass", value = "computed"),
+                 variableSpec = new("VariableSpec", variableId = names(dt[, -..recordIdColumn]), entityId = entity),
+                 displayName = computedVarLabel,
+                 displayRangeMin = 0,
+                 displayRangeMax = 1,
+                 dataType = new("DataType", value = "NUMBER"),
+                 dataShape = new("DataShape", value = "CONTINUOUS")
+      )
       
-    attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
-                                  'computedVariableMetadata' = computedVariableMetadata)
-    
+    attr$computedVariable <- computedVariableMetadata
     
     # Add entity to column names
     data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))
