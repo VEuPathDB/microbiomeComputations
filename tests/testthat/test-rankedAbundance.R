@@ -51,81 +51,70 @@ test_that("rankedAbundance returns a data.table with the correct attributes", {
   expect_true(all(c('computationDetails','parameters','computedVariable','isCutoff') %in% names(attr)))
   expect_equal(attr$parameters, 'median')
   expect_true(attr$isCutoff)
-  expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
-  expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
-  expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Bifidobacterium','Frischella','Commensalibacter','unclassified Mitochondria','unclassified Rhizobiaceae','unclassified Chloroplast','Bombella'))
-  expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',10))
-  expect_true(attr$computedVariable$computedVariableDetails$isCollection)
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMin, '0')
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMax, '1')
+  expect_equal(inherits(attr$computedVariable, "VariableMetadata"), TRUE)
+  expect_equal(unlist(lapply(as.list(attr$computedVariable@members), function(x) {x@variableId})), c('Lactobacillus','Snodgrassella','Gilliamella','Bifidobacterium','Frischella','Commensalibacter','unclassified Mitochondria','unclassified Rhizobiaceae','unclassified Chloroplast','Bombella'))
+  expect_equal(attr$computedVariable@variableSpec@entityId, 'entity')
+  expect_equal(attr$computedVariable@displayRangeMin, 0)
+  expect_equal(attr$computedVariable@displayRangeMax, 1)
   
   dt <- rankedAbundance(df, "entity.SampleID", method='max', verbose=F)
   attr <- attributes(dt)
   expect_true(all(c('computationDetails','parameters','computedVariable','isCutoff') %in% names(attr)))
   expect_equal(attr$parameters, 'max')
   expect_true(attr$isCutoff)
-  expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
-  expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
-  expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella'))
-  expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',10))
-  expect_true(attr$computedVariable$computedVariableDetails$isCollection)
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMin, '0')
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMax, '1')
+  expect_equal(inherits(attr$computedVariable, "VariableMetadata"), TRUE)
+  expect_equal(unlist(lapply(as.list(attr$computedVariable@members), function(x) {x@variableId})), c('Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella'))
+  expect_equal(attr$computedVariable@variableSpec@entityId, 'entity')
+  expect_equal(attr$computedVariable@displayRangeMin, 0)
+  expect_equal(attr$computedVariable@displayRangeMax, 1)
   
   dt <- rankedAbundance(df, "entity.SampleID", method='q3', verbose=F)
   attr <- attributes(dt)
   expect_true(all(c('computationDetails','parameters','computedVariable','isCutoff') %in% names(attr)))
   expect_equal(attr$parameters, 'q3')
   expect_true(attr$isCutoff)
-  expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
-  expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
-  expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
-  expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',10))
-  expect_true(attr$computedVariable$computedVariableDetails$isCollection)
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMin, '0')
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMax, '1')
+  expect_equal(inherits(attr$computedVariable, "VariableMetadata"), TRUE)
+  expect_equal(unlist(lapply(as.list(attr$computedVariable@members), function(x) {x@variableId})), c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
+  expect_equal(attr$computedVariable@variableSpec@entityId, 'entity')
+  expect_equal(attr$computedVariable@displayRangeMin, 0)
+  expect_equal(attr$computedVariable@displayRangeMax, 1)
   
   dt <- rankedAbundance(df, "entity.SampleID", method='variance', verbose=F)
   attr <- attributes(dt)
   expect_true(all(c('computationDetails','parameters','computedVariable','isCutoff') %in% names(attr)))
   expect_equal(attr$parameters, 'variance')
   expect_true(attr$isCutoff)
-  expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
-  expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
-  expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Lactobacillus','Gilliamella','Bombella','Snodgrassella','Klebsiella','unclassified Rhizobiaceae','unclassified Enterobacterales','Fructobacillus','Pseudomonas','unclassified Chloroplast'))
-  expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',10))
-  expect_true(attr$computedVariable$computedVariableDetails$isCollection)
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMin, '0')
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayRangeMax, '1')
+  expect_equal(inherits(attr$computedVariable, "VariableMetadata"), TRUE)
+  expect_equal(unlist(lapply(as.list(attr$computedVariable@members), function(x) {x@variableId})), c('Lactobacillus','Gilliamella','Bombella','Snodgrassella','Klebsiella','unclassified Rhizobiaceae','unclassified Enterobacterales','Fructobacillus','Pseudomonas','unclassified Chloroplast'))
+  expect_equal(attr$computedVariable@variableSpec@entityId, 'entity')
+  expect_equal(attr$computedVariable@displayRangeMin, 0)
+  expect_equal(attr$computedVariable@displayRangeMax, 1)
   
 })
 
-
-test_that("getMetadata() output is correctly represented in json", {
-  
-  df <- testOTU
-  
-  nMethods <- 1
-  results <- rankedAbundance(df, "entity.SampleID", method= 'q3', verbose=F)
-  outJson <- getMetadata(results)
-  jsonList <- jsonlite::fromJSON(outJson)
-  expect_equal(names(jsonList), c('computedVariableDetails','computedVariableMetadata'))
-  # computedVariableDetails
-  expect_equal(names(jsonList$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(jsonList$computedVariableDetails$variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
-  expect_equal(jsonList$computedVariableDetails$entityId, rep('entity', 10))
-  expect_equal(jsonList$computedVariableDetails$dataType, rep('NUMBER', 10))
-  expect_equal(jsonList$computedVariableDetails$dataShape, rep('CONTINUOUS', 10))
-  #expect_equal(ncol(jsonListi$computedVariableDetails$values), nrow(df))
-  #expect_equal(nrow(jsonList$computedVariableDetails$values), 10)
-  expect_true(jsonList$computedVariableDetails$isCollection)
-  # computedVariableMetadata
-  expect_equal(names(jsonList$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
-  expect_equal(jsonList$computedVariableMetadata$displayRangeMin, '0')
-  expect_equal(jsonList$computedVariableMetadata$displayRangeMax, '1')
-  
-})
+# no longer needed, tests exist in veupathUtils for writing VariableMetadata objects
+#test_that("getMetadata() output is correctly represented in json", {
+#  
+#  df <- testOTU
+#  
+#  nMethods <- 1
+#  results <- rankedAbundance(df, "entity.SampleID", method= 'q3', verbose=F)
+#  outJson <- getMetadata(results)
+#  jsonList <- jsonlite::fromJSON(outJson)
+#  expect_equal(names(jsonList), c('computedVariableDetails','computedVariableMetadata'))
+#  # computedVariableDetails
+#  expect_equal(names(jsonList$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
+#  expect_equal(jsonList@variableSpec@variableId, c('Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
+#  expect_equal(jsonList@variableSpec@entityId, rep('entity', 10))
+#  expect_equal(jsonList@variableSpec@dataType, rep('NUMBER', 10))
+#  expect_equal(jsonList@variableSpec@dataShape, rep('CONTINUOUS', 10))
+#  #expect_equal(ncol(jsonListi@variableSpec@values), nrow(df))
+#  #expect_equal(nrow(jsonList@variableSpec@values), 10)
+#  expect_true(jsonList@variableSpec@isCollection)
+#  # computedVariableMetadata
+#  expect_equal(names(jsonList$computedVariableMetadata), c('displayRangeMin','displayRangeMax','collectionVariable'))
+#  expect_equal(jsonList@displayRangeMin, 0)
+#  expect_equal(jsonList@displayRangeMax, 1)
+#  
+#})
+#

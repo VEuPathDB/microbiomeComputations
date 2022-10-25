@@ -42,60 +42,55 @@ test_that("betaDiv returns a data.table with the correct attributes" , {
   attr <- attributes(results)
   expect_true(all(c('computationDetails','parameters','computedVariable','pcoaVariance') %in% names(attr)))
   expect_equal(attr$parameters, 'bray')
-  expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
-  expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayName'))
-  expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Axis1','Axis2'))
-  expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',2))
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayName, c('Axis1 15.3%','Axis2 5.7%'))
+  expect_equal(inherits(attr$computedVariable, "VariableMetadataList"), TRUE)
+  expect_equal(attr$computedVariable[[1]]@variableSpec@variableId, 'Axis1')
+  expect_equal(attr$computedVariable[[1]]@variableSpec@entityId, 'entity')
+  expect_equal(attr$computedVariable[[1]]@displayName, 'Axis1 15.3%')
   
   results <- betaDiv(df, "entity.SampleID", method='jaccard', verbose=F)
   attr <- attributes(results)
   expect_true(all(c('computationDetails','parameters','computedVariable','pcoaVariance') %in% names(attr)))
   expect_equal(attr$parameters, 'jaccard')
-  expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
-  expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayName'))
-  expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Axis1','Axis2'))
-  expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',2))
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayName, c('Axis1 10.0%','Axis2 4.3%'))
+  expect_equal(inherits(attr$computedVariable, "VariableMetadataList"), TRUE)
+  expect_equal(attr$computedVariable[[1]]@variableSpec@variableId, 'Axis1')
+  expect_equal(attr$computedVariable[[1]]@variableSpec@entityId, 'entity')
+  expect_equal(attr$computedVariable[[1]]@displayName, 'Axis1 10.0%')
   
   results <- betaDiv(df, "entity.SampleID", method='jsd', verbose=F)
   attr <- attributes(results)
   expect_true(all(c('computationDetails','parameters','computedVariable','pcoaVariance') %in% names(attr)))
   expect_equal(attr$parameters, 'jsd')
-  expect_equal(names(attr$computedVariable), c('computedVariableDetails','computedVariableMetadata'))
-  expect_equal(names(attr$computedVariable$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(names(attr$computedVariable$computedVariableMetadata), c('displayName'))
-  expect_equal(attr$computedVariable$computedVariableDetails$variableId, c('Axis1','Axis2'))
-  expect_equal(attr$computedVariable$computedVariableDetails$entityId, rep('entity',2))
-  expect_equal(attr$computedVariable$computedVariableMetadata$displayName,c('Axis1 25.2%','Axis2 17.5%'))
+  expect_equal(inherits(attr$computedVariable, "VariableMetadataList"), TRUE)
+  expect_equal(attr$computedVariable[[1]]@variableSpec@variableId, 'Axis1')
+  expect_equal(attr$computedVariable[[1]]@variableSpec@entityId, 'entity')
+  expect_equal(attr$computedVariable[[1]]@displayName, 'Axis1 25.2%')
 
 })
 
 
-# after refactoring to a parent 'computation' class this should move somewhere else
-test_that("getMetadata() output is correctly represented in json", {
-  
-  df <- testOTU
-  
-  nMethods <- 1
-  results <- betaDiv(df, "entity.SampleID", method=c('bray'), verbose=F)
-  outJson <- getMetadata(results)
-  jsonList <- jsonlite::fromJSON(outJson)
-  expect_equal(names(jsonList), c('computedVariableDetails','computedVariableMetadata'))
-  # computedVariableDetails
-  expect_equal(names(jsonList$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
-  expect_equal(jsonList$computedVariableDetails$variableId, c('Axis1', 'Axis2'))
-  expect_equal(jsonList$computedVariableDetails$entityId, c('entity','entity'))
-  expect_equal(jsonList$computedVariableDetails$dataType, c('NUMBER', 'NUMBER'))
-  expect_equal(jsonList$computedVariableDetails$dataShape, c('CONTINUOUS', 'CONTINUOUS'))
-  expect_false(jsonList$computedVariableDetails$isCollection)
-  # computedVariableMetadata
-  expect_equal(names(jsonList$computedVariableMetadata), c('displayName'))
-  expect_equal(jsonList$computedVariableMetadata$displayName, c('Axis1 15.3%','Axis2 5.7%'))
 
-})
+# now done in veupathUtils
+#test_that("getMetadata() output is correctly represented in json", {
+#  
+#  df <- testOTU
+#  
+#  nMethods <- 1
+#  results <- betaDiv(df, "entity.SampleID", method=c('bray'), verbose=F)
+#  outJson <- getMetadata(results)
+#  jsonList <- jsonlite::fromJSON(outJson)
+#  expect_equal(names(jsonList), c('computedVariableDetails','computedVariableMetadata'))
+#  # computedVariableDetails
+#  expect_equal(names(jsonList$computedVariableDetails), c('variableId','entityId','dataType','dataShape','isCollection'))
+#  expect_equal(jsonList@variableSpec@variableId, c('Axis1', 'Axis2'))
+#  expect_equal(jsonList@variableSpec@entityId, c('entity','entity'))
+#  expect_equal(jsonList@variableSpec@dataType, c('NUMBER', 'NUMBER'))
+#  expect_equal(jsonList@variableSpec@dataShape, c('CONTINUOUS', 'CONTINUOUS'))
+#  expect_false(jsonList@variableSpec@isCollection)
+#  # computedVariableMetadata
+#  expect_equal(names(jsonList$computedVariableMetadata), c('displayName'))
+#  expect_equal(jsonList@displayName, c('Axis1 15.3%','Axis2 5.7%'))
+#
+#})
 
 
 test_that("betaDiv fails gracefully", {
@@ -111,11 +106,11 @@ test_that("betaDiv fails gracefully", {
   attr <- attributes(dt)
   expect_equal(attr$computationDetails, "Error: beta diversity bray failed: missing values are not allowed with argument 'na.rm = FALSE'")
   expect_equal(typeof(attr$parameters), 'character')
-  expect_equal(typeof(attr$computedVariable$computedVariableDetails$variableId), 'character')
-  expect_equal(typeof(attr$computedVariable$computedVariableDetails$entityId), 'character')
-  expect_equal(typeof(attr$computedVariable$computedVariableDetails$dataType), 'character')
-  expect_equal(typeof(attr$computedVariable$computedVariableDetails$dataShape), 'character')
-  expect_equal(typeof(attr$computedVariable$computedVariableMetadata$displayName), 'character')
+  expect_equal(typeof(attr$computedVariable@variableSpec@variableId), 'character')
+  expect_equal(typeof(attr$computedVariable@variableSpec@entityId), 'character')
+  expect_equal(typeof(attr$computedVariable@dataType@value), 'character')
+  expect_equal(typeof(attr$computedVariable@dataShape@value), 'character')
+  expect_equal(typeof(attr$computedVariable@displayName), 'character')
   expect_equal(typeof(attr$pcoaVariance), 'double')
   
 })
