@@ -81,6 +81,7 @@ betaDiv <- function(df,
       computedVariableMetadata <- new("VariableMetadata",
                  variableClass = new("VariableClass", value = "computed"),
                  variableSpec = new("VariableSpec", variableId = "placeholder", entityId = "placeholder"),
+                 plotReference = new("PlotReference", value = "xAxis"),
                  displayName = "Empty computed variable",
                  displayRangeMin = 1,
                  displayRangeMax = 10,
@@ -134,10 +135,13 @@ betaDiv <- function(df,
 
     makeVariableMetadataObject <- function(displayName) {
       axisName <- veupathUtils::strSplit(displayName, " ")
+      #bit hacky, see if you can think of something better
+      plotRef <- ifelse(grepl('Axis1', displayName, fixed=T), 'xAxis', 'yAxis')
 
       new("VariableMetadata",
                  variableClass = new("VariableClass", value = "computed"),
                  variableSpec = new("VariableSpec", variableId = axisName, entityId = entity),
+                 plotReference = new("PlotReference", value = plotRef),
                  displayName = displayName,
                  displayRangeMin = min(dt[[axisName]]),
                  displayRangeMax = max(dt[[axisName]]),

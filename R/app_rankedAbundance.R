@@ -74,13 +74,15 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     }
 
     computedVariableMetadata <- new("VariableMetadata",
-                 variableClass = new("VariableClass", value = c("computed", "collection")),
+                 variableClass = new("VariableClass", value = "computed"),
                  variableSpec = new("VariableSpec", variableId = "rankedAbundance", entityId = entity),
+                 plotReference = new("PlotReference", value = "xAxis"),
                  displayName = "To be found by client",
                  displayRangeMin = 0,
                  displayRangeMax = 1,
                  dataType = new("DataType", value = "NUMBER"),
                  dataShape = new("DataShape", value = "CONTINUOUS"),
+                 isCollection = TRUE,
                  members = new("VariableSpecList", lapply(collectionMemberVariableIds, makeVariableSpecs))
       )
     
