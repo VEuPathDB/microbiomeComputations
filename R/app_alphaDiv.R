@@ -65,19 +65,19 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
       
       attr <- list('computationDetails' = computeMessage,
                    'parameters' = character())
+
+      computedVariableMetadata <- new("VariableMetadata",
+                 variableClass = new("VariableClass", value = "computed"),
+                 variableSpec = new("VariableSpec", variableId = "placeholder", entityId = "placeholder"),
+                 plotReference = new("PlotReference", value = "yAxis"),
+                 displayName = "Empty computed variable",
+                 displayRangeMin = 1,
+                 displayRangeMax = 10,
+                 dataType = new("DataType", value = "NUMBER"),
+                 dataShape = new("DataShape", value = "CONTINUOUS")
+      )
       
-      computedVariableDetails <- list('variableId' = character(),
-                                       'entityId' = character(),
-                                       'dataType' = character(),
-                                       'dataShape' = character(),
-                                       'values' = numeric())
-      
-      computedVariableMetadata <- list('displayName' = character(),
-                                       'displayRangeMin' = character(),
-                                       'displayRangeMax' = character())
-      
-      attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
-                                     'computedVariableMetadata' = computedVariableMetadata)
+      attr$computedVariable <- new("VariableMetadataList", SimpleList(computedVariableMetadata))
       
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
       veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
@@ -111,7 +111,7 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
                  dataShape = new("DataShape", value = "CONTINUOUS")
       )
       
-    attr$computedVariable <- computedVariableMetadata
+    attr$computedVariable <- new("VariableMetadataList", SimpleList(computedVariableMetadata))
     
     # Add entity to column names
     data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))

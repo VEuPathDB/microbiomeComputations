@@ -89,7 +89,7 @@ betaDiv <- function(df,
                  dataShape = new("DataShape", value = "CONTINUOUS")
       )
       
-      attr$computedVariable <- computedVariableMetadata
+      attr$computedVariable <- new("VariableMetadataList", SimpleList(computedVariableMetadata))
 
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
       veupathUtils::logWithTime(paste('Beta diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', k=', k , ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
