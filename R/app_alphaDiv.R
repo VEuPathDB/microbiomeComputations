@@ -103,7 +103,7 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
     computedVariableMetadata <- new("VariableMetadata",
                  variableClass = new("VariableClass", value = "computed"),
                  variableSpec = new("VariableSpec", variableId = names(dt[, -..recordIdColumn]), entityId = entity),
-                 plotReference = new("PlotReference", value = "yAxis")
+                 plotReference = new("PlotReference", value = "yAxis"),
                  displayName = computedVarLabel,
                  displayRangeMin = 0,
                  displayRangeMax = 1,
