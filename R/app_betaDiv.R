@@ -78,18 +78,18 @@ betaDiv <- function(df,
                    'parameters' = character(),
                    'pcoaVariance' = numeric())
 
-      computedVariableMetadata <- new("VariableMetadata",
-                 variableClass = new("VariableClass", value = "computed"),
-                 variableSpec = new("VariableSpec", variableId = "placeholder", entityId = "placeholder"),
-                 plotReference = new("PlotReference", value = "xAxis"),
+      computedVariableMetadata <- veupathUtils::VariableMetadata(
+                 variableClass = veupathUtils::VariableClass(value = "computed"),
+                 variableSpec = veupathUtils::VariableSpec(variableId = "placeholder", entityId = "placeholder"),
+                 plotReference = veupathUtils::PlotReference(value = "xAxis"),
                  displayName = "Empty computed variable",
                  displayRangeMin = 1,
                  displayRangeMax = 10,
-                 dataType = new("DataType", value = "NUMBER"),
-                 dataShape = new("DataShape", value = "CONTINUOUS")
+                 dataType = veupathUtils::DataType(value = "NUMBER"),
+                 dataShape = veupathUtils::DataShape(value = "CONTINUOUS")
       )
       
-      attr$computedVariable <- new("VariableMetadataList", SimpleList(computedVariableMetadata))
+      attr$computedVariable <- veupathUtils::VariableMetadataList(SimpleList(computedVariableMetadata))
 
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
       veupathUtils::logWithTime(paste('Beta diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', k=', k , ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
@@ -138,19 +138,19 @@ betaDiv <- function(df,
       #bit hacky, see if you can think of something better
       plotRef <- ifelse(grepl('Axis1', displayName, fixed=T), 'xAxis', 'yAxis')
 
-      new("VariableMetadata",
-                 variableClass = new("VariableClass", value = "computed"),
-                 variableSpec = new("VariableSpec", variableId = axisName, entityId = entity),
-                 plotReference = new("PlotReference", value = plotRef),
+      veupathUtils::VariableMetadata(
+                 variableClass = veupathUtils::VariableClass(value = "computed"),
+                 variableSpec = veupathUtils::VariableSpec(variableId = axisName, entityId = entity),
+                 plotReference = veupathUtils::PlotReference(value = plotRef),
                  displayName = displayName,
                  displayRangeMin = min(dt[[axisName]]),
                  displayRangeMax = max(dt[[axisName]]),
-                 dataType = new("DataType", value = "NUMBER"),
-                 dataShape = new("DataShape", value = "CONTINUOUS")
+                 dataType = veupathUtils::DataType(value = "NUMBER"),
+                 dataShape = veupathUtils::DataShape(value = "CONTINUOUS")
       )
     }
           
-    computedVariableMetadata <- new("VariableMetadataList", lapply(displayNames, makeVariableMetadataObject))
+    computedVariableMetadata <- veupathUtils::VariableMetadataList(lapply(displayNames, makeVariableMetadataObject))
 
     attr$computedVariable <- computedVariableMetadata
     

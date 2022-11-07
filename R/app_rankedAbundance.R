@@ -11,6 +11,7 @@
 #' @return data.table with columns recordIdColumn, followed by the top taxa as ranked by the given method, with no more taxa columns than specified by the cutoff argument.
 #' @import veupathUtils
 #' @import data.table
+#' @importFrom S4Vectors SimpleList
 #' @export
 rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','variance'), cutoff=10, naToZero=c(TRUE, FALSE), verbose = c(TRUE, FALSE)) {
 
@@ -70,27 +71,35 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     collectionMemberVariableIds <- unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2))
 
     makeVariableSpecs <- function(variableId) {
-      new("VariableSpec", variableId = variableId, entityId = entity)
+	    veupathUtils::VariableSpec(variableId = variableId, entityId = entity)
     }
 
-    computedVariableMetadata <- new("VariableMetadata",
-                 variableClass = new("VariableClass", value = "computed"),
-                 variableSpec = new("VariableSpec", variableId = "rankedAbundance", entityId = entity),
-                 plotReference = new("PlotReference", value = "xAxis"),
-                 displayName = "To be found by client",
+    # TODO how does the client find the display name
+    # this will go to plot.data, which will make 2 VariableMetadata objects from this one
+    # the first will be for the xaxis, rankedAbundanceMembers (taxa names)
+    # the second will be for the yaxis, rankedAbundanceValues (rel abund)
+    # the yaxis one should have display name 'Relative abundance values' or something provided by this plugin
+    # the xaxis one should have display name the same as the CollectionSpec input
+    # so i guess the variableId here should be the same id as the CollectionSpec input
+    # and the display name here should be 'Relative abundance', plot.data should append 'values' to inferred plotRef
+    # front end can override if desired i suppose, but it seems the only/ best general purpose solution
+    computedVariableMetadata <- veupathUtils::VariableMetadata(
+                 variableClass = veupathUtils::VariableClass(value = "computed"),
+                 variableSpec = veupathUtils::VariableSpec(variableId = "rankedAbundance", entityId = entity),
+                 plotReference = veupathUtils::PlotReference(value = "xAxis"),
+                 displayName = "To be determined by client",
                  displayRangeMin = 0,
                  displayRangeMax = 1,
-                 dataType = new("DataType", value = "NUMBER"),
-                 dataShape = new("DataShape", value = "CONTINUOUS"),
+                 dataType = veupathUtils::DataType(value = "NUMBER"),
+                 dataShape = veupathUtils::DataShape(value = "CONTINUOUS"),
                  isCollection = TRUE,
-                 members = new("VariableSpecList", lapply(collectionMemberVariableIds, makeVariableSpecs))
+                 members = veupathUtils::VariableSpecList(S4Vectors::SimpleList(lapply(collectionMemberVariableIds, makeVariableSpecs)))
       )
     
-    attr$computedVariable <- new("VariableMetadataList", SimpleList(computedVariableMetadata))
+    attr$computedVariable <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
     
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
     veupathUtils::logWithTime(paste('Ranked abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', cutoff =', cutoff, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
 
-    return(dt)
-}
+    return(dt)}

@@ -66,18 +66,18 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
       attr <- list('computationDetails' = computeMessage,
                    'parameters' = character())
 
-      computedVariableMetadata <- new("VariableMetadata",
-                 variableClass = new("VariableClass", value = "computed"),
-                 variableSpec = new("VariableSpec", variableId = "placeholder", entityId = "placeholder"),
-                 plotReference = new("PlotReference", value = "yAxis"),
+      computedVariableMetadata <- veupathUtils::VariableMetadata(
+                 variableClass = veupathUtils::VariableClass(value = "computed"),
+                 variableSpec = veupathUtils::VariableSpec(variableId = "placeholder", entityId = "placeholder"),
+                 plotReference = veupathUtils::PlotReference(value = "yAxis"),
                  displayName = "Empty computed variable",
                  displayRangeMin = 1,
                  displayRangeMax = 10,
-                 dataType = new("DataType", value = "NUMBER"),
-                 dataShape = new("DataShape", value = "CONTINUOUS")
+                 dataType = veupathUtils::DataType(value = "NUMBER"),
+                 dataShape = veupathUtils::DataShape(value = "CONTINUOUS")
       )
       
-      attr$computedVariable <- new("VariableMetadataList", SimpleList(computedVariableMetadata))
+      attr$computedVariable <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
       
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
       veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
@@ -100,18 +100,18 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
     attr <- list('computationDetails' = computeMessage,
                  'parameters' = method)
 
-    computedVariableMetadata <- new("VariableMetadata",
-                 variableClass = new("VariableClass", value = "computed"),
-                 variableSpec = new("VariableSpec", variableId = names(dt[, -..recordIdColumn]), entityId = entity),
-                 plotReference = new("PlotReference", value = "yAxis"),
+    computedVariableMetadata <- veupathUtils::VariableMetadata(
+                 variableClass = veupathUtils::VariableClass(value = "computed"),
+                 variableSpec = veupathUtils::VariableSpec(variableId = names(dt[, -..recordIdColumn]), entityId = entity),
+                 plotReference = veupathUtils::PlotReference(value = "yAxis"),
                  displayName = computedVarLabel,
                  displayRangeMin = 0,
                  displayRangeMax = 1,
-                 dataType = new("DataType", value = "NUMBER"),
-                 dataShape = new("DataShape", value = "CONTINUOUS")
+                 dataType = veupathUtils::DataType(value = "NUMBER"),
+                 dataShape = veupathUtils::DataShape(value = "CONTINUOUS")
       )
       
-    attr$computedVariable <- new("VariableMetadataList", SimpleList(computedVariableMetadata))
+    attr$computedVariable <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
     
     # Add entity to column names
     data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))
