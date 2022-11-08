@@ -66,18 +66,7 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
       attr <- list('computationDetails' = computeMessage,
                    'parameters' = character())
 
-      computedVariableMetadata <- veupathUtils::VariableMetadata(
-                 variableClass = veupathUtils::VariableClass(value = "computed"),
-                 variableSpec = veupathUtils::VariableSpec(variableId = "placeholder", entityId = "placeholder"),
-                 plotReference = veupathUtils::PlotReference(value = "yAxis"),
-                 displayName = "Empty computed variable",
-                 displayRangeMin = 1,
-                 displayRangeMax = 10,
-                 dataType = veupathUtils::DataType(value = "NUMBER"),
-                 dataShape = veupathUtils::DataShape(value = "CONTINUOUS")
-      )
-      
-      attr$computedVariable <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
+      attr$computedVariable <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(veupathUtils::VariableMetadata()))
       
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
       veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)

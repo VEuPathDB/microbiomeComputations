@@ -78,18 +78,7 @@ betaDiv <- function(df,
                    'parameters' = character(),
                    'pcoaVariance' = numeric())
 
-      computedVariableMetadata <- veupathUtils::VariableMetadata(
-                 variableClass = veupathUtils::VariableClass(value = "computed"),
-                 variableSpec = veupathUtils::VariableSpec(variableId = "placeholder", entityId = "placeholder"),
-                 plotReference = veupathUtils::PlotReference(value = "xAxis"),
-                 displayName = "Empty computed variable",
-                 displayRangeMin = 1,
-                 displayRangeMax = 10,
-                 dataType = veupathUtils::DataType(value = "NUMBER"),
-                 dataShape = veupathUtils::DataShape(value = "CONTINUOUS")
-      )
-      
-      attr$computedVariable <- veupathUtils::VariableMetadataList(SimpleList(computedVariableMetadata))
+      attr$computedVariable <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(veupathUtils::VariableMetadata()))
 
       veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
       veupathUtils::logWithTime(paste('Beta diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', k=', k , ', naToZero = ', naToZero, ', verbose =', verbose), verbose)

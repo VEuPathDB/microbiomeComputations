@@ -74,15 +74,6 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
 	    veupathUtils::VariableSpec(variableId = variableId, entityId = entity)
     }
 
-    # TODO how does the client find the display name
-    # this will go to plot.data, which will make 2 VariableMetadata objects from this one
-    # the first will be for the xaxis, rankedAbundanceMembers (taxa names)
-    # the second will be for the yaxis, rankedAbundanceValues (rel abund)
-    # the yaxis one should have display name 'Relative abundance values' or something provided by this plugin
-    # the xaxis one should have display name the same as the CollectionSpec input
-    # so i guess the variableId here should be the same id as the CollectionSpec input
-    # and the display name here should be 'Relative abundance', plot.data should append 'values' to inferred plotRef
-    # front end can override if desired i suppose, but it seems the only/ best general purpose solution
     computedVariableMetadata <- veupathUtils::VariableMetadata(
                  variableClass = veupathUtils::VariableClass(value = "computed"),
                  variableSpec = veupathUtils::VariableSpec(variableId = "rankedAbundance", entityId = entity),
