@@ -11,6 +11,7 @@
 #' @return data.table with columns recordIdColumn, followed by the top taxa as ranked by the given method, with no more taxa columns than specified by the cutoff argument.
 #' @import veupathUtils
 #' @import data.table
+#' @importFrom S4Vectors SimpleList
 #' @export
 rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','variance'), cutoff=10, naToZero=c(TRUE, FALSE), verbose = c(TRUE, FALSE)) {
 
@@ -66,24 +67,30 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     attr <- list('computationDetails' = computeMessage,
                  'parameters' = method,
                  'isCutoff' = isCutoff)
+
+    collectionMemberVariableIds <- unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2))
+
+    makeVariableSpecs <- function(variableId) {
+	    veupathUtils::VariableSpec(variableId = variableId, entityId = entity)
+    }
+
+    computedVariableMetadata <- veupathUtils::VariableMetadata(
+                 variableClass = veupathUtils::VariableClass(value = "computed"),
+                 variableSpec = veupathUtils::VariableSpec(variableId = "rankedAbundance", entityId = entity),
+                 plotReference = veupathUtils::PlotReference(value = "xAxis"),
+                 displayName = "To be determined by client",
+                 displayRangeMin = 0,
+                 displayRangeMax = 1,
+                 dataType = veupathUtils::DataType(value = "NUMBER"),
+                 dataShape = veupathUtils::DataShape(value = "CONTINUOUS"),
+                 isCollection = TRUE,
+                 members = veupathUtils::VariableSpecList(S4Vectors::SimpleList(lapply(collectionMemberVariableIds, makeVariableSpecs)))
+      )
     
-    #### Make into a function? Need to get entity from variables
-    computedVariableDetails <- list('variableId' = unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2)),
-                                    'entityId' = rep(entity, length(names(dt[, -..recordIdColumn]))),
-                                    'dataType' = rep('NUMBER', length(names(dt[, -..recordIdColumn]))),
-                                    'dataShape' = rep('CONTINUOUS', length(names(dt[, -..recordIdColumn]))),
-                                    'isCollection' = TRUE)
-    
-    computedVariableMetadata <- list('displayRangeMin' = '0',
-                                     'displayRangeMax' = '1',
-                                     'collectionVariable' = list('collectionType' = 'abundance'))
-    
-    attr$computedVariable <- list('computedVariableDetails' = computedVariableDetails,
-                                  'computedVariableMetadata' = computedVariableMetadata)
+    attr$computedVariable <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
     
     veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
 
     veupathUtils::logWithTime(paste('Ranked abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', cutoff =', cutoff, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
 
-    return(dt)
-}
+    return(dt)}
