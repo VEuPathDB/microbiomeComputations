@@ -2,18 +2,25 @@
 #'
 #' This function returns abundances, ranked by a selected ranking function
 #' 
-#' @param df data.table with rows corresponding to records, one column indicating the record id, and all other columns corresponding to taxa abundance.
-#' @param recordIdColumn string defining the name of the df column that specifies sample ids. Note, all other columns must be numeric and will be treated as abundance values.
+#' @param data AbundanceData object
 #' @param method string defining the ranking strategy by which to order the taxa. Accepted values are 'median','max','q3',and 'variance'. Note that taxa that return a value of 0 for a given method will not be included in the results.
 #' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
-#' @param naToZero boolean indicating if NAs in numeric columns should be replaced with 0
 #' @param verbose boolean indicating if timed logging is desired
-#' @return data.table with columns recordIdColumn, followed by the top taxa as ranked by the given method, with no more taxa columns than specified by the cutoff argument.
+#' @return ComputedResult object
 #' @import veupathUtils
 #' @import data.table
 #' @importFrom S4Vectors SimpleList
 #' @export
-rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','variance'), cutoff=10, naToZero=c(TRUE, FALSE), verbose = c(TRUE, FALSE)) {
+setGeneric("rankedAbundance",
+  function(data, method, cutoff, verbose) standardGeneric("rankedAbundance"),
+  signature = c("data")
+)
+
+#'@export 
+setMethod("rankedAbundance", signature("AbundanceData"), function(data, method = c('median','max','q3','variance'), cutoff=10, verbose = c(TRUE, FALSE)) {
+    df <- data@data
+    recordIdColumn <- data@recordIdColumn
+    naToZero <- data@imputeZero
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
@@ -23,15 +30,6 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
     # Check that incoming df meets requirements
     if (!'data.table' %in% class(df)) {
       data.table::setDT(df)
-    }
-    if (!recordIdColumn %in% names(df)) {
-      stop("recordIdColumn must exist as a column in df")
-    }
-    if (!all(unlist(lapply(df[, -..recordIdColumn], is.numeric)))) {
-      stop("All columns except the recordIdColumn must be numeric")
-    }
-    if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
-      stop("All entities must be identical")
     }
 
     computeMessage <- ''
@@ -62,11 +60,12 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
 
     veupathUtils::logWithTime("Finished ranking taxa", verbose)
     
-    # Collect attributes
+    result <- new("ComputedResult")
+    result@data <- dt
+
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
-    attr <- list('computationDetails' = computeMessage,
-                 'parameters' = method,
-                 'isCutoff' = isCutoff)
+    result@computationDetails <- computeMessage
+    result@parameters <- paste('method =',method, ', isCutoff =', isCutoff)
 
     collectionMemberVariableIds <- unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2))
 
@@ -87,10 +86,9 @@ rankedAbundance <- function(df, recordIdColumn, method = c('median','max','q3','
                  members = veupathUtils::VariableSpecList(S4Vectors::SimpleList(lapply(collectionMemberVariableIds, makeVariableSpecs)))
       )
     
-    attr$computedVariable <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
+    result@computedVariableMetadata <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
     
-    veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
-
+    validObject(result)
     veupathUtils::logWithTime(paste('Ranked abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', cutoff =', cutoff, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
 
-    return(dt)}
+    return(result)}
