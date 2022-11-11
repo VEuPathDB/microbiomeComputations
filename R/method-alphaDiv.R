@@ -12,7 +12,7 @@
 #' @import data.table
 #' @export
 setGeneric("alphaDiv",
-  function(data, method, verbose) standardGeneric("alphaDiv"),
+  function(data, method = c('shannon','simpson','evenness'), verbose = c(TRUE, FALSE)) standardGeneric("alphaDiv"),
   signature = c("data")
 )
 

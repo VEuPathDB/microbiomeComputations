@@ -12,12 +12,14 @@ check_compute_result <- function(object) {
       errors <- c(errors, msg) 
     }
    
-    col_names <- unlist(lapply(as.list(variables), function(x) {veupathUtils::getColName(x@variableSpec)}))
-    if (!all(col_names %in% names(object@data))) {
-      msg <- paste("Some specified computed variables are not present in compute result data.frame")
-      errors <- c(errors, msg)
-    }
+    # TODO think this isnt working for collections
+    #col_names <- unlist(lapply(as.list(variables), function(x) {veupathUtils::getColName(x@variableSpec)}))
+    #if (!all(col_names %in% names(object@data))) {
+    #  msg <- paste("Some specified computed variables are not present in compute result data.frame")
+    #  errors <- c(errors, msg)
+    #}
 
+    # TODO think this isnt working for the empty placeholders
     #var_classes <- unlist(lapply(as.list(variables), function(x) {x@variableClass}))
     #if (!all(var_classes %in% 'computed')) {
     #  msg <- paste("Some specified computed variables have the wrong variable class.")

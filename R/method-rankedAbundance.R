@@ -12,7 +12,7 @@
 #' @importFrom S4Vectors SimpleList
 #' @export
 setGeneric("rankedAbundance",
-  function(data, method, cutoff, verbose) standardGeneric("rankedAbundance"),
+  function(data, method = c('median','max','q3','variance'), cutoff=10, verbose = c(TRUE, FALSE)) standardGeneric("rankedAbundance"),
   signature = c("data")
 )
 
@@ -66,7 +66,9 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
 
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
     result@computationDetails <- computeMessage
-    result@parameters <- paste('method =',method, ', isCutoff =', isCutoff)
+    # TODO this could be a named vector or something maybe instead
+    # also, not sure isCutoff is a param, maybe put it in computationDetails?
+    result@parameters <- paste0('method = ',method, ', isCutoff = ', isCutoff)
 
     collectionMemberVariableIds <- unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2))
 

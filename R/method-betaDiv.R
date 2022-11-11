@@ -16,7 +16,7 @@
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("betaDiv",
-  function(data, method, k, verbose) standardGeneric("betaDiv"),
+  function(data, method = c('bray','jaccard','jsd'), k = 2, verbose = c(TRUE, FALSE)) standardGeneric("betaDiv"),
   signature = c("data")
 )
 
