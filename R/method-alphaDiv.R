@@ -2,36 +2,33 @@
 #'
 #' This function returns alpha diversity values for each sample.
 #' 
-#' @param df data.table with rows corresponding to records, one column indicating the record id, and all other columns corresponding to taxa abundance.
-#' @param recordIdColumn string defining the name of the df column that specifies record ids. Note, all other columns must be numeric and will be treated as abundance values.
+#' @param data AbundanceData object
 #' @param method string defining the the alpha diversity method. Accepted values are 'shannon','simpson', and 'evenness'
-#' @param naToZero boolean indicating if NAs in numeric columns should be replaced with 0
 #' @param verbose boolean indicating if timed logging is desired
-#' @return data.table with columns recordIdColumn, "alphaDiversity".
+#' @return ComputedResult object
 #' @importFrom vegan diversity
 #' @importFrom stringi stri_trans_totitle
 #' @import veupathUtils
 #' @import data.table
 #' @export
-alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evenness'), naToZero = c(TRUE, FALSE), verbose = c(TRUE, FALSE)) {
+setGeneric("alphaDiv",
+  function(data, method, verbose) standardGeneric("alphaDiv"),
+  signature = c("data")
+)
+
+#'@export 
+setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('shannon','simpson','evenness'), verbose = c(TRUE, FALSE)) {
+    df <- data@data
+    recordIdColumn <- data@recordIdColumn
+    naToZero <- data@imputeZero
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
-    naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
 
     # Check that incoming df meets requirements
     if (!'data.table' %in% class(df)) {
       data.table::setDT(df)
-    }
-    if (!recordIdColumn %in% names(df)) {
-      stop("recordIdColumn must exist as a column in df")
-    }
-    if (!all(unlist(lapply(df[, -..recordIdColumn], is.numeric)))) {
-      stop("All columns except the recordIdColumn must be numeric")
-    }
-    if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
-      stop("All entities must be identical")
     }
     
     computeMessage <- ''
@@ -55,6 +52,8 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
       computedVarLabel <- "Pielou\'s Evenness"
     }
 
+    result <- new("ComputedResult")
+
     # Handle errors or return positive computeMessage
     if (veupathUtils::is.error(alphaDivDT)) {
       
@@ -63,13 +62,10 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
       # Return only recordIdColumn and expected attributes
       dt <- df[, ..recordIdColumn]
       
-      attr <- list('computationDetails' = computeMessage,
-                   'parameters' = character())
-
-      attr$computedVariable <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(veupathUtils::VariableMetadata()))
+      result@computationDetails = computeMessage
+      result@computedVariableMetadata <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(veupathUtils::VariableMetadata()))
       
-      veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
-      veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
+      veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters, method=', method), verbose)
       
       return(dt)
       
@@ -83,11 +79,10 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
                       'alphaDiv' = alphaDivDT)
 
     data.table::setnames(dt, c(recordIdColumn,'alphaDiversity'))
-    
-    # Collect attributes
+
     entity <- veupathUtils::strSplit(recordIdColumn, ".", 4, 1)
-    attr <- list('computationDetails' = computeMessage,
-                 'parameters' = method)
+    result@computationDetails <- computeMessage
+    result@parameters <- method
 
     computedVariableMetadata <- veupathUtils::VariableMetadata(
                  variableClass = veupathUtils::VariableClass(value = "computed"),
@@ -100,14 +95,14 @@ alphaDiv <- function(df, recordIdColumn, method = c('shannon','simpson','evennes
                  dataShape = veupathUtils::DataShape(value = "CONTINUOUS")
       )
       
-    attr$computedVariable <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
+    result@computedVariableMetadata <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
     
     # Add entity to column names
     data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))
-
-    veupathUtils::setAttrFromList(dt, attr, removeExtraAttrs = F)
-
-    veupathUtils::logWithTime(paste('Alpha diversity computation completed with parameters recordIdColumn=', recordIdColumn, ', method=', method, ', verbose =', verbose), verbose)
+    result@data <- dt 
     
-    return(dt)
-}
+    validObject(result)
+    veupathUtils::logWithTime(paste('Alpha diversity computation completed with parameters method=', method), verbose)
+    
+    return(result)
+})

@@ -1,4 +1,4 @@
-# TODO roxygen docs
+# TODO tests
 
 # so S4 will recognize data.table class as inheriting from data.frame
 setOldClass(c("data.table", "data.frame"))
@@ -22,14 +22,35 @@ check_compute_result <- function(object) {
     return(if (length(errors) == 0) TRUE else errors)
 }
 
+#' Compute Result
+#' 
+#' A class for consistently representing the results of computes. 
+#' This includes their representation in R, as JSON and how they are written to files.
+#' 
+#' @slot data A data.frame of values where computed variables are columns and samples rows.
+#' @slot recordIdColumn The name of the column containing IDs for the samples. All other columns will be treated as computed values.
+#' @slot computedVariableMetadata veupathUtils::VariableMetadataList detailing the computed variables.
+#' @slot computationDetails An optional message about the computed results.
+#' @slot parameters A record of the input parameters used to generate the computed results.
+#' 
+#' @name ComputeResult-class
+#' @rdname ComputeResult-class
 #' @export
 ComputeResult <- setClass("ComputeResult", representation(
     data = 'data.frame',
-    computedVariableMetadata = 'VariableMetadataList'
+    recordIdColumn = 'character',
+    computedVariableMetadata = 'VariableMetadataList',
+    computationDetails = 'character',
+    parameters = 'character'
+), prototype = prototype(
+    recordIdColumn = NA_character_,
+    computationDetails = NA_character_,
+    parameters = NA_character_
 ), validity = check_compute_result)
 
 check_abundance_data <- function(object) {
     errors <- character()
+    df <- object@data
     record_id_col <- object@recordIdColumn
     
     if (length(record_id_col) != 1) {
@@ -42,13 +63,35 @@ check_abundance_data <- function(object) {
       errors <- c(errors, msg)
     }
 
+    if (!all(unlist(lapply(df[, -..record_id_col], is.numeric)))) {
+      msg <- paste("All columns except the record ID column must be numeric")
+      errors <- c(errors, msg)
+    }
+
+    if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
+      msg <- paste("All columns must belong to the same entity.")
+      errors <- c(errors, msg)
+    }
+
     return(if (length(errors) == 0) TRUE else errors)
 }
 
+#' Abundance Data
+#' 
+#' A class for working with microbiome or ecological abundance data.
+#' 
+#' @slot data A data.frame of abundance values with species as columns and samples as rows
+#' @slot recordIdColumn The name of the column containing IDs for the samples. All other columns will be treated as abundance values.
+#' @slot imputeZero A logical indicating whether NA/ null values should be replaced with zeros.
+#' 
+#' @name AbundanceData-class
+#' @rdname AbundanceData-class
 #' @export 
 AbundanceData <- setClass("AbundanceData", representation(
     data = 'data.frame',
-    recordIdColumn = 'character'
+    recordIdColumn = 'character',
+    imputeZero = 'logical'
 ), prototype = prototype(
-    recordIdColumn = NA_character_
+    recordIdColumn = NA_character_,
+    imputeZero = TRUE
 ), validity = check_abundance_data)
