@@ -4,7 +4,11 @@
 \alias{alphaDiv}
 \title{Alpha diversity}
 \usage{
-alphaDiv(data, method, verbose)
+alphaDiv(
+  data,
+  method = c("shannon", "simpson", "evenness"),
+  verbose = c(TRUE, FALSE)
+)
 }
 \arguments{
 \item{data}{AbundanceData object}
@@ -14,7 +18,7 @@ alphaDiv(data, method, verbose)
 \item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
-ComputedResult object
+ComputeResult object
 }
 \description{
 This function returns alpha diversity values for each sample.

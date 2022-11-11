@@ -4,7 +4,12 @@
 \alias{rankedAbundance}
 \title{Ranked abundance}
 \usage{
-rankedAbundance(data, method, cutoff, verbose)
+rankedAbundance(
+  data,
+  method = c("median", "max", "q3", "variance"),
+  cutoff = 10,
+  verbose = c(TRUE, FALSE)
+)
 }
 \arguments{
 \item{data}{AbundanceData object}
@@ -16,7 +21,7 @@ rankedAbundance(data, method, cutoff, verbose)
 \item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
-ComputedResult object
+ComputeResult object
 }
 \description{
 This function returns abundances, ranked by a selected ranking function

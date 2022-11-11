@@ -4,7 +4,12 @@
 \alias{betaDiv}
 \title{Beta diversity}
 \usage{
-betaDiv(data, method, k, verbose)
+betaDiv(
+  data,
+  method = c("bray", "jaccard", "jsd"),
+  k = 2,
+  verbose = c(TRUE, FALSE)
+)
 }
 \arguments{
 \item{data}{AbundanceData object}
@@ -16,7 +21,7 @@ betaDiv(data, method, k, verbose)
 \item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
-ComputedResult object
+ComputeResult object
 }
 \description{
 This function returns pcoa coordinates calculated from the beta diversity dissimilarity matrix.
