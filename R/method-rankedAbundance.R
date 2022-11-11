@@ -6,7 +6,7 @@
 #' @param method string defining the ranking strategy by which to order the taxa. Accepted values are 'median','max','q3',and 'variance'. Note that taxa that return a value of 0 for a given method will not be included in the results.
 #' @param cutoff integer indicating the maximium number of taxa to be kept after ranking.
 #' @param verbose boolean indicating if timed logging is desired
-#' @return ComputedResult object
+#' @return ComputeResult object
 #' @import veupathUtils
 #' @import data.table
 #' @importFrom S4Vectors SimpleList
@@ -59,8 +59,9 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
 
     veupathUtils::logWithTime("Finished ranking taxa", verbose)
     
-    result <- new("ComputedResult")
+    result <- new("ComputeResult")
     result@name <- 'rankedAbundance'
+    result@recordIdColumn <- recordIdColumn
     result@data <- dt
 
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)

@@ -18,11 +18,11 @@ check_compute_result <- function(object) {
       errors <- c(errors, msg)
     }
 
-    var_classes <- unlist(lapply(as.list(variables), function(x) {x@variableClass}))
-    if (!all(var_classes %in% 'computed')) {
-      msg <- paste("Some specified computed variables have the wrong variable class.")
-      errors <- c(errors, msg) 
-    }
+    #var_classes <- unlist(lapply(as.list(variables), function(x) {x@variableClass}))
+    #if (!all(var_classes %in% 'computed')) {
+    #  msg <- paste("Some specified computed variables have the wrong variable class.")
+    #  errors <- c(errors, msg) 
+    #}
 
     # think we always want a data.table by now, not sure how to enforce that in the class def
     if (!'data.table' %in% class(object@data)) {
@@ -71,12 +71,12 @@ check_abundance_data <- function(object) {
       errors <- c(errors, msg) 
     }
 
-    if (!record_id_col %in% names(object@data)) {
+    if (!record_id_col %in% names(df)) {
       msg <- paste("Record ID column is not present in abundance data.frame")
       errors <- c(errors, msg)
     }
 
-    if (!all(unlist(lapply(df[, -..record_id_col], is.numeric)))) {
+    if (!all(unlist(lapply(df[, !(names(df) %in% record_id_col)], is.numeric)))) {
       msg <- paste("All columns except the record ID column must be numeric")
       errors <- c(errors, msg)
     }

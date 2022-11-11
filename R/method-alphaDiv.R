@@ -5,7 +5,7 @@
 #' @param data AbundanceData object
 #' @param method string defining the the alpha diversity method. Accepted values are 'shannon','simpson', and 'evenness'
 #' @param verbose boolean indicating if timed logging is desired
-#' @return ComputedResult object
+#' @return ComputeResult object
 #' @importFrom vegan diversity
 #' @importFrom stringi stri_trans_totitle
 #' @import veupathUtils
@@ -52,8 +52,9 @@ setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('sha
       computedVarLabel <- "Pielou\'s Evenness"
     }
 
-    result <- new("ComputedResult")
+    result <- new("ComputeResult")
     result@name <- 'alphaDiv'
+    result@recordIdColumn <- recordIdColumn
 
     # Handle errors or return positive computeMessage
     if (veupathUtils::is.error(alphaDivDT)) {

@@ -6,7 +6,7 @@
 #' @param method string defining the the beta diversity dissimilarity method. Accepted values are 'bray','jaccard', and 'jsd'
 #' @param k integer determining the number of pcoa axes to return
 #' @param verbose boolean indicating if timed logging is desired
-#' @return ComputedResult object
+#' @return ComputeResult object
 #' @importFrom Rcpp sourceCpp
 #' @importFrom vegan vegdist
 #' @importFrom ape pcoa
@@ -58,8 +58,9 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
       stop('Unaccepted dissimilarity method. Accepted methods are bray, jaccard, and jsd.')
     }
     
-    result <- new("ComputedResult")
+    result <- new("ComputeResult")
     result@name <- 'betaDiv'
+    result@recordIdColumn <- recordIdColumn
 
     # Handle errors or return positive computeMessage
     if (veupathUtils::is.error(dist)) {
