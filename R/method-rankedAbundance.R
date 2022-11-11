@@ -24,7 +24,6 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
-    naToZero <- veupathUtils::matchArg(naToZero)
     verbose <- veupathUtils::matchArg(verbose)
 
     # Check that incoming df meets requirements
@@ -61,6 +60,7 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
     veupathUtils::logWithTime("Finished ranking taxa", verbose)
     
     result <- new("ComputedResult")
+    result@name <- 'rankedAbundance'
     result@data <- dt
 
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
@@ -91,4 +91,5 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
     validObject(result)
     veupathUtils::logWithTime(paste('Ranked abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', cutoff =', cutoff, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
 
-    return(result)}
+    return(result)
+  })

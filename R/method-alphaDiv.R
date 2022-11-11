@@ -53,6 +53,7 @@ setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('sha
     }
 
     result <- new("ComputedResult")
+    result@name <- 'alphaDiv'
 
     # Handle errors or return positive computeMessage
     if (veupathUtils::is.error(alphaDivDT)) {
@@ -61,13 +62,14 @@ setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('sha
       
       # Return only recordIdColumn and expected attributes
       dt <- df[, ..recordIdColumn]
+      result@data <- dt
       
       result@computationDetails = computeMessage
       result@computedVariableMetadata <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(veupathUtils::VariableMetadata()))
       
       veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters, method=', method), verbose)
       
-      return(dt)
+      return(result)
       
     } else {
       computeMessage <- paste('Computed', method, 'alpha diversity.')
@@ -82,7 +84,7 @@ setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('sha
 
     entity <- veupathUtils::strSplit(recordIdColumn, ".", 4, 1)
     result@computationDetails <- computeMessage
-    result@parameters <- method
+    result@parameters <- paste('method =', method)
 
     computedVariableMetadata <- veupathUtils::VariableMetadata(
                  variableClass = veupathUtils::VariableClass(value = "computed"),

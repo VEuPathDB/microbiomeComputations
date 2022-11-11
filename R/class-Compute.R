@@ -6,6 +6,11 @@ setOldClass(c("data.table", "data.frame"))
 check_compute_result <- function(object) {
     errors <- character()
     variables <- object@computedVariableMetadata
+
+    if (length(object@name) != 1) {
+      msg <- "Compute result name must have a single value."
+      errors <- c(errors, msg) 
+    }
    
     col_names <- unlist(lapply(as.list(variables), function(x) {veupathUtils::getColName(x@variableSpec)}))
     if (!all(col_names %in% names(object@data))) {
@@ -17,6 +22,12 @@ check_compute_result <- function(object) {
     if (!all(var_classes %in% 'computed')) {
       msg <- paste("Some specified computed variables have the wrong variable class.")
       errors <- c(errors, msg) 
+    }
+
+    # think we always want a data.table by now, not sure how to enforce that in the class def
+    if (!'data.table' %in% class(object@data)) {
+      msg <- paste("Compute result data object should be a data.table")
+      errors <- c(errors, msg)
     }
 
     return(if (length(errors) == 0) TRUE else errors)
@@ -37,12 +48,14 @@ check_compute_result <- function(object) {
 #' @rdname ComputeResult-class
 #' @export
 ComputeResult <- setClass("ComputeResult", representation(
+    name = 'character',
     data = 'data.frame',
     recordIdColumn = 'character',
     computedVariableMetadata = 'VariableMetadataList',
     computationDetails = 'character',
     parameters = 'character'
 ), prototype = prototype(
+    name = NA_character_,
     recordIdColumn = NA_character_,
     computationDetails = NA_character_,
     parameters = NA_character_
