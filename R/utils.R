@@ -49,14 +49,3 @@ rankTaxa <- function(df, method=c('median','max','q3','variance')) {
     return(ranked)
 }
 
-# Proof of principle. Needs additional nice inputs and tmp directories and such.
-writeAppDataToFile <- function(appResults, filename="file.tab") {
-  
-  # make one large dt
-  dt <- Reduce(function(...) merge(..., all = TRUE, by='SampleID'), appResults)
-  
-  # Write to file
-  data.table::fwrite(dt, file=filename)
-  
-  return(filename)
-}
