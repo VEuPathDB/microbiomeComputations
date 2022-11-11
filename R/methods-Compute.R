@@ -31,7 +31,7 @@ setMethod("writeMeta", signature("ComputeResult"), function(object, pattern = NU
   veupathUtils::logWithTime(paste('New output file written:', outFileName), verbose)
 
   return(outFileName)
-}
+})
 
 #' Write Compute Result Data
 #'
@@ -48,7 +48,7 @@ setGeneric("writeData",
 )
 
 #'@export 
-setMethod("writeData", signature("object"), function(object, pattern = NULL, verbose = c(TRUE, FALSE)) {
+setMethod("writeData", signature("ComputeResult"), function(object, pattern = NULL, verbose = c(TRUE, FALSE)) {
   verbose <- veupathUtils::matchArg(verbose)
 
   if (is.null(pattern)) { 
@@ -64,7 +64,7 @@ setMethod("writeData", signature("object"), function(object, pattern = NULL, ver
   veupathUtils::logWithTime(paste('New output file written:', outFileName), verbose)
 
   return(outFileName)
-}
+})
 
 # someday well have a stats endpoint in use. may differ a lot from one compute type to another though
 # maybe at least wait until we have the heatmap better sorted before writing methods etc
