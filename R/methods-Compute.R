@@ -8,7 +8,7 @@
 #' @return filehandle where JSON representation of ComputedVariableMetadata can be found
 #' @export
 setGeneric("writeMeta",
-  function(object, pattern, verbose) standardGeneric("writeMeta"),
+  function(object, pattern = NULL, verbose = c(TRUE, FALSE)) standardGeneric("writeMeta"),
   signature = c("object")
 )
 
@@ -43,7 +43,7 @@ setMethod("writeMeta", signature("ComputeResult"), function(object, pattern = NU
 #' @return filehandle where tab delimited representation of result data can be found
 #' @export
 setGeneric("writeData",
-  function(object, pattern, verbose) standardGeneric("writeData"),
+  function(object, pattern = NULL, verbose = c(TRUE, FALSE)) standardGeneric("writeData"),
   signature = c("object")
 )
 

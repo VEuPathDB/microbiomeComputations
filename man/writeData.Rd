@@ -4,7 +4,7 @@
 \alias{writeData}
 \title{Write Compute Result Data}
 \usage{
-writeData(object, pattern, verbose)
+writeData(object, pattern = NULL, verbose = c(TRUE, FALSE))
 }
 \arguments{
 \item{object}{ComputeResult}

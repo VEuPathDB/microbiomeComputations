@@ -4,7 +4,7 @@
 \alias{writeMeta}
 \title{Write Computed Variable Metadata}
 \usage{
-writeMeta(object, pattern, verbose)
+writeMeta(object, pattern = NULL, verbose = c(TRUE, FALSE))
 }
 \arguments{
 \item{object}{ComputeResult}
