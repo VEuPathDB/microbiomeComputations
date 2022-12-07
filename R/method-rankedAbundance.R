@@ -21,6 +21,8 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
     df <- data@data
     recordIdColumn <- data@recordIdColumn
     naToZero <- data@imputeZero
+    ancestorIdColumns <- data@ancestorIdColumns
+    allIdColumns <- c(ancestorIdColumns, recordIdColumn)
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
@@ -41,7 +43,7 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
     }
 
     # Reshape back to sample, taxonomicLevel, abundance
-    formattedDT <- data.table::melt(df, measure.vars=colnames(df[, -..recordIdColumn]), variable.factor=F, variable.name='TaxonomicLevel', value.name="Abundance")
+    formattedDT <- data.table::melt(df, measure.vars=colnames(df[, -..allIdColumns]), variable.factor=F, variable.name='TaxonomicLevel', value.name="Abundance")
 
     rankedTaxa <- rankTaxa(formattedDT, method)
 
@@ -54,7 +56,7 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
       isCutoff <- TRUE
     }
 
-    keepCols <- c(recordIdColumn, topN)
+    keepCols <- c(allIdColumns, topN)
     dt = df[, ..keepCols]
 
     veupathUtils::logWithTime("Finished ranking taxa", verbose)
@@ -62,7 +64,7 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
     result <- new("ComputeResult")
     result@name <- 'rankedAbundance'
     result@recordIdColumn <- recordIdColumn
-    result@data <- dt
+    result@ancestorIdColumns <- ancestorIdColumns
 
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
     result@computationDetails <- computeMessage
@@ -70,7 +72,7 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
     # also, not sure isCutoff is a param, maybe put it in computationDetails?
     result@parameters <- paste0('method = ',method, ', isCutoff = ', isCutoff)
 
-    collectionMemberVariableIds <- unlist(lapply(names(dt[, -..recordIdColumn]), veupathUtils::strSplit, ".", 4, 2))
+    collectionMemberVariableIds <- unlist(lapply(names(dt[, -..allIdColumns]), veupathUtils::strSplit, ".", 4, 2))
 
     makeVariableSpecs <- function(variableId) {
 	    veupathUtils::VariableSpec(variableId = variableId, entityId = entity)
@@ -90,7 +92,9 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
       )
     
     result@computedVariableMetadata <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
-    
+    names(dt) <- stripEntityIdFromColumnHeader(names(dt))
+    result@data <- dt
+
     validObject(result)
     veupathUtils::logWithTime(paste('Ranked abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', cutoff =', cutoff, ', naToZero = ', naToZero, ', verbose =', verbose), verbose)
 
