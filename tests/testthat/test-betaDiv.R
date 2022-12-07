@@ -9,19 +9,19 @@ test_that('betaDiv returns a correctly formatted data.table', {
   dt <- betaDiv(data, method='bray', verbose=F)@data
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), c('entity.SampleID','entity.Axis1','entity.Axis2'))
+  expect_equal(names(dt), c('SampleID','Axis1','Axis2'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character','numeric','numeric'))
   
   dt <- betaDiv(data, method='jaccard', verbose=F)@data
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), c('entity.SampleID','entity.Axis1','entity.Axis2'))
+  expect_equal(names(dt), c('SampleID','Axis1','Axis2'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character','numeric','numeric'))
   
   dt <- betaDiv(data, method='jsd', verbose=F)@data
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), c('entity.SampleID','entity.Axis1','entity.Axis2'))
+  expect_equal(names(dt), c('SampleID','Axis1','Axis2'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character','numeric','numeric'))
   
   # With NAs
@@ -41,7 +41,7 @@ test_that('betaDiv returns a correctly formatted data.table', {
   dt <- betaDiv(data, method='bray', verbose=F)@data
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), c('entity.SampleID','entity.Axis1','entity.Axis2'))
+  expect_equal(names(dt), c('SampleID','Axis1','Axis2'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character','numeric','numeric'))
   expect_true(sum(dt > 0) > 100)   # ensure output is not all 0
   

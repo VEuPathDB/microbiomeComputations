@@ -9,25 +9,25 @@ test_that('rankedAbundance returns a correctly formatted data.table', {
   dt <- rankedAbundance(data, method='max', verbose=F)@data
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), paste0('entity.',c('SampleID','Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella')))
+  expect_equal(names(dt), c('SampleID','Gilliamella','Tyzzerella','Pseudomonas','Klebsiella','unclassified Chloroplast','Lactobacillus','unclassified Enterobacterales','Serratia','Frischella','Bombella'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character', rep('numeric',10)))
   
   dt <- rankedAbundance(data, method='median', verbose=F)@data
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), paste0('entity.',c('SampleID','Lactobacillus','Snodgrassella','Gilliamella','Bifidobacterium','Frischella','Commensalibacter','unclassified Mitochondria','unclassified Rhizobiaceae','unclassified Chloroplast','Bombella')))
+  expect_equal(names(dt), c('SampleID','Lactobacillus','Snodgrassella','Gilliamella','Bifidobacterium','Frischella','Commensalibacter','unclassified Mitochondria','unclassified Rhizobiaceae','unclassified Chloroplast','Bombella'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character', rep('numeric',10)))
   
   dt <- rankedAbundance(data, method='variance', verbose=F)@data
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), paste0('entity.',c('SampleID','Lactobacillus','Gilliamella','Bombella','Snodgrassella','Klebsiella','unclassified Rhizobiaceae','unclassified Enterobacterales','Fructobacillus','Pseudomonas','unclassified Chloroplast')))
+  expect_equal(names(dt), c('SampleID','Lactobacillus','Gilliamella','Bombella','Snodgrassella','Klebsiella','unclassified Rhizobiaceae','unclassified Enterobacterales','Fructobacillus','Pseudomonas','unclassified Chloroplast'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character', rep('numeric',10)))
   
   dt <- rankedAbundance(data, method='q3', verbose=F)@data
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), paste0('entity.',c('SampleID','Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella')))
+  expect_equal(names(dt), c('SampleID','Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character', rep('numeric',10)))
 
   # With NAs
@@ -47,7 +47,7 @@ test_that('rankedAbundance returns a correctly formatted data.table', {
   dt <- rankedAbundance(data, method='q3', verbose=F)@data
   expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), paste0('entity.',c('SampleID','Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella')))
+  expect_equal(names(dt), c('SampleID','Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character', rep('numeric',10)))
   expect_equal(sum(dt > 0), 2847)   # ensure output is not all 0s.
 
