@@ -26,6 +26,8 @@ check_compute_result <- function(object) {
     #  errors <- c(errors, msg) 
     #}
 
+    #TODO check that data col headers dont have entityID prepended
+
     # think we always want a data.table by now, not sure how to enforce that in the class def
     if (!'data.table' %in% class(object@data)) {
       msg <- paste("Compute result data object should be a data.table")
@@ -53,6 +55,7 @@ ComputeResult <- setClass("ComputeResult", representation(
     name = 'character',
     data = 'data.frame',
     recordIdColumn = 'character',
+    ancestorIdColumns = 'character',
     computedVariableMetadata = 'VariableMetadataList',
     computationDetails = 'character',
     parameters = 'character'
@@ -67,6 +70,7 @@ check_abundance_data <- function(object) {
     errors <- character()
     df <- object@data
     record_id_col <- object@recordIdColumn
+    ancestor_id_cols <- object@ancestorIdColumns
     
     if (length(record_id_col) != 1) {
       msg <- "Record ID column must have a single value."
@@ -78,15 +82,23 @@ check_abundance_data <- function(object) {
       errors <- c(errors, msg)
     }
 
+    if (!!length(ancestor_id_cols)) {
+      if (!all(ancestor_id_cols %in% names(df))) {
+        msg <- paste("Not all ancestor ID columns are present in abundance data.frame")
+        errors <- c(errors, msg)
+      }
+    }
+
     if (!all(unlist(lapply(df[, !(names(df) %in% record_id_col)], is.numeric)))) {
       msg <- paste("All columns except the record ID column must be numeric")
       errors <- c(errors, msg)
     }
 
-    if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
-      msg <- paste("All columns must belong to the same entity.")
-      errors <- c(errors, msg)
-    }
+    #TODO exclude ancestors from this
+    #if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
+    #  msg <- paste("All columns must belong to the same entity.")
+    #  errors <- c(errors, msg)
+    #}
 
     return(if (length(errors) == 0) TRUE else errors)
 }
@@ -105,6 +117,7 @@ check_abundance_data <- function(object) {
 AbundanceData <- setClass("AbundanceData", representation(
     data = 'data.frame',
     recordIdColumn = 'character',
+    ancestorIdColumns = 'character',
     imputeZero = 'logical'
 ), prototype = prototype(
     recordIdColumn = NA_character_,
