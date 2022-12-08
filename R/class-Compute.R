@@ -27,6 +27,7 @@ check_compute_result <- function(object) {
     #}
 
     #TODO check that data col headers dont have entityID prepended
+    #TODO check col order for ids matches the order of ancestorIds, recordId
 
     # think we always want a data.table by now, not sure how to enforce that in the class def
     if (!'data.table' %in% class(object@data)) {
@@ -89,10 +90,10 @@ check_abundance_data <- function(object) {
       }
     }
 
-    if (!all(unlist(lapply(df[, !(names(df) %in% record_id_col)], is.numeric)))) {
-      msg <- paste("All columns except the record ID column must be numeric")
-      errors <- c(errors, msg)
-    }
+    #if (!all(unlist(lapply(df[, !(names(df) %in% record_id_col)], is.numeric)))) {
+    #  msg <- paste("All columns except the record ID column must be numeric")
+    #  errors <- c(errors, msg)
+    #}
 
     #TODO exclude ancestors from this
     #if (uniqueN(veupathUtils::strSplit(names(df), ".", ncol=2, index=1)) > 1) {
