@@ -67,21 +67,8 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
 
     # Handle errors or return positive computeMessage
     if (veupathUtils::is.error(dist)) {
-      
-      computeMessage <- paste('Error: beta diversity', method, 'failed:', attr(dist,'condition')$message)
-      
-      # Return only recordIdColumn and expected attributes
-      dt <- df[, ..allIdColumns]
-      result@data <- dt
-      
-      result@computationDetails <- computeMessage
-
-      result@computedVariableMetadata <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(veupathUtils::VariableMetadata()))
-
       veupathUtils::logWithTime(paste('Beta diversity computation FAILED with parameters method=', method, ', k=', k), verbose)
-      
-      return(result)
-      
+      stop() 
     } else {
       veupathUtils::logWithTime("Computed dissimilarity matrix.", verbose)
       computeMessage <- paste(method, "dissimilarity matrix computation successful.")

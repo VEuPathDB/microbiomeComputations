@@ -61,20 +61,8 @@ setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('sha
 
     # Handle errors or return positive computeMessage
     if (veupathUtils::is.error(alphaDivDT)) {
-      
-      computeMessage <- paste('Error: alpha diversity', method, 'failed:', attr(alphaDivDT,'condition')$message)
-      
-      # Return only recordIdColumn and expected attributes
-      dt <- df[, -..allIdColumns]
-      result@data <- dt
-      
-      result@computationDetails = computeMessage
-      result@computedVariableMetadata <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(veupathUtils::VariableMetadata()))
-      
-      veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters, method=', method), verbose)
-      
-      return(result)
-      
+      veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters, method =', method), verbose)
+      stop() 
     } else {
       computeMessage <- paste('Computed', method, 'alpha diversity.')
       veupathUtils::logWithTime(paste(method, 'alpha diversity computation complete.'), verbose)
