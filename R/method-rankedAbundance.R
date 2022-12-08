@@ -22,7 +22,7 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
     recordIdColumn <- data@recordIdColumn
     naToZero <- data@imputeZero
     ancestorIdColumns <- data@ancestorIdColumns
-    allIdColumns <- c(ancestorIdColumns, recordIdColumn)
+    allIdColumns <- c(recordIdColumn, ancestorIdColumns)
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)

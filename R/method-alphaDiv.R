@@ -21,7 +21,7 @@ setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('sha
     df <- data@data
     recordIdColumn <- data@recordIdColumn
     ancestorIdColumns <- data@ancestorIdColumns
-    allIdColumns <- c(ancestorIdColumns, recordIdColumn)
+    allIdColumns <- c(recordIdColumn, ancestorIdColumns)
     naToZero <- data@imputeZero
 
     # Initialize and check inputs
