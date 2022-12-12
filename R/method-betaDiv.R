@@ -40,6 +40,8 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
 
+    naToZero <- FALSE
+    print("setting naToZero to FALSE for testing")
     if (naToZero) {
       # Replace NA values with 0
       veupathUtils::setNaToZero(df)
