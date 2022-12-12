@@ -40,8 +40,7 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
 
-    naToZero <- FALSE
-    print("setting naToZero to FALSE for testing")
+
     if (naToZero) {
       # Replace NA values with 0
       veupathUtils::setNaToZero(df)
@@ -49,9 +48,10 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
     }
 
     # Compute beta diversity using given dissimilarity method
+    print("testing binary=F")
     if (identical(method, 'bray') | identical(method, 'jaccard')) {
 
-      dist <- try(vegan::vegdist(df[, -..allIdColumns], method=method, binary=TRUE))
+      dist <- try(vegan::vegdist(df[, -..allIdColumns], method=method, binary=FALSE))
 
     } else if (identical(method, 'jsd')) {
 
