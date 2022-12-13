@@ -27,6 +27,7 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
     naToZero <- data@imputeZero
     ancestorIdColumns <- data@ancestorIdColumns
     allIdColumns <- c(recordIdColumn, ancestorIdColumns)
+    print(df)
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
