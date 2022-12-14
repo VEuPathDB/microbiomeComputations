@@ -21,19 +21,19 @@ check_compute_result <- function(object) {
     }
    
     # TODO think this isnt working for collections
-    col_names <- veupathUtils::findAllColNames(variables)
+    col_names <- stripEntityIdFromColumnHeader(veupathUtils::findAllColNames(variables))
     if (!all(col_names %in% names(object@data))) {
       msg <- paste("Some specified computed variables are not present in compute result data.frame")
       errors <- c(errors, msg)
     }
 
-    var_classes <- unlist(lapply(as.list(variables), function(x) {x@variableClass}))
+    var_classes <- unlist(lapply(as.list(variables), function(x) {x@variableClass@value}))
     if (!all(var_classes %in% 'computed')) {
       msg <- paste("Some specified computed variables have the wrong variable class.")
       errors <- c(errors, msg) 
     }
 
-    if (grepl(".", names(object@data), fixed = TRUE)) {
+    if (any(grepl(".", names(object@data), fixed = TRUE))) {
       msg <- paste("Column headers appear to be in dot notation [entityId.variableId]. They should be the raw variableId.")
       errors <- c(errors, msg)
     }
