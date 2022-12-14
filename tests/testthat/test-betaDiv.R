@@ -76,29 +76,3 @@ test_that("betaDiv returns a data.table with the correct attributes" , {
   expect_equal(result@computedVariableMetadata[[1]]@displayName, 'Axis1 25.2%')
 
 })
-
-test_that("betaDiv fails gracefully", {
-  
-  df <- testOTU
-  df$entity.Abiotrophia <- NA
-  data <- microbiomeComputations::AbundanceData(
-              data = df,
-              recordIdColumn = 'entity.SampleID',
-              imputeZero = FALSE)
-  
-  result <- betaDiv(data, method='bray', verbose=T)
-  dt <- result@data
-
-  expect_equal(nrow(dt), nrow(df))
-  expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), 'entity.SampleID')
-  expect_equal(typeof(dt$entity.SampleID), c('character'))
-  expect_equal(result@computationDetails, "Error: beta diversity bray failed: missing values are not allowed with argument 'na.rm = FALSE'")
-  expect_equal(typeof(result@parameters), 'character')
-  expect_equal(typeof(result@computedVariableMetadata[[1]]@variableSpec@variableId), 'character')
-  expect_equal(typeof(result@computedVariableMetadata[[1]]@variableSpec@entityId), 'character')
-  expect_equal(typeof(result@computedVariableMetadata[[1]]@dataType@value), 'character')
-  expect_equal(typeof(result@computedVariableMetadata[[1]]@dataShape@value), 'character')
-  expect_equal(typeof(result@computedVariableMetadata[[1]]@displayName), 'character')
-  
-})
