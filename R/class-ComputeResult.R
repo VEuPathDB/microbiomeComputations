@@ -1,4 +1,4 @@
-# TODO tests
+# TODO tests for classes
 
 # so S4 will recognize data.table class as inheriting from data.frame
 setOldClass(c("data.table", "data.frame"))
@@ -20,7 +20,6 @@ check_compute_result <- function(object) {
       errors <- c(errors, msg)      
     }
    
-    # TODO think this isnt working for collections
     col_names <- stripEntityIdFromColumnHeader(veupathUtils::findAllColNames(variables))
     if (!all(col_names %in% names(object@data))) {
       msg <- paste("Some specified computed variables are not present in compute result data.frame")
@@ -40,7 +39,7 @@ check_compute_result <- function(object) {
     
     expectedOutputIdColHeaders <- stripEntityIdFromColumnHeader(c(object@recordIdColumn, object@ancestorIdColumns))
     actualOutputIdColHeaders <- names(object@data)[1:length(expectedOutputIdColHeaders)]
-    if (expectedOutputIdColHeaders != actualOutputIdColHeaders) {
+    if (all(expectedOutputIdColHeaders != actualOutputIdColHeaders)) {
       msg <- paste("Columns must be ordered by recordIdColumn, ancestorIdColumns, and then data columns.")
       errors <- c(errors, msg) 
     }
