@@ -25,6 +25,8 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
     df <- data@data
     recordIdColumn <- data@recordIdColumn
     naToZero <- data@imputeZero
+    ancestorIdColumns <- data@ancestorIdColumns
+    allIdColumns <- c(recordIdColumn, ancestorIdColumns)
 
     # Initialize and check inputs
     method <- veupathUtils::matchArg(method)
@@ -47,11 +49,11 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
     # Compute beta diversity using given dissimilarity method
     if (identical(method, 'bray') | identical(method, 'jaccard')) {
 
-      dist <- try(vegan::vegdist(df[, -..recordIdColumn], method=method, binary=TRUE))
+      dist <- try(vegan::vegdist(df[, -..allIdColumns], method=method, binary=TRUE))
 
     } else if (identical(method, 'jsd')) {
 
-      dfMat <- matrix(as.numeric(unlist(df[, -..recordIdColumn])), nrow=nrow(df))
+      dfMat <- matrix(as.numeric(unlist(df[, -..allIdColumns])), nrow=nrow(df))
       dist <- try({dist <- jsd(t(dfMat)); dist <- as.dist(dist)})
 
     } else {
@@ -61,24 +63,12 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
     result <- new("ComputeResult")
     result@name <- 'betaDiv'
     result@recordIdColumn <- recordIdColumn
+    result@ancestorIdColumns <- ancestorIdColumns
 
     # Handle errors or return positive computeMessage
     if (veupathUtils::is.error(dist)) {
-      
-      computeMessage <- paste('Error: beta diversity', method, 'failed:', attr(dist,'condition')$message)
-      
-      # Return only recordIdColumn and expected attributes
-      dt <- df[, ..recordIdColumn]
-      result@data <- dt
-      
-      result@computationDetails <- computeMessage
-
-      result@computedVariableMetadata <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(veupathUtils::VariableMetadata()))
-
       veupathUtils::logWithTime(paste('Beta diversity computation FAILED with parameters method=', method, ', k=', k), verbose)
-      
-      return(result)
-      
+      stop() 
     } else {
       veupathUtils::logWithTime("Computed dissimilarity matrix.", verbose)
       computeMessage <- paste(method, "dissimilarity matrix computation successful.")
@@ -87,12 +77,13 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
     # Ordination
     pcoa <- ape::pcoa(dist)
     dt <- data.table::as.data.table(pcoa$vectors)
+    dt <- dt[, 1:k]
     # Remove dots from names
     data.table::setnames(dt, stringi::stri_replace_all_fixed(names(dt),".",""))
     computeMessage <- paste(computeMessage, "PCoA returned results for", ncol(dt), "dimensions.")
 
-    dt[[recordIdColumn]] <- df[[recordIdColumn]]
-    data.table::setcolorder(dt, recordIdColumn)
+    dt <- cbind(dt, df[, ..allIdColumns])
+    data.table::setcolorder(dt, allIdColumns)
     veupathUtils::logWithTime("Finished ordination step.", verbose)
 
     # Extract percent variance
@@ -103,14 +94,12 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
     # We should keep the same number of percentVar values as cols in the data table. However, i think we're letting the user download lots of columns? So perhaps we shouldn't have k at all? A plot can use however many it needs.
     # For now returning data and percentVar for how much is in the plot.
     percentVar <- percentVar[1:k]
-    keepCols <- c(recordIdColumn,names(dt)[2:(k+1)])
-    dt <- dt[, ..keepCols]
     
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
     result@computationDetails <- paste(computeMessage, ', pcoaVariance =', percentVar)
     result@parameters <- paste('method =', method)   
     
-    axesNames <- names(dt[, -..recordIdColumn])
+    axesNames <- names(dt[, -..allIdColumns])
     displayNames <- paste0(axesNames, " ", sprintf(percentVar,fmt = '%#.1f'), "%")
 
     makeVariableMetadataObject <- function(displayName) {
@@ -133,9 +122,7 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
     computedVariableMetadata <- veupathUtils::VariableMetadataList(lapply(displayNames, makeVariableMetadataObject))
 
     result@computedVariableMetadata <- computedVariableMetadata
-    
-    # Add entity to column names
-    data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))
+    names(dt) <- stripEntityIdFromColumnHeader(names(dt))
     result@data <- dt
 
     validObject(result)

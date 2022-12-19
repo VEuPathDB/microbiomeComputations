@@ -49,3 +49,9 @@ rankTaxa <- function(df, method=c('median','max','q3','variance')) {
     return(ranked)
 }
 
+stripEntityIdFromColumnHeader <- function(columnNames) {
+  columnsToFix <- grepl(".", columnNames, fixed=T)
+  columnNames[columnsToFix] <- veupathUtils::strSplit(columnNames[columnsToFix], ".", index=2)
+
+  return(columnNames)
+}

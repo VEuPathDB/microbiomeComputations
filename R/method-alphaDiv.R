@@ -20,6 +20,8 @@ setGeneric("alphaDiv",
 setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('shannon','simpson','evenness'), verbose = c(TRUE, FALSE)) {
     df <- data@data
     recordIdColumn <- data@recordIdColumn
+    ancestorIdColumns <- data@ancestorIdColumns
+    allIdColumns <- c(recordIdColumn, ancestorIdColumns)
     naToZero <- data@imputeZero
 
     # Initialize and check inputs
@@ -43,65 +45,52 @@ setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('sha
     # Compute alpha diversity
     if (identical(method, 'shannon') | identical(method, 'simpson')){
 
-      alphaDivDT <- try(vegan::diversity(df[, -..recordIdColumn], method))
+      alphaDivDT <- try(vegan::diversity(df[, -..allIdColumns], method))
       computedVarLabel <- paste(stringi::stri_trans_totitle(method), 'Diversity')
 
     } else if (identical(method, 'evenness')) {
 
-      alphaDivDT <- try(vegan::diversity(df[, -..recordIdColumn], 'shannon') / log(vegan::specnumber(df)))
+      alphaDivDT <- try(vegan::diversity(df[, -..allIdColumns], 'shannon') / log(vegan::specnumber(df)))
       computedVarLabel <- "Pielou\'s Evenness"
     }
 
     result <- new("ComputeResult")
     result@name <- 'alphaDiv'
     result@recordIdColumn <- recordIdColumn
+    result@ancestorIdColumns <- ancestorIdColumns
 
     # Handle errors or return positive computeMessage
     if (veupathUtils::is.error(alphaDivDT)) {
-      
-      computeMessage <- paste('Error: alpha diversity', method, 'failed:', attr(alphaDivDT,'condition')$message)
-      
-      # Return only recordIdColumn and expected attributes
-      dt <- df[, ..recordIdColumn]
-      result@data <- dt
-      
-      result@computationDetails = computeMessage
-      result@computedVariableMetadata <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(veupathUtils::VariableMetadata()))
-      
-      veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters, method=', method), verbose)
-      
-      return(result)
-      
+      veupathUtils::logWithTime(paste('Alpha diversity computation FAILED with parameters, method =', method), verbose)
+      stop() 
     } else {
       computeMessage <- paste('Computed', method, 'alpha diversity.')
       veupathUtils::logWithTime(paste(method, 'alpha diversity computation complete.'), verbose)
     }
 
     # Assemble data table
-    dt <- data.table('SampleID'= df[[recordIdColumn]],
-                      'alphaDiv' = alphaDivDT)
-
-    data.table::setnames(dt, c(recordIdColumn,'alphaDiversity'))
+    dt <- as.data.table(df[, ..allIdColumns])
+    dt$alphaDiversity <- alphaDivDT
 
     entity <- veupathUtils::strSplit(recordIdColumn, ".", 4, 1)
     result@computationDetails <- computeMessage
     result@parameters <- paste('method =', method)
+    result@recordIdColumn <- recordIdColumn
+    result@ancestorIdColumns <- ancestorIdColumns
 
     computedVariableMetadata <- veupathUtils::VariableMetadata(
                  variableClass = veupathUtils::VariableClass(value = "computed"),
-                 variableSpec = veupathUtils::VariableSpec(variableId = names(dt[, -..recordIdColumn]), entityId = entity),
+                 variableSpec = veupathUtils::VariableSpec(variableId = names(dt[, -..allIdColumns]), entityId = entity),
                  plotReference = veupathUtils::PlotReference(value = "yAxis"),
                  displayName = computedVarLabel,
                  displayRangeMin = 0,
-                 displayRangeMax = 1,
+                 displayRangeMax = max(max(dt$alphaDiversity, na.rm = TRUE),1),
                  dataType = veupathUtils::DataType(value = "NUMBER"),
                  dataShape = veupathUtils::DataShape(value = "CONTINUOUS")
       )
       
     result@computedVariableMetadata <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
-    
-    # Add entity to column names
-    data.table::setnames(dt, names(dt[, -..recordIdColumn]), paste0(entity,".",names(dt[, -..recordIdColumn])))
+    names(dt) <- stripEntityIdFromColumnHeader(names(dt))
     result@data <- dt 
     
     validObject(result)
