@@ -1,5 +1,3 @@
-# TODO tests for classes
-
 # so S4 will recognize data.table class as inheriting from data.frame
 setOldClass(c("data.table", "data.frame"))
 
@@ -7,7 +5,7 @@ check_compute_result <- function(object) {
     errors <- character()
     variables <- object@computedVariableMetadata
 
-    if (!length(object@name)) {
+    if (is.na(object@name)) {
       msg <- "Compute result must have a name."
       errors <- c(errors, msg)
     } else if (length(object@name) != 1) {
@@ -45,10 +43,10 @@ check_compute_result <- function(object) {
     }
 
     # think we always want a data.table by now, not sure how to enforce that in the class def
-    if (!'data.table' %in% class(object@data)) {
-      msg <- paste("Compute result data object should be a data.table")
-      errors <- c(errors, msg)
-    }
+    #if (!'data.table' %in% class(object@data)) {
+    #  msg <- paste("Compute result data object should be a data.table")
+    #  errors <- c(errors, msg)
+    #}
 
     return(if (length(errors) == 0) TRUE else errors)
 }

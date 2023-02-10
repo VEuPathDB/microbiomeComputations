@@ -68,8 +68,6 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
 
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
     result@computationDetails <- computeMessage
-    # TODO this could be a named vector or something maybe instead
-    # also, not sure isCutoff is a param, maybe put it in computationDetails?
     result@parameters <- paste0('method = ',method, ', isCutoff = ', isCutoff)
 
     collectionMemberVariableIds <- unlist(lapply(names(dt[, -..allIdColumns]), veupathUtils::strSplit, ".", 4, 2))

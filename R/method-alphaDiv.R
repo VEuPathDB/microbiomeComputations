@@ -69,7 +69,7 @@ setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('sha
     }
 
     # Assemble data table
-    dt <- as.data.table(df[, ..allIdColumns])
+    dt <- data.table::as.data.table(df[, ..allIdColumns])
     dt$alphaDiversity <- alphaDivDT
 
     entity <- veupathUtils::strSplit(recordIdColumn, ".", 4, 1)
