@@ -34,7 +34,7 @@ test_that('ComputeResult validation works', {
               recordIdColumn = c('entity.SampleID'))
 
   expect_true(inherits(testing, 'AbundanceData'))
-  expect_equal(slotNames(testing), c('data', 'recordIdColumn', 'ancestorIdColumns', 'imputeZero'))
+  expect_equal(slotNames(testing), c('data', 'metadata', 'recordIdColumn', 'ancestorIdColumns', 'imputeZero'))
   expect_equal(nrow(testing@data), 288)
   expect_equal(ncol(testing@data), 909)
   expect_equal(testing@recordIdColumn, 'entity.SampleID')

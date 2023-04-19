@@ -37,7 +37,7 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
       data.table::setDT(df)
     }
 
-    # Check that incoming metadata meets requirements - consider moving to a validateOTU function or similar
+    # Check that incoming metadata meets requirements
     if (!'data.table' %in% class(metadata)) {
       data.table::setDT(metadata)
     }
@@ -54,22 +54,20 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
     ### Take values in groupA, groupB, and turn them into a binary variable
     ## To do
 
+    # Transpose abundance data to get a counts matrix with taxa on rows and samples as columns
+    cts <- data.table::transpose(df[, -..recordIdColumn])
+    rownames(cts) <- names(df[, -..recordIdColumn])
+    colnames(cts) <- df[[recordIdColumn]]
+
+    # Format metadata
+    rownames(metadata) <- metadata[[recordIdColumn]]
+    metadata <- metadata[, -..recordIdColumn]
+
     # Compute differential abundance
     if (identical(method, 'DESeq')) {
 
-      # Lots of the following may get moved outside this conditional if it matches the prep for ancombc as well
-      # Transpose abundance data to get a counts matrix with taxa on rows and samples as columns
-      ### ANN set_rownames??
-      cts <- data.table::transpose(df[, -..recordIdColumn])
-      rownames(cts) <- names(df[, -..recordIdColumn])
-      colnames(cts) <- df[[recordIdColumn]]
-
 
       # CHECK to ensure samples are in the same order for the cts and metadata dfs
-
-      # Format metadata
-      rownames(metadata) <- metadata[[recordIdColumn]]
-      metadata <- metadata[, -..recordIdColumn]
 
       # Create DESeqDataSet
       dds <- DESeq2::DESeqDataSetFromMatrix(countData = cts,
@@ -78,7 +76,7 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
                                             tidy = FALSE) # consider changing to true so dont have to format metadata
 
       # Estimate size factors before running deseq to avoid errors about 0 counts
-      geoMeans = apply(counts(dds), 1, function(x){exp(sum(log(x[x > 0]), na.rm=T) / length(x))})
+      geoMeans = apply(DESeq2::counts(dds), 1, function(x){exp(sum(log(x[x > 0]), na.rm=T) / length(x))})
       dds <- DESeq2::estimateSizeFactors(dds,geoMeans=geoMeans) # Alternatively let type ='iterate'. Pros/cons?
 
       # Run DESeq
@@ -96,6 +94,26 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
 
 
 
+    } else if (identical(method, 'ANCOMBC')) {
+
+      # se <- TreeSummarizedExperiment::TreeSummarizedExperiment(list(counts = cts), colData = metadata)
+
+      # output_abs = ancombc2(data = se, assay_name = "counts", tax_level = NULL,
+      #             fix_formula = comparisonVariable, rand_formula = NULL,
+      #             p_adj_method = "holm", pseudo = 0, pseudo_sens = TRUE,
+      #             prv_cut = 0.10, lib_cut = 0, s0_perc = 0.05,
+      #             group = comparisonVariable, struc_zero = FALSE, neg_lb = FALSE,
+      #             alpha = 0.05, n_cl = 2, verbose = TRUE,
+      #             global = FALSE, pairwise = FALSE, 
+      #             dunnet = FALSE, trend = FALSE,
+      #             iter_control = list(tol = 1e-5, max_iter = 20, 
+      #                                 verbose = FALSE),
+      #             em_control = list(tol = 1e-5, max_iter = 100),
+      #             lme_control = NULL, mdfdr_control = NULL, 
+      #             trend_control = NULL)
+
+    print('good try!!')
+
     } else {
       stop('Unaccepted dissimilarity method. Accepted methods are bray, jaccard, and jsd.')
     }
@@ -106,7 +124,6 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
     result@name <- 'differentialAbundance'
     result@recordIdColumn <- recordIdColumn
     result@ancestorIdColumns <- ancestorIdColumns
-    result@otherSlot <- 'hi'
     result@statistics <- statistics
 
     # # Handle errors or return positive computeMessage

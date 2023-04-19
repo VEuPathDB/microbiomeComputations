@@ -74,7 +74,7 @@ ComputeResult <- setClass("ComputeResult", representation(
     recordIdColumn = 'character',
     ancestorIdColumns = 'character',
     computedVariableMetadata = 'VariableMetadataList',
-    otherSlot = 'character',
+    statistics = 'data.frame',
     computedStatisticMetadata = 'VariableMetadataList',
     computationDetails = 'character',
     parameters = 'character'
