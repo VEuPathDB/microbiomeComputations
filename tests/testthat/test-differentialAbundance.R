@@ -19,7 +19,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
               metadata = metadata,
               recordIdColumn = 'entity.SampleID')
   
-  result <- differentialAbundance(data, method='DESeq', verbose=F)
+  result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = NULL, groupB = NULL, method='DESeq', verbose=F)
   dt <- result@data
   # expect_equal(nrow(dt), nrow(df)) want nrow(dt) = #unique taxa
   expect_s3_class(dt, 'data.table')

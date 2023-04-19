@@ -51,9 +51,13 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
+    ### Take values in groupA, groupB, and turn them into a binary variable
+    ## To do
+
     # Compute differential abundance
     if (identical(method, 'DESeq')) {
 
+      # Lots of the following may get moved outside this conditional if it matches the prep for ancombc as well
       # Transpose abundance data to get a counts matrix with taxa on rows and samples as columns
       ### ANN set_rownames??
       cts <- data.table::transpose(df[, -..recordIdColumn])
@@ -71,15 +75,11 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
       dds <- DESeq2::DESeqDataSetFromMatrix(countData = cts,
                                             colData = metadata,
                                             design = as.formula(paste("~",comparisonVariable)),
-                                            tidy = FALSE)
+                                            tidy = FALSE) # consider changing to true so dont have to format metadata
 
       # Estimate size factors before running deseq to avoid errors about 0 counts
-      # NEEDS TO MOVE calculate geometric means prior to estimate size factors
-      gm_mean = function(x, na.rm=TRUE){
-        exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
-      }
-      geoMeans = apply(counts(dds), 1, gm_mean)
-      dds <- DESeq2::estimateSizeFactors(dds,geoMeans=geoMeans)
+      geoMeans = apply(counts(dds), 1, function(x){exp(sum(log(x[x > 0]), na.rm=T) / length(x))})
+      dds <- DESeq2::estimateSizeFactors(dds,geoMeans=geoMeans) # Alternatively let type ='iterate'. Pros/cons?
 
       # Run DESeq
       deseq_output <- DESeq2::DESeq(dds)
@@ -87,16 +87,27 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
       # Extract results
       deseq_results <- DESeq2::results(deseq_output)
 
+      # Format results for us
+      statistics <- data.frame(log2FoldChange = deseq_results$log2FoldChange,
+                               pvalue = deseq_results$pvalue,
+                               adjustedPValue = deseq_results$padj,
+                               pointID = rownames(cts))
+
+
 
 
     } else {
       stop('Unaccepted dissimilarity method. Accepted methods are bray, jaccard, and jsd.')
     }
     
+    ## Make the result a Compute result. Return the samples that are left as the data. Return
+    # the rest as statistics
     result <- new("ComputeResult")
     result@name <- 'differentialAbundance'
-    # result@recordIdColumn <- recordIdColumn May be pointID now?
-    # result@ancestorIdColumns <- ancestorIdColumns  needed?
+    result@recordIdColumn <- recordIdColumn
+    result@ancestorIdColumns <- ancestorIdColumns
+    result@otherSlot <- 'hi'
+    result@statistics <- statistics
 
     # # Handle errors or return positive computeMessage
     # if (veupathUtils::is.error(dist)) {
@@ -107,59 +118,36 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
     #   computeMessage <- paste(method, "dissimilarity matrix computation successful.")
     # }
 
-    # Ordination
-    pcoa <- ape::pcoa(dist)
-    dt <- data.table::as.data.table(pcoa$vectors)
-    dt <- dt[, 1:k]
-    # Remove dots from names
-    data.table::setnames(dt, stringi::stri_replace_all_fixed(names(dt),".",""))
-    computeMessage <- paste(computeMessage, "PCoA returned results for", ncol(dt), "dimensions.")
-
-    dt <- cbind(dt, df[, ..allIdColumns])
-    data.table::setcolorder(dt, allIdColumns)
-    veupathUtils::logWithTime("Finished ordination step.", verbose)
-
-    # Extract percent variance
-    eigenvecs <- pcoa$values$Relative_eig
-    percentVar <- round(100*(eigenvecs / sum(eigenvecs)), 1)
-
-    # Keep dims 1:k
-    # We should keep the same number of percentVar values as cols in the data table. However, i think we're letting the user download lots of columns? So perhaps we shouldn't have k at all? A plot can use however many it needs.
-    # For now returning data and percentVar for how much is in the plot.
-    percentVar <- percentVar[1:k]
-    
     entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
-    result@computationDetails <- paste(computeMessage, ', pcoaVariance =', percentVar)
-    result@parameters <- paste('method =', method)   
+    # result@computationDetails <- paste(computeMessage, ', pcoaVariance =', percentVar)
+    # result@parameters <- paste('method =', method)   
     
-    axesNames <- names(dt[, -..allIdColumns])
-    displayNames <- paste0(axesNames, " ", sprintf(percentVar,fmt = '%#.1f'), "%")
+    
+    # makeVariableMetadataObject <- function(varName) {
+    #   #bit hacky, see if you can think of something better
+    #   plotRef <- ifelse(identical(varName, 'log2FoldChange'), 'xAxis', 'tooltip')
 
-    makeVariableMetadataObject <- function(displayName) {
-      axisName <- veupathUtils::strSplit(displayName, " ")
-      #bit hacky, see if you can think of something better
-      plotRef <- ifelse(grepl('Axis1', displayName, fixed=T), 'xAxis', 'yAxis')
+    #   veupathUtils::VariableMetadata(
+    #              variableClass = veupathUtils::VariableClass(value = "computed"),
+    #              variableSpec = veupathUtils::VariableSpec(variableId = varName, entityId = entity),
+    #              plotReference = veupathUtils::PlotReference(value = plotRef),
+    #             #  displayName = displayName, # Ann add logic for display name
+    #              displayRangeMin = min(dt[[axisName]]),
+    #              displayRangeMax = max(dt[[axisName]]),
+    #              dataType = veupathUtils::DataType(value = "NUMBER"),
+    #              dataShape = veupathUtils::DataShape(value = "CONTINUOUS")
+    #   )
+    # }
 
-      veupathUtils::VariableMetadata(
-                 variableClass = veupathUtils::VariableClass(value = "computed"),
-                 variableSpec = veupathUtils::VariableSpec(variableId = axisName, entityId = entity),
-                 plotReference = veupathUtils::PlotReference(value = plotRef),
-                 displayName = displayName,
-                 displayRangeMin = min(dt[[axisName]]),
-                 displayRangeMax = max(dt[[axisName]]),
-                 dataType = veupathUtils::DataType(value = "NUMBER"),
-                 dataShape = veupathUtils::DataShape(value = "CONTINUOUS")
-      )
-    }
-          
-    computedVariableMetadata <- veupathUtils::VariableMetadataList(lapply(displayNames, makeVariableMetadataObject))
+    ### This doesnot work yet...  
+    # computedStatisticMetadata <- veupathUtils::VariableMetadataList(lapply(displayNames, makeVariableMetadataObject))
 
-    result@computedVariableMetadata <- computedVariableMetadata
-    names(dt) <- stripEntityIdFromColumnHeader(names(dt))
-    result@data <- dt
+    # result@computedStatisticMetadata <- computedStatisticMetadata
+    # names(dt) <- stripEntityIdFromColumnHeader(names(dt))
+    result@data <- dt[[recordIdColumn]]
 
     validObject(result)
-    veupathUtils::logWithTime(paste('Beta diversity computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', k =', k, ', verbose =', verbose), verbose)
+    veupathUtils::logWithTime(paste('Differential abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', ..., verbose =', verbose), verbose)
     
     return(result)
 })
