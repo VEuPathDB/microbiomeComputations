@@ -41,7 +41,7 @@ check_abundance_data <- function(object) {
 #' A class for working with microbiome or ecological abundance data.
 #' 
 #' @slot data A data.frame of abundance values with species as columns and samples as rows
-#' @slot metadata A data.frame of metadata about the samples with samples as rows and metadata variables as columns
+#' @slot sampleMetadata A data.frame of metadata about the samples with samples as rows and metadata variables as columns
 #' @slot recordIdColumn The name of the column containing IDs for the samples. All other columns will be treated as abundance values.
 #' @slot ancestorIdColumns A character vector of column names representing parent entities of the recordIdColumn.
 #' @slot imputeZero A logical indicating whether NA/ null values should be replaced with zeros.
@@ -50,12 +50,11 @@ check_abundance_data <- function(object) {
 #' @export 
 AbundanceData <- setClass("AbundanceData", representation(
     data = 'data.frame',
-    metadata = 'data.frame',
+    sampleMetadata = 'data.frame',
     recordIdColumn = 'character',
     ancestorIdColumns = 'character',
     imputeZero = 'logical'
 ), prototype = prototype(
-    metadata = data.frame(SampleId = character()),
     recordIdColumn = NA_character_,
     imputeZero = TRUE
 ), validity = check_abundance_data)

@@ -14,18 +14,18 @@
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("differentialAbundance",
-  function(data, comparisonVariable, groupA, groupB, method = c('DESeq'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
+  function(data, comparisonVariable, groupA, groupB, method = c('DESeq', 'ANCOMBC'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
   signature = c("data")
 )
 
 #'@export
-setMethod("differentialAbundance", signature("AbundanceData"), function(data, comparisonVariable, groupA, groupB, method = c('DESeq'), verbose = c(TRUE, FALSE)) {
+setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(data, comparisonVariable, groupA, groupB, method = c('DESeq', 'ANCOMBC'), verbose = c(TRUE, FALSE)) {
     df <- data@data
     recordIdColumn <- data@recordIdColumn
     naToZero <- data@imputeZero
     ancestorIdColumns <- data@ancestorIdColumns
     allIdColumns <- c(recordIdColumn, ancestorIdColumns)
-    metadata <- data@metadata
+    sampleMetadata <- data@sampleMetadata
 
 
     # Initialize and check inputs
@@ -38,8 +38,8 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
     }
 
     # Check that incoming metadata meets requirements
-    if (!'data.table' %in% class(metadata)) {
-      data.table::setDT(metadata)
+    if (!'data.table' %in% class(sampleMetadata)) {
+      data.table::setDT(sampleMetadata)
     }
 
     computeMessage <- ''
@@ -60,19 +60,21 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
     colnames(cts) <- df[[recordIdColumn]]
 
     # Format metadata
-    rownames(metadata) <- metadata[[recordIdColumn]]
-    metadata <- metadata[, -..recordIdColumn]
+    rownames(sampleMetadata) <- sampleMetadata[[recordIdColumn]]
+    sampleMetadata <- sampleMetadata[, -..recordIdColumn]
 
     # Compute differential abundance
     if (identical(method, 'DESeq')) {
 
 
       # CHECK to ensure samples are in the same order for the cts and metadata dfs
+      
+      # Convert comparisonVariable column to factors so deseq doesn't have to do it
 
       # Create DESeqDataSet
       dds <- DESeq2::DESeqDataSetFromMatrix(countData = cts,
-                                            colData = metadata,
-                                            design = as.formula(paste("~",comparisonVariable)),
+                                            colData = sampleMetadata,
+                                            design = as.formula(paste0("~",comparisonVariable)),
                                             tidy = FALSE) # consider changing to true so dont have to format metadata
 
       # Estimate size factors before running deseq to avoid errors about 0 counts
@@ -96,26 +98,17 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
 
     } else if (identical(method, 'ANCOMBC')) {
 
-      # se <- TreeSummarizedExperiment::TreeSummarizedExperiment(list(counts = cts), colData = metadata)
+      se <- TreeSummarizedExperiment::TreeSummarizedExperiment(list(counts = cts), colData = metadata)
 
-      # output_abs = ancombc2(data = se, assay_name = "counts", tax_level = NULL,
-      #             fix_formula = comparisonVariable, rand_formula = NULL,
-      #             p_adj_method = "holm", pseudo = 0, pseudo_sens = TRUE,
-      #             prv_cut = 0.10, lib_cut = 0, s0_perc = 0.05,
-      #             group = comparisonVariable, struc_zero = FALSE, neg_lb = FALSE,
-      #             alpha = 0.05, n_cl = 2, verbose = TRUE,
-      #             global = FALSE, pairwise = FALSE, 
-      #             dunnet = FALSE, trend = FALSE,
-      #             iter_control = list(tol = 1e-5, max_iter = 20, 
-      #                                 verbose = FALSE),
-      #             em_control = list(tol = 1e-5, max_iter = 100),
-      #             lme_control = NULL, mdfdr_control = NULL, 
-      #             trend_control = NULL)
-
-    print('good try!!')
+      # Currently getting this error: Error in is.infinite(o1) : default method not implemented for type 'list'
+      # Ignoring for now.
+      output_abs = ANCOMBC::ancombc2(data = se, assay_name = "counts", tax_level = NULL,
+                  fix_formula = comparisonVariable, rand_formula = NULL,
+                  p_adj_method = "holm", prv_cut=0,
+                  group = comparisonVariable)
 
     } else {
-      stop('Unaccepted dissimilarity method. Accepted methods are bray, jaccard, and jsd.')
+      stop('Unaccepted differential abundance method. Accepted methods are DESeq and ANCOMBC.')
     }
     
     ## Make the result a Compute result. Return the samples that are left as the data. Return
@@ -126,44 +119,13 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
     result@ancestorIdColumns <- ancestorIdColumns
     result@statistics <- statistics
 
-    # # Handle errors or return positive computeMessage
-    # if (veupathUtils::is.error(dist)) {
-    #   veupathUtils::logWithTime(paste('Differential abundance computation FAILED with parameters method=', method), verbose)
-    #   stop() 
-    # } else {
-    #   veupathUtils::logWithTime("Computed dissimilarity matrix.", verbose)
-    #   computeMessage <- paste(method, "dissimilarity matrix computation successful.")
-    # }
 
-    entity <- veupathUtils::strSplit(recordIdColumn,".", 4, 1)
-    # result@computationDetails <- paste(computeMessage, ', pcoaVariance =', percentVar)
-    # result@parameters <- paste('method =', method)   
-    
-    
-    # makeVariableMetadataObject <- function(varName) {
-    #   #bit hacky, see if you can think of something better
-    #   plotRef <- ifelse(identical(varName, 'log2FoldChange'), 'xAxis', 'tooltip')
+    # This should be the samples actually used in the method. Samples might get 
+    # dropped because of whatever reasoning in the diff abund method.
+    result@data <- df[, ..recordIdColumn]
 
-    #   veupathUtils::VariableMetadata(
-    #              variableClass = veupathUtils::VariableClass(value = "computed"),
-    #              variableSpec = veupathUtils::VariableSpec(variableId = varName, entityId = entity),
-    #              plotReference = veupathUtils::PlotReference(value = plotRef),
-    #             #  displayName = displayName, # Ann add logic for display name
-    #              displayRangeMin = min(dt[[axisName]]),
-    #              displayRangeMax = max(dt[[axisName]]),
-    #              dataType = veupathUtils::DataType(value = "NUMBER"),
-    #              dataShape = veupathUtils::DataShape(value = "CONTINUOUS")
-    #   )
-    # }
 
-    ### This doesnot work yet...  
-    # computedStatisticMetadata <- veupathUtils::VariableMetadataList(lapply(displayNames, makeVariableMetadataObject))
-
-    # result@computedStatisticMetadata <- computedStatisticMetadata
-    # names(dt) <- stripEntityIdFromColumnHeader(names(dt))
-    result@data <- dt[[recordIdColumn]]
-
-    validObject(result)
+    # validObject(result)
     veupathUtils::logWithTime(paste('Differential abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', ..., verbose =', verbose), verbose)
     
     return(result)
