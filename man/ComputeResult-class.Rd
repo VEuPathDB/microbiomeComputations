@@ -24,8 +24,6 @@ This includes their representation in R, as JSON and how they are written to fil
 
 \item{\code{statistics}}{An optional data.frame of values. This data frame is not required to have rows or cols map to samples.}
 
-\item{\code{computedStatisticMetadata}}{An optional veupathUtils::VariableMetadataList containing details of any computed statistics}
-
 \item{\code{computationDetails}}{An optional message about the computed results.}
 
 \item{\code{parameters}}{A record of the input parameters used to generate the computed results.}

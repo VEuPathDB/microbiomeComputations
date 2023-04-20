@@ -20,19 +20,20 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
               recordIdColumn = 'entity.SampleID')
   
   result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = NULL, groupB = NULL, method='DESeq', verbose=F)
+  dt <- result@data
+  expect_equal(names(dt), c('entity.SampleID'))
+  expect_s3_class(dt, 'data.table')
+  stats <- result@statistics
+  expect_s3_class(stats, 'data.frame')
+  expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
+  expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
+  # result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = NULL, groupB = NULL, method='ANCOMBC', verbose=F)
   # dt <- result@data
   # # expect_equal(nrow(dt), nrow(df)) want nrow(dt) = #unique taxa
   # expect_s3_class(dt, 'data.table')
   # expect_equal(names(dt), c('pointID','foldChange','pValue'))
   # expect_equal(unname(unlist(lapply(dt, class))), c('character','numeric','numeric'))
-
-  result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = NULL, groupB = NULL, method='ANCOMBC', verbose=F)
-  dt <- result@data
-  # expect_equal(nrow(dt), nrow(df)) want nrow(dt) = #unique taxa
-  expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), c('pointID','foldChange','pValue'))
-  expect_equal(unname(unlist(lapply(dt, class))), c('character','numeric','numeric'))
 })
 # }
 

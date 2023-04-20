@@ -32,7 +32,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     method <- veupathUtils::matchArg(method)
     verbose <- veupathUtils::matchArg(verbose)
 
-    # Check that incoming df meets requirements - consider moving to a validateOTU function or similar
+    # Check that incoming df meets requirements
     if (!'data.table' %in% class(df)) {
       data.table::setDT(df)
     }
@@ -88,8 +88,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
       deseq_results <- DESeq2::results(deseq_output)
 
       # Format results for us
-      statistics <- data.frame(log2FoldChange = deseq_results$log2FoldChange,
-                               pvalue = deseq_results$pvalue,
+      statistics <- data.frame(log2foldChange = deseq_results$log2FoldChange,
+                               pValue = deseq_results$pvalue,
                                adjustedPValue = deseq_results$padj,
                                pointID = rownames(cts))
 
@@ -98,7 +98,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
     } else if (identical(method, 'ANCOMBC')) {
 
-      se <- TreeSummarizedExperiment::TreeSummarizedExperiment(list(counts = cts), colData = metadata)
+      se <- TreeSummarizedExperiment::TreeSummarizedExperiment(list(counts = cts), colData = sampleMetadata)
 
       # Currently getting this error: Error in is.infinite(o1) : default method not implemented for type 'list'
       # Ignoring for now.
@@ -125,7 +125,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     result@data <- df[, ..recordIdColumn]
 
 
-    # validObject(result)
+    # validObject(result) Punting on this for now - we don't have any computedVariablesMetadata
+    # Either we could make that optional, or make a new class. Still mulling it over.
     veupathUtils::logWithTime(paste('Differential abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', ..., verbose =', verbose), verbose)
     
     return(result)

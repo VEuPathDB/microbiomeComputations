@@ -31,6 +31,11 @@ check_abundance_data <- function(object) {
       errors <- c(errors, msg)
     }
 
+    if (any(df < 0, na.rm=TRUE)) {
+      msg <- "Abundance data cannot contain negative values."
+      errors <- c(errors, msg)
+    }
+
 ## check samples all match in metadata and data?
 
     return(if (length(errors) == 0) TRUE else errors)
