@@ -37,22 +37,34 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
 })
 # }
 
-# test_that("differentialAbundance returns a data.table with the correct attributes" , {
+test_that("differentialAbundance returns a data.table with the correct attributes" , {
 
-#   df <- testOTU
+  df <- testOTU
+  counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
+  counts[ ,entity.SampleID:= df$entity.SampleID]
+  nSamples <- dim(df)[1]
+  sampleMetadata <- data.frame(list(
+    "entity.SampleID" = df[["entity.SampleID"]],
+    "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
+    "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
+    "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
+    "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T),
+    "entity.contA" = rnorm(nSamples, sd=5)
+    ))
 
-#   data <- microbiomeComputations::AbundanceData(
-#               data = df,
-#               recordIdColumn = 'entity.SampleID')
 
+  data <- microbiomeComputations::AbsoluteAbundanceData(
+              data = counts,
+              sampleMetadata = sampleMetadata,
+              recordIdColumn = 'entity.SampleID')
 
-#   result <- differentialAbundance(data, method='DESeq', verbose=F)
+  result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = NULL, groupB = NULL, method='DESeq', verbose=F)
 #   expect_equal(result@parameters, 'method = DESeq')
 #   expect_equal(inherits(result@computedVariableMetadata, "VariableMetadataList"), TRUE)
 #   expect_equal(result@computedVariableMetadata[[1]]@variableSpec@variableId, 'foldChange')
 #   expect_equal(result@computedVariableMetadata[[1]]@variableSpec@entityId, 'entity')
 #   expect_equal(result@computedVariableMetadata[[1]]@displayName, 'Fold Change')
-# }
+}
 
 # test_that("differentialAbundance fails gracefully", {
 

@@ -125,8 +125,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     result@data <- df[, ..recordIdColumn]
 
 
-    # validObject(result) Punting on this for now - we don't have any computedVariablesMetadata
-    # Either we could make that optional, or make a new class. Still mulling it over.
+    validObject(result) # not crazy about what i've done for ComputeResult. Considering
+    # subclassing and making a ComputeResultWithStatistics subclass. Still have to navigate the computedVarMetadata though
     veupathUtils::logWithTime(paste('Differential abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', ..., verbose =', verbose), verbose)
     
     return(result)
