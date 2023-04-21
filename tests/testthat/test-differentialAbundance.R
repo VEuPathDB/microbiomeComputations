@@ -6,11 +6,11 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   nSamples <- dim(df)[1]
   sampleMetadata <- data.frame(list(
     "entity.SampleID" = df[["entity.SampleID"]],
-    "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
-    "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
-    "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
-    "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T),
-    "entity.contA" = rnorm(nSamples, sd=5)
+    "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T)
+    # "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
+    # "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
+    # "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T),
+    # "entity.contA" = rnorm(nSamples, sd=5)
     ))
 
 
@@ -21,7 +21,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   
   result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = NULL, groupB = NULL, method='DESeq', verbose=F)
   dt <- result@data
-  expect_equal(names(dt), c('entity.SampleID'))
+  expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
@@ -64,7 +64,7 @@ test_that("differentialAbundance returns a data.table with the correct attribute
 #   expect_equal(result@computedVariableMetadata[[1]]@variableSpec@variableId, 'foldChange')
 #   expect_equal(result@computedVariableMetadata[[1]]@variableSpec@entityId, 'entity')
 #   expect_equal(result@computedVariableMetadata[[1]]@displayName, 'Fold Change')
-}
+})
 
 # test_that("differentialAbundance fails gracefully", {
 

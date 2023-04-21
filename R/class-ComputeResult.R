@@ -12,6 +12,9 @@ check_compute_result <- function(object) {
       errors <- c(errors, msg) 
     }
 
+    # If computedVariableMetadata is supplied, check that it contains
+    # metadata for variables actually in the result data, and that
+    # the variable classes are correct.
     if (!!length(object@computedVariableMetadata)) {
       variables <- object@computedVariableMetadata
       col_names <- stripEntityIdFromColumnHeader(veupathUtils::findAllColNames(variables))

@@ -2,10 +2,10 @@
 #'
 #' This function returns the fold change and associated p value for a differential abundance analysis comparing samples in two groups.
 #' 
-#' @param data AbundanceData object
+#' @param data AbsoluteAbundanceData object
 #' @param comparisonVariable string identifying the metadata column to be used when grouping samples.
-#' @param groupA array of strings, each string matching a metadata value. Samples with this metadata value will be included in Group A
-#' @param groupB array of strings, each string matching a metadata value. Samples with this metadata value will be included in Group B. Must be distinct from groupA.
+#' @param groupA array of strings, each string indicating a value in the comparisonVariable column. Samples with this metadata value will be included in Group A. Must have no overlap with groupB
+#' @param groupB array of strings, each string indicating a value in the comparisonVariable column. Samples with this metadata value will be included in Group B. Must have no overlap with groupB.
 #' @param method string defining the the differential abundance method. Accepted values are 'DESeq'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
@@ -54,51 +54,51 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     ### Take values in groupA, groupB, and turn them into a binary variable
     ## To do
 
-    # Transpose abundance data to get a counts matrix with taxa on rows and samples as columns
-    cts <- data.table::transpose(df[, -..recordIdColumn])
-    rownames(cts) <- names(df[, -..recordIdColumn])
-    colnames(cts) <- df[[recordIdColumn]]
+    # Transpose abundance data to get a counts matrix with taxa as rows and samples as columns
+    counts <- data.table::transpose(df[, -..recordIdColumn])
+    rownames(counts) <- names(df[, -..recordIdColumn])
+    colnames(counts) <- df[[recordIdColumn]]
 
-    # Format metadata
+    # Format metadata. Samples are rows and variables are columns
     rownames(sampleMetadata) <- sampleMetadata[[recordIdColumn]]
     sampleMetadata <- sampleMetadata[, -..recordIdColumn]
 
+    # Check to ensure samples are in the same order in counts and metadata. Both DESeq
+    # and ANCOMBC expect the order to match, and will not perform this check.
+    if (!identical(rownames(sampleMetadata), colnames(counts))){
+      # Reorder sampleMetadata to match counts
+      # To do
+    }
+    
     # Compute differential abundance
     if (identical(method, 'DESeq')) {
 
-
-      # CHECK to ensure samples are in the same order for the cts and metadata dfs
-      
-      # Convert comparisonVariable column to factors so deseq doesn't have to do it
-
       # Create DESeqDataSet
-      dds <- DESeq2::DESeqDataSetFromMatrix(countData = cts,
+      dds <- DESeq2::DESeqDataSetFromMatrix(countData = counts,
                                             colData = sampleMetadata,
                                             design = as.formula(paste0("~",comparisonVariable)),
                                             tidy = FALSE) # consider changing to true so dont have to format metadata
 
       # Estimate size factors before running deseq to avoid errors about 0 counts
       geoMeans = apply(DESeq2::counts(dds), 1, function(x){exp(sum(log(x[x > 0]), na.rm=T) / length(x))})
-      dds <- DESeq2::estimateSizeFactors(dds,geoMeans=geoMeans) # Alternatively let type ='iterate'. Pros/cons?
+      dds <- DESeq2::estimateSizeFactors(dds,geoMeans=geoMeans) # Alternatively let type ='iterate'. Pros/cons? Look up blame to see if we can figure out why this was added.
 
       # Run DESeq
       deseq_output <- DESeq2::DESeq(dds)
 
-      # Extract results
+      # Extract deseq results
       deseq_results <- DESeq2::results(deseq_output)
 
-      # Format results for us
+      # Format results for easier access
       statistics <- data.frame(log2foldChange = deseq_results$log2FoldChange,
                                pValue = deseq_results$pvalue,
                                adjustedPValue = deseq_results$padj,
-                               pointID = rownames(cts))
-
-
+                               pointID = rownames(counts))
 
 
     } else if (identical(method, 'ANCOMBC')) {
 
-      se <- TreeSummarizedExperiment::TreeSummarizedExperiment(list(counts = cts), colData = sampleMetadata)
+      se <- TreeSummarizedExperiment::TreeSummarizedExperiment(list(counts = counts), colData = sampleMetadata)
 
       # Currently getting this error: Error in is.infinite(o1) : default method not implemented for type 'list'
       # Ignoring for now.
@@ -120,13 +120,14 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     result@statistics <- statistics
 
 
-    # This should be the samples actually used in the method. Samples might get 
+    # This should contain the samples actually used in the method. Samples might get 
     # dropped because of whatever reasoning in the diff abund method.
-    result@data <- df[, ..recordIdColumn]
+    # Doesn't look like DESeq gives us this information. So can leave as is for now.
+    result@data <- df[, ..allIdColumns]
+    names(result@data) <- stripEntityIdFromColumnHeader(names(result@data))
 
 
-    validObject(result) # not crazy about what i've done for ComputeResult. Considering
-    # subclassing and making a ComputeResultWithStatistics subclass. Still have to navigate the computedVarMetadata though
+    validObject(result)
     veupathUtils::logWithTime(paste('Differential abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', ..., verbose =', verbose), verbose)
     
     return(result)
