@@ -14,13 +14,13 @@ differentialAbundance(
 )
 }
 \arguments{
-\item{data}{AbundanceData object}
+\item{data}{AbsoluteAbundanceData object}
 
 \item{comparisonVariable}{string identifying the metadata column to be used when grouping samples.}
 
-\item{groupA}{array of strings, each string matching a metadata value. Samples with this metadata value will be included in Group A}
+\item{groupA}{array of strings, each string indicating a value in the comparisonVariable column. Samples with this metadata value will be included in Group A. Must have no overlap with groupB}
 
-\item{groupB}{array of strings, each string matching a metadata value. Samples with this metadata value will be included in Group B. Must be distinct from groupA.}
+\item{groupB}{array of strings, each string indicating a value in the comparisonVariable column. Samples with this metadata value will be included in Group B. Must have no overlap with groupB.}
 
 \item{method}{string defining the the differential abundance method. Accepted values are 'DESeq'}
 

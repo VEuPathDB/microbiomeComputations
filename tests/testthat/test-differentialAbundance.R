@@ -6,9 +6,9 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   nSamples <- dim(df)[1]
   sampleMetadata <- data.frame(list(
     "entity.SampleID" = df[["entity.SampleID"]],
-    "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T)
+    "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
     # "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
-    # "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
+    "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T)
     # "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T),
     # "entity.contA" = rnorm(nSamples, sd=5)
     ))
@@ -19,7 +19,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
               sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
   
-  result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = NULL, groupB = NULL, method='DESeq', verbose=F)
+  result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = c('binA_a'), groupB = c('binA_b'), method='DESeq', verbose=F)
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
@@ -28,14 +28,25 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
-  # result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = NULL, groupB = NULL, method='ANCOMBC', verbose=F)
-  # dt <- result@data
-  # # expect_equal(nrow(dt), nrow(df)) want nrow(dt) = #unique taxa
-  # expect_s3_class(dt, 'data.table')
-  # expect_equal(names(dt), c('pointID','foldChange','pValue'))
-  # expect_equal(unname(unlist(lapply(dt, class))), c('character','numeric','numeric'))
+
+  ## Test with defined groups
+  result <- differentialAbundance(data, comparisonVariable = "entity.cat3", groupA = c('cat3_a'), groupB = c('cat3_b', 'cat3_c'), method='DESeq', verbose=F)
+  dt <- result@data
+  expect_equal(names(dt), c('SampleID'))
+  expect_s3_class(dt, 'data.table')
+  stats <- result@statistics
+  expect_s3_class(stats, 'data.frame')
+  expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
+  expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
+
+  ## Expect diff abund to handle messy inputs
+
+  # With no groups defined and a bin var
+
+  # With samples ordered differently in the metadata and abundance data
+
 })
-# }
+
 
 test_that("differentialAbundance returns a data.table with the correct attributes" , {
 
@@ -59,37 +70,25 @@ test_that("differentialAbundance returns a data.table with the correct attribute
               recordIdColumn = 'entity.SampleID')
 
   result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = NULL, groupB = NULL, method='DESeq', verbose=F)
-#   expect_equal(result@parameters, 'method = DESeq')
-#   expect_equal(inherits(result@computedVariableMetadata, "VariableMetadataList"), TRUE)
-#   expect_equal(result@computedVariableMetadata[[1]]@variableSpec@variableId, 'foldChange')
-#   expect_equal(result@computedVariableMetadata[[1]]@variableSpec@entityId, 'entity')
-#   expect_equal(result@computedVariableMetadata[[1]]@displayName, 'Fold Change')
+  expect_equal(result@parameters, 'comparisonVariable = entity.binA, groupA = binA_a, groupB = binA_b, method = DESeq')
+  expect_equal(result@recordIdColumn, 'entity.SampleID')
 })
 
-# test_that("differentialAbundance fails gracefully", {
+test_that("differentialAbundance fails with improper inputs", {
 
-#   df <- testOTU
+  # Fail when we send in comparisonVar with > 2 values and no groups
 
-#   data <- microbiomeComputations::AbundanceData(
-#             data = df,
-#             recordIdColumn = 'entity.SampleID')
+  # Fail when group values are not found in the comparisonVar
 
-#   result <- differentialAbundance(data, method='DESeq', verbose=F)
-#   dt <- result@data
-#   # expect_equal(nrow(dt), nrow(df)) nrow(dt) should equal number of unique taxa
-#   expect_s3_class(dt, 'data.table')
-#   expect_equal(names(dt), c('pointID','foldChange','pValue'))
-#   expect_true(all(is.na(dt[['foldChange']])))
-#   expect_equal(typeof(dt$pointID), c('character'))
-#   attr <- attributes(dt)
-#   expect_equal(typeof(result@parameters), 'character')
-#   expect_equal(typeof(result@computedVariableMetadata[[1]]@variableSpec@variableId), 'character')
-#   expect_equal(typeof(result@computedVariableMetadata[[1]]@variableSpec@entityId), 'character')
-#   expect_equal(typeof(result@computedVariableMetadata[[1]]@dataType@value), 'character')
-#   expect_equal(typeof(result@computedVariableMetadata[[1]]@dataShape@value), 'character')
-#   expect_equal(typeof(result@computedVariableMetadata[[1]]@displayName), 'character')
-#   expect_equal(typeof(result@computedVariableMetadata[[1]]@displayRangeMin), 'double')
-#   expect_equal(typeof(result@computedVariableMetadata[[1]]@displayRangeMax), 'double')
-  
 
-# }
+})
+
+test_that("differentialAbundance fails gracefully", {
+
+  # Does okay when there aren't enough samples left to do a good diff abund calculation
+
+  # Does okay when deseq fails
+
+  # Does okay when ancombc fails
+
+})

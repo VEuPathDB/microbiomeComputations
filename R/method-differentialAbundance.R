@@ -11,6 +11,7 @@
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @import data.table
+#' @importFrom purrr none
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("differentialAbundance",
@@ -28,7 +29,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     sampleMetadata <- data@sampleMetadata
 
 
-    # Initialize and check inputs
+    ## Initialize and check inputs
     method <- veupathUtils::matchArg(method)
     verbose <- veupathUtils::matchArg(verbose)
 
@@ -51,26 +52,59 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
-    ### Take values in groupA, groupB, and turn them into a binary variable
-    ## To do
+    ## Check that groups are provided, if needed, and if they are provided,
+    ## that they match at least one value in the comparisonVariable column.
+    uniqueComparisonVariableValues <- unique(sampleMetadata[[comparisonVariable]])
+    
+    if (!!length(groupA) && !!length(groupB)) {
+      # Does each group contain at least one string that matches a value in the comparisonValue column?
+      if (purrr::none(groupA,function(x, arr) { x %in% arr}, uniqueComparisonVariableValues)) {
+        stop("At least one value in groupA must exist as a value in the comparisonValue sampleMetadata column.")
+      }
+      if (purrr::none(groupB,function(x, arr) { x %in% arr}, uniqueComparisonVariableValues)) {
+        stop("At least one value in groupB must exist as a value in the comparisonValue sampleMetadata column.")
+      }
+    } else if (length(uniqueComparisonVariableValues) == 2) {
+      # Ignore any groups passed to us and set the groups to be these two values
+      veupathUtils::logWithTime("Only two values found in the comparisonVariable sampleMetadata column. Using these two values as groupA and groupB.", verbose)
+      groupA <- c(uniqueComparisonVariableValues[1])
+      groupB <- c(uniqueComparisonVariableValues[2])
+    } else {
+      stop("Must supply two groups (groupA and groupB) for the differential abundance calculation.")
+    }
 
-    # Transpose abundance data to get a counts matrix with taxa as rows and samples as columns
+    # Subset to only include samples with metadata defined in groupA and groupB
+    sampleMetadata <- sampleMetadata[get(comparisonVariable) %in% c(groupA, groupB), ]
+    keepSamples <- sampleMetadata[[recordIdColumn]]
+    veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with ", comparisonVariable, "in either groupA or groupB. The calculation will continue with only these samples."), verbose)
+
+    # Subset the original df based on the kept samples
+    df <- df[get(recordIdColumn) %in% keepSamples, ]
+
+    # Turn comparisonVariable into a binary variable
+    sampleMetadata[get(comparisonVariable) %in% groupA, c(comparisonVariable)] <- 'groupA'
+    sampleMetadata[get(comparisonVariable) %in% groupB, c(comparisonVariable)] <- 'groupB'
+
+
+    ## Format data for the different differential abundance methods.
+
+    # First, transpose abundance data to get a counts matrix with taxa as rows and samples as columns
     counts <- data.table::transpose(df[, -..recordIdColumn])
     rownames(counts) <- names(df[, -..recordIdColumn])
     colnames(counts) <- df[[recordIdColumn]]
 
-    # Format metadata. Samples are rows and variables are columns
+    # Next, format metadata. Recall samples are rows and variables are columns
     rownames(sampleMetadata) <- sampleMetadata[[recordIdColumn]]
     sampleMetadata <- sampleMetadata[, -..recordIdColumn]
 
-    # Check to ensure samples are in the same order in counts and metadata. Both DESeq
+    # Finally, check to ensure samples are in the same order in counts and metadata. Both DESeq
     # and ANCOMBC expect the order to match, and will not perform this check.
     if (!identical(rownames(sampleMetadata), colnames(counts))){
       # Reorder sampleMetadata to match counts
       # To do
     }
     
-    # Compute differential abundance
+    ## Compute differential abundance
     if (identical(method, 'DESeq')) {
 
       # Create DESeqDataSet
@@ -111,18 +145,16 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
       stop('Unaccepted differential abundance method. Accepted methods are DESeq and ANCOMBC.')
     }
     
-    ## Make the result a Compute result. Return the samples that are left as the data. Return
-    # the rest as statistics
+    ## Construct the ComputeResult
     result <- new("ComputeResult")
     result@name <- 'differentialAbundance'
     result@recordIdColumn <- recordIdColumn
     result@ancestorIdColumns <- ancestorIdColumns
     result@statistics <- statistics
+    result@parameters <- paste0("comparisonVariable = ", comparisonVariable, ", groupA = ", groupA, ", groupB = ", groupB, ', method = ', method)
 
 
-    # This should contain the samples actually used in the method. Samples might get 
-    # dropped because of whatever reasoning in the diff abund method.
-    # Doesn't look like DESeq gives us this information. So can leave as is for now.
+    # The resulting data should contain only the samples actually used.
     result@data <- df[, ..allIdColumns]
     names(result@data) <- stripEntityIdFromColumnHeader(names(result@data))
 
