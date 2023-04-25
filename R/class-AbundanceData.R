@@ -32,11 +32,19 @@ check_abundance_data <- function(object) {
     }
 
     if (any(df < 0, na.rm=TRUE)) {
-      msg <- "Abundance data cannot contain negative values."
+      msg <- paste("Abundance data cannot contain negative values.")
       errors <- c(errors, msg)
     }
 
-## check samples all match in metadata and data?
+    if (!!length(object@sampleMetadata)) {
+      sampleMetadata <- object@sampleMetadata
+      if (!setequal(sampleMetadata[[record_id_col]], df[[record_id_col]])) {
+        msg <- paste("Samples do not match between the sample metadata and abundance data.")
+        errors <- c(errors, msg)
+      }
+    }
+
+    
 
     return(if (length(errors) == 0) TRUE else errors)
 }

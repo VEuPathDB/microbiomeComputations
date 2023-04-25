@@ -78,8 +78,9 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     keepSamples <- sampleMetadata[[recordIdColumn]]
     veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with ", comparisonVariable, "in either groupA or groupB. The calculation will continue with only these samples."), verbose)
 
-    # Subset the original df based on the kept samples
+    # Subset the original data based on the kept samples
     df <- df[get(recordIdColumn) %in% keepSamples, ]
+    sampleMetadata <- sampleMetadata[get(recordIdColumn) %in% keepSamples, ]
 
     # Turn comparisonVariable into a binary variable
     sampleMetadata[get(comparisonVariable) %in% groupA, c(comparisonVariable)] <- 'groupA'
@@ -95,13 +96,12 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
     # Next, format metadata. Recall samples are rows and variables are columns
     rownames(sampleMetadata) <- sampleMetadata[[recordIdColumn]]
-    sampleMetadata <- sampleMetadata[, -..recordIdColumn]
 
     # Finally, check to ensure samples are in the same order in counts and metadata. Both DESeq
     # and ANCOMBC expect the order to match, and will not perform this check.
     if (!identical(rownames(sampleMetadata), colnames(counts))){
       # Reorder sampleMetadata to match counts
-      # To do
+      counts <- counts[, rownames(sampleMetadata)]
     }
     
     ## Compute differential abundance

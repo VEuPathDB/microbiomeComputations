@@ -6,7 +6,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   nSamples <- dim(df)[1]
   sampleMetadata <- data.frame(list(
     "entity.SampleID" = df[["entity.SampleID"]],
-    "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
+    "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T),
     # "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
     "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T)
     # "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T),
