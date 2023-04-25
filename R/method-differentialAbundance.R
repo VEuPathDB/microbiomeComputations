@@ -97,6 +97,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     # Next, format metadata. Recall samples are rows and variables are columns
     rownames(sampleMetadata) <- sampleMetadata[[recordIdColumn]]
 
+    veupathUtils::logWithTime(paste0("Abundance data formatted for differential abundance computation. Proceeding with method=",method), verbose)
+
     # Finally, check to ensure samples are in the same order in counts and metadata. Both DESeq
     # and ANCOMBC expect the order to match, and will not perform this check.
     if (!identical(rownames(sampleMetadata), colnames(counts))){
@@ -107,15 +109,15 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     ## Compute differential abundance
     if (identical(method, 'DESeq')) {
 
-      # Create DESeqDataSet
+      # Create DESeqDataSet (dds)
       dds <- DESeq2::DESeqDataSetFromMatrix(countData = counts,
                                             colData = sampleMetadata,
                                             design = as.formula(paste0("~",comparisonVariable)),
-                                            tidy = FALSE) # consider changing to true so dont have to format metadata
+                                            tidy = FALSE)
 
       # Estimate size factors before running deseq to avoid errors about 0 counts
       geoMeans = apply(DESeq2::counts(dds), 1, function(x){exp(sum(log(x[x > 0]), na.rm=T) / length(x))})
-      dds <- DESeq2::estimateSizeFactors(dds,geoMeans=geoMeans) # Alternatively let type ='iterate'. Pros/cons? Look up blame to see if we can figure out why this was added.
+      dds <- DESeq2::estimateSizeFactors(dds, geoMeans = geoMeans)
 
       # Run DESeq
       deseq_output <- DESeq2::DESeq(dds)
@@ -142,8 +144,9 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
                   group = comparisonVariable)
 
     } else {
-      stop('Unaccepted differential abundance method. Accepted methods are DESeq and ANCOMBC.')
+      stop('Unaccepted differential abundance method. Accepted methods are "DESeq" and "ANCOMBC".')
     }
+    veupathUtils::logWithTime(paste0('Completed method=',method,'. Formatting results.'), verbose)
     
     ## Construct the ComputeResult
     result <- new("ComputeResult")
