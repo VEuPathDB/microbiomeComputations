@@ -13,7 +13,7 @@ writeData(object, pattern = NULL, verbose = c(TRUE, FALSE))
 filehandle where tab delimited representation of result data can be found
 }
 \description{
-This function, for any given ComuteResult,
+This function, for any given ComputeResult,
 will return a filehandle where result data
 has been written in tab delimited format.
 }

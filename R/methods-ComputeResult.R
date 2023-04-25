@@ -1,6 +1,6 @@
 #' Write Computed Variable Metadata
 #'
-#' This function, for any given ComuteResult, 
+#' This function, for any given ComputeResult, 
 #' will return a filehandle where ComputedVariableMetadata
 #' has been written in JSON format.
 #' 
@@ -35,10 +35,9 @@ setMethod("writeMeta", signature("ComputeResult"), function(object, pattern = NU
 
 #' Write Compute Result Data
 #'
-#' This function, for any given ComuteResult, 
+#' This function, for any given ComputeResult, 
 #' will return a filehandle where result data
 #' has been written in tab delimited format.
-#' 
 #' @param object ComputeResult 
 #' @return filehandle where tab delimited representation of result data can be found
 #' @export
@@ -66,5 +65,40 @@ setMethod("writeData", signature("ComputeResult"), function(object, pattern = NU
   return(outFileName)
 })
 
-# someday well have a stats endpoint in use. may differ a lot from one compute type to another though
-# maybe at least wait until we have the heatmap better sorted before writing methods etc
+
+
+
+#' Write Computed Variable Statistics
+#'
+#' This function, for any given ComputeResult, 
+#' will return a filehandle where the statistics table
+#' has been written in JSON format.
+#' 
+#' @param object ComputeResult with statistics
+#' @return filehandle where JSON representation of ComputeResult statistics can be found
+#' @export
+setGeneric("writeStatistics",
+  function(object, pattern = NULL, verbose = c(TRUE, FALSE)) standardGeneric("writeStatistics"),
+  signature = c("object")
+)
+
+#'@export 
+setMethod("writeStatistics", signature("ComputeResult"), function(object, pattern = NULL, verbose = c(TRUE, FALSE)) {
+  verbose <- veupathUtils::matchArg(verbose)
+
+  outJson <- jsonlite::toJSON(object@statistics)
+
+  if (is.null(pattern)) { 
+    pattern <- object@name
+    if (is.null(pattern)) {
+      pattern <- 'file'
+    } 
+  }
+  pattern <- paste0(pattern, '-statistics-')
+
+  outFileName <- basename(tempfile(pattern = pattern, tmpdir = tempdir(), fileext = ".json"))
+  write(outJson, outFileName)
+  veupathUtils::logWithTime(paste('New output file written:', outFileName), verbose)
+
+  return(outFileName)
+})

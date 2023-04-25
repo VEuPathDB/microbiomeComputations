@@ -13,7 +13,7 @@ writeMeta(object, pattern = NULL, verbose = c(TRUE, FALSE))
 filehandle where JSON representation of ComputedVariableMetadata can be found
 }
 \description{
-This function, for any given ComuteResult,
+This function, for any given ComputeResult,
 will return a filehandle where ComputedVariableMetadata
 has been written in JSON format.
 }
