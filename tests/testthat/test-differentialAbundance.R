@@ -70,7 +70,7 @@ test_that("differentialAbundance returns a data.table with the correct attribute
               recordIdColumn = 'entity.SampleID')
 
   result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = NULL, groupB = NULL, method='DESeq', verbose=F)
-  expect_equal(result@parameters, 'comparisonVariable = entity.binA, groupA = binA_a, groupB = binA_b, method = DESeq')
+  expect_equal(result@parameters, 'comparisonVariable = entity.binA, groupA = binA_b, groupB = binA_a, method = DESeq')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
 })
 

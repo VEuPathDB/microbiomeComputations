@@ -104,3 +104,28 @@ test_that("ComputeResult writeMeta method returns well formatted json", {
   expect_equal(names(jsonlist), 'variables')
   expect_equal(names(jsonlist$variables), c("variableClass","variableSpec","plotReference","displayName","displayRangeMin","displayRangeMax","dataType","dataShape","isCollection","imputeZero"))
 })
+
+
+test_that("ComputeResult writeStatistics returns formatted json.", {
+
+  nStats <- 100
+  df <- data.table::as.data.table(testOTU)
+  names(df) <- stripEntityIdFromColumnHeader(names(df))
+  result <- new("ComputeResult",
+              name = "differentialAbundance",
+              recordIdColumn = 'entity.SampleID',
+              statistics = data.frame(list("stat_float" = rnorm(nStats, sd=5),
+                                           "stat_char" = sample(letters,nStats,replace=T),
+                                           "stat_with_missing" = sample(c(1.2, 3, NA), nStats, replace=T)
+                                           )),
+              data = df)
+
+  outJson <- jsonlite::toJSON(result@statistics, digits=NA)
+  jsonList <- jsonlite::fromJSON(outJson)
+  expect_equal(nrow(jsonList), nStats)
+  expect_equal(names(jsonList), c('stat_float','stat_char','stat_with_missing'))
+  expect_equal(unname(unlist(lapply(jsonList,class))), c('numeric','character','numeric'))
+  expect_equal(jsonList$stat_with_missing, result@statistics$stat_with_missing)
+  expect_equal(jsonList$stat_float, result@statistics$stat_float)
+
+})
