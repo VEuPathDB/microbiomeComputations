@@ -1,4 +1,4 @@
-test_that('ComputeResult validation works', {
+test_that('AbundanceData validation works', {
   
   df <- testOTU
 

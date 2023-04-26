@@ -2,13 +2,15 @@ check_absolute_abundance_data <- function(object) {
     errors <- character()
     df <- object@data
     record_id_col <- object@recordIdColumn
+    ancestor_id_cols <- object@ancestorIdColumns
+    all_id_cols <- c(record_id_col, ancestor_id_cols)
 
-    # otu <- df[, -..record_id_col]
+    numeric_data <- df[, !(names(df) %in% all_id_cols)]
 
-    # if (!identical(otu, round(otu))) {
-    #   msg <- "Absolute abundance data must be integer numbers."
-    #   errors <- c(errors, msg)
-    # }
+    if (!identical(numeric_data, round(numeric_data))) {
+      msg <- "Absolute abundance data must be integer numbers."
+      errors <- c(errors, msg)
+    }
     
 
     return(if (length(errors) == 0) TRUE else errors)
