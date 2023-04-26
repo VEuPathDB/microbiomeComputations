@@ -64,6 +64,23 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
       if (purrr::none(groupB,function(x, arr) { x %in% arr}, uniqueComparisonVariableValues)) {
         stop("At least one value in groupB must exist as a value in the comparisonValue sampleMetadata column.")
       }
+
+      # Alert that we discard groupA/B values that are not found in the comparisonVariable
+      if (any(!(groupA %in% uniqueComparisonVariableValues))) {
+        veupathUtils::logWithTime("Found values in groupA that do not exist in the comparisonVariable. Removing these values.", verbose)
+        groupA <- groupA[groupA %in% uniqueComparisonVariableValues]
+      }
+      if (any(!(groupB %in% uniqueComparisonVariableValues))) {
+        veupathUtils::logWithTime("Found values in groupB that do not exist in the comparisonVariable. Removing these values.", verbose)
+        groupB <- groupB[groupB %in% uniqueComparisonVariableValues]
+      }
+
+      # Do not allow duplicated values
+      if (!!length(intersect(groupA, groupB))) {
+        veupathUtils::logWithTime("groupA and groupB cannot share members.", verbose)
+        stop()
+      }
+
     } else if (length(uniqueComparisonVariableValues) == 2) {
       # Ignore any groups passed to us and set the groups to be these two values
       veupathUtils::logWithTime("Only two values found in the comparisonVariable sampleMetadata column. Using these two values as groupA and groupB.", verbose)
@@ -103,7 +120,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     # and ANCOMBC expect the order to match, and will not perform this check.
     if (!identical(rownames(sampleMetadata), colnames(counts))){
       # Reorder sampleMetadata to match counts
-      counts <- counts[, rownames(sampleMetadata)]
+      veupathUtils::logWithTime("Sample order differs between data and metadata. Reordering data based on the metadata sample order.", verbose)
+      data.table::setcolorder(counts, rownames(sampleMetadata))
     }
     
     ## Compute differential abundance
