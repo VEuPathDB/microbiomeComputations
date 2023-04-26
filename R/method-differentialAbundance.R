@@ -54,7 +54,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
     ## Check that groups are provided, if needed, and if they are provided,
     ## that they match at least one value in the comparisonVariable column.
-    uniqueComparisonVariableValues <- unique(sampleMetadata[[comparisonVariable]])
+    uniqueComparisonVariableValues <- sort(unique(sampleMetadata[[comparisonVariable]]))
     
     if (!!length(groupA) && !!length(groupB)) {
       # Does each group contain at least one string that matches a value in the comparisonValue column?
@@ -109,18 +109,26 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     ## Compute differential abundance
     if (identical(method, 'DESeq')) {
 
-      # Create DESeqDataSet (dds)
-      dds <- DESeq2::DESeqDataSetFromMatrix(countData = counts,
-                                            colData = sampleMetadata,
-                                            design = as.formula(paste0("~",comparisonVariable)),
-                                            tidy = FALSE)
+      deseq_output <- try({
 
-      # Estimate size factors before running deseq to avoid errors about 0 counts
-      geoMeans = apply(DESeq2::counts(dds), 1, function(x){exp(sum(log(x[x > 0]), na.rm=T) / length(x))})
-      dds <- DESeq2::estimateSizeFactors(dds, geoMeans = geoMeans)
+        # Create DESeqDataSet (dds)
+        dds <- DESeq2::DESeqDataSetFromMatrix(countData = counts,
+                                              colData = sampleMetadata,
+                                              design = as.formula(paste0("~",comparisonVariable)),
+                                              tidy = FALSE)
 
-      # Run DESeq
-      deseq_output <- DESeq2::DESeq(dds)
+        # Estimate size factors before running deseq to avoid errors about 0 counts
+        geoMeans = apply(DESeq2::counts(dds), 1, function(x){exp(sum(log(x[x > 0]), na.rm=T) / length(x))})
+        dds <- DESeq2::estimateSizeFactors(dds, geoMeans = geoMeans)
+
+        # Run DESeq
+        deseq_output <- DESeq2::DESeq(dds)
+      })
+
+      if (veupathUtils::is.error(deseq_output)) {
+        veupathUtils::logWithTime(paste0('Differential abundance FAILED with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', verbose =', verbose), verbose)
+        stop()
+      }
 
       # Extract deseq results
       deseq_results <- DESeq2::results(deseq_output)
@@ -163,7 +171,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
 
     validObject(result)
-    veupathUtils::logWithTime(paste('Differential abundance computation completed with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', ..., verbose =', verbose), verbose)
+    veupathUtils::logWithTime(paste('Differential abundance computation completed with parameters recordIdColumn=', recordIdColumn, "comparisonVariable = ", comparisonVariable, ", groupA = ", groupA, ", groupB = ", groupB, ', method = ', method), verbose)
     
     return(result)
 })

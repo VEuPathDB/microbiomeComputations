@@ -7,10 +7,10 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   sampleMetadata <- data.frame(list(
     "entity.SampleID" = df[["entity.SampleID"]],
     "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T),
-    # "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
-    "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T)
-    # "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T),
-    # "entity.contA" = rnorm(nSamples, sd=5)
+    "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
+    "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
+    "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T),
+    "entity.contA" = rnorm(nSamples, sd=5)
     ))
 
 
@@ -59,8 +59,7 @@ test_that("differentialAbundance returns a data.table with the correct attribute
     "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
     "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
     "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
-    "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T),
-    "entity.contA" = rnorm(nSamples, sd=5)
+    "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T)
     ))
 
 
@@ -70,7 +69,7 @@ test_that("differentialAbundance returns a data.table with the correct attribute
               recordIdColumn = 'entity.SampleID')
 
   result <- differentialAbundance(data, comparisonVariable = "entity.binA", groupA = NULL, groupB = NULL, method='DESeq', verbose=F)
-  expect_equal(result@parameters, 'comparisonVariable = entity.binA, groupA = binA_b, groupB = binA_a, method = DESeq')
+  expect_equal(result@parameters, 'comparisonVariable = entity.binA, groupA = binA_a, groupB = binA_b, method = DESeq')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
 })
 
@@ -83,12 +82,24 @@ test_that("differentialAbundance fails with improper inputs", {
 
 })
 
-test_that("differentialAbundance fails gracefully", {
+test_that("differentialAbundance catches deseq errors", {
 
-  # Does okay when there aren't enough samples left to do a good diff abund calculation
+  df <- testOTU
+  counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
+  counts[ ,entity.SampleID:= df$entity.SampleID]
+  nSamples <- dim(df)[1]
+  sampleMetadata <- data.frame(list(
+    "entity.SampleID" = df[["entity.SampleID"]],
+    "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T)
+    ))
 
-  # Does okay when deseq fails
+  # Use only a few taxa
+  data <- microbiomeComputations::AbsoluteAbundanceData(
+              data = counts[, c("entity.SampleID","entity.1174-901-12","entity.A2")],
+              sampleMetadata = sampleMetadata,
+              recordIdColumn = 'entity.SampleID')
 
-  # Does okay when ancombc fails
+  expect_error(differentialAbundance(data, comparisonVariable = "entity.binA", groupA = c('binA_a'), groupB = c('binA_b'), method='DESeq', verbose=T))
+
 
 })
