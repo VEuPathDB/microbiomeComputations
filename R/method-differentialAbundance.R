@@ -54,8 +54,6 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
     ## Check that groups are provided, if needed, and if they are provided,
     ## that they match at least one value in the comparisonVariable column.
-    print(sampleMetadata);
-    print(names(sampleMetadata));
     uniqueComparisonVariableValues <- sort(unique(sampleMetadata[[comparisonVariable]]))
     
     if (!!length(groupA) && !!length(groupB)) {
@@ -109,7 +107,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     ## Format data for the different differential abundance methods.
 
     # First, transpose abundance data to get a counts matrix with taxa as rows and samples as columns
-    counts <- data.table::transpose(df[, -..recordIdColumn])
+    counts <- data.table::transpose(df[, -..allIdColumns])
     rownames(counts) <- names(df[, -..recordIdColumn])
     colnames(counts) <- df[[recordIdColumn]]
 
