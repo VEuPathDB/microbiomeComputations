@@ -108,7 +108,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
     # First, transpose abundance data to get a counts matrix with taxa as rows and samples as columns
     counts <- data.table::transpose(df[, -..allIdColumns])
-    rownames(counts) <- names(df[, -..recordIdColumn])
+    rownames(counts) <- names(df[, -..allIdColumns])
     colnames(counts) <- df[[recordIdColumn]]
 
     # Next, format metadata. Recall samples are rows and variables are columns
