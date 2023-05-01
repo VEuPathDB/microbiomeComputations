@@ -4,9 +4,9 @@
 #' 
 #' @param data AbsoluteAbundanceData object
 #' @param comparisonVariable string identifying the metadata column to be used when grouping samples.
-#' @param groupA array of strings, each string indicating a value in the comparisonVariable column. Samples with this metadata value will be included in Group A. Must have no overlap with groupB
-#' @param groupB array of strings, each string indicating a value in the comparisonVariable column. Samples with this metadata value will be included in Group B. Must have no overlap with groupB.
-#' @param method string defining the the differential abundance method. Accepted values are 'DESeq'
+#' @param groupA array of strings, each string indicating a value in the comparisonVariable column. Samples with these metadata values will be included in Group A for the differential abundance calculation. Must have no overlap with groupB
+#' @param groupB array of strings, each string indicating a value in the comparisonVariable column. Samples with these metadata values will be included in Group B for the differential abundance calculation. Must have no overlap with groupA.
+#' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
@@ -54,6 +54,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
     ## Check that groups are provided, if needed, and if they are provided,
     ## that they match at least one value in the comparisonVariable column.
+    print(sampleMetadata);
+    print(names(sampleMetadata));
     uniqueComparisonVariableValues <- sort(unique(sampleMetadata[[comparisonVariable]]))
     
     if (!!length(groupA) && !!length(groupB)) {
@@ -114,8 +116,6 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     # Next, format metadata. Recall samples are rows and variables are columns
     rownames(sampleMetadata) <- sampleMetadata[[recordIdColumn]]
 
-    veupathUtils::logWithTime(paste0("Abundance data formatted for differential abundance computation. Proceeding with method=",method), verbose)
-
     # Finally, check to ensure samples are in the same order in counts and metadata. Both DESeq
     # and ANCOMBC expect the order to match, and will not perform this check.
     if (!identical(rownames(sampleMetadata), colnames(counts))){
@@ -123,6 +123,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
       veupathUtils::logWithTime("Sample order differs between data and metadata. Reordering data based on the metadata sample order.", verbose)
       data.table::setcolorder(counts, rownames(sampleMetadata))
     }
+    veupathUtils::logWithTime(paste0("Abundance data formatted for differential abundance computation. Proceeding with method=",method), verbose)
     
     ## Compute differential abundance
     if (identical(method, 'DESeq')) {
