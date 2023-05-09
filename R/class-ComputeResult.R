@@ -3,7 +3,6 @@ setOldClass(c("data.table", "data.frame"))
 
 check_compute_result <- function(object) {
     errors <- character()
-    variables <- object@computedVariableMetadata
 
     if (is.na(object@name)) {
       msg <- "Compute result must have a name."
@@ -13,22 +12,30 @@ check_compute_result <- function(object) {
       errors <- c(errors, msg) 
     }
 
-    if (!length(variables)) {
-      msg <- "Compute result must include computed variable metadata."
-      errors <- c(errors, msg)      
-    }
-   
-    col_names <- stripEntityIdFromColumnHeader(veupathUtils::findAllColNames(variables))
-    if (!all(col_names %in% names(object@data))) {
-      msg <- paste("Some specified computed variables are not present in compute result data.frame")
+    # If computedVariableMetadata is supplied, check that it contains
+    # metadata for variables actually in the result data, and that
+    # the variable classes are correct.
+    if (!!length(object@computedVariableMetadata)) {
+      variables <- object@computedVariableMetadata
+      col_names <- stripEntityIdFromColumnHeader(veupathUtils::findAllColNames(variables))
+
+      if (!all(col_names %in% names(object@data))) {
+        msg <- paste("Some specified computed variables are not present in compute result data.frame")
+        errors <- c(errors, msg)
+      }
+
+      var_classes <- unlist(lapply(as.list(variables), function(x) {x@variableClass@value}))
+      if (!all(var_classes %in% 'computed')) {
+        msg <- paste("Some specified computed variables have the wrong variable class.")
+        errors <- c(errors, msg) 
+      }
+
+    } else if (!length(object@statistics)) {
+      msg <- "Compute result must include computed variable metadata or statistics."
       errors <- c(errors, msg)
     }
+   
 
-    var_classes <- unlist(lapply(as.list(variables), function(x) {x@variableClass@value}))
-    if (!all(var_classes %in% 'computed')) {
-      msg <- paste("Some specified computed variables have the wrong variable class.")
-      errors <- c(errors, msg) 
-    }
 
     if (any(grepl(".", names(object@data), fixed = TRUE))) {
       msg <- paste("Column headers appear to be in dot notation [entityId.variableId]. They should be the raw variableId.")
@@ -61,9 +68,9 @@ check_compute_result <- function(object) {
 #' @slot recordIdColumn The name of the column containing IDs for the samples. All other columns will be treated as computed values.
 #' @slot ancestorIdColumns A character vector of column names representing parent entities of the recordIdColumn.
 #' @slot computedVariableMetadata veupathUtils::VariableMetadataList detailing the computed variables.
+#' @slot statistics An optional data.frame of values. This data frame is not required to have rows or cols map to samples.
 #' @slot computationDetails An optional message about the computed results.
 #' @slot parameters A record of the input parameters used to generate the computed results.
-#' 
 #' @name ComputeResult-class
 #' @rdname ComputeResult-class
 #' @export
@@ -73,6 +80,7 @@ ComputeResult <- setClass("ComputeResult", representation(
     recordIdColumn = 'character',
     ancestorIdColumns = 'character',
     computedVariableMetadata = 'VariableMetadataList',
+    statistics = 'data.frame',
     computationDetails = 'character',
     parameters = 'character'
 ), prototype = prototype(

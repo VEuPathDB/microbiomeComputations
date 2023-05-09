@@ -1,6 +1,6 @@
 Package: microbiomeComputations
 Title: Compute Results for Microbiome Analyses
-Version: 2.0.2
+Version: 2.1.0
 Authors@R: 
     c(person(given = "Danielle",
            family = "Callan",
@@ -28,7 +28,19 @@ License: Apache License (= 2.0)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Collate: 
+    'RcppExports.R'
+    'class-AbundanceData.R'
+    'class-AbsoluteAbundanceData.R'
+    'class-ComputeResult.R'
+    'method-alphaDiv.R'
+    'method-betaDiv.R'
+    'method-differentialAbundance.R'
+    'method-rankedAbundance.R'
+    'methods-ComputeResult.R'
+    'microbiomeComputations-package.R'
+    'utils.R'
