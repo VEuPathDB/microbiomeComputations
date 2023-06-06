@@ -18,11 +18,11 @@ differentialAbundance(
 
 \item{comparisonVariable}{string identifying the metadata column to be used when grouping samples.}
 
-\item{groupA}{array of strings, each string indicating a value in the comparisonVariable column. Samples with this metadata value will be included in Group A. Must have no overlap with groupB}
+\item{groupA}{array of strings, each string indicating a value in the comparisonVariable column. Samples with these metadata values will be included in Group A for the differential abundance calculation. Must have no overlap with groupB}
 
-\item{groupB}{array of strings, each string indicating a value in the comparisonVariable column. Samples with this metadata value will be included in Group B. Must have no overlap with groupB.}
+\item{groupB}{array of strings, each string indicating a value in the comparisonVariable column. Samples with these metadata values will be included in Group B for the differential abundance calculation. Must have no overlap with groupA.}
 
-\item{method}{string defining the the differential abundance method. Accepted values are 'DESeq'}
+\item{method}{string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

@@ -46,8 +46,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
 
+    # Replace NA values with 0
     if (naToZero) {
-      # Replace NA values with 0
       veupathUtils::setNaToZero(df)
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
@@ -107,12 +107,17 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
     ## Format data for the different differential abundance methods.
 
-    # First, transpose abundance data to get a counts matrix with taxa as rows and samples as columns
-    counts <- data.table::transpose(df[, -..allIdColumns])
-    rownames(counts) <- names(df[, -..allIdColumns])
+    # First, remove id columns and any columns that are all 0s.
+    cleanedData <- veupathUtils::dropZeroColumns(df[, -..allIdColumns])
+    dfCleaned <- cleanedData$data
+    droppedColumns <- cleanedData$droppedColumns
+
+    # Next, transpose abundance data to get a counts matrix with taxa as rows and samples as columns
+    counts <- data.table::transpose(dfCleaned)
+    rownames(counts) <- names(dfCleaned)
     colnames(counts) <- df[[recordIdColumn]]
 
-    # Next, format metadata. Recall samples are rows and variables are columns
+    # Then, format metadata. Recall samples are rows and variables are columns
     rownames(sampleMetadata) <- sampleMetadata[[recordIdColumn]]
 
     # Finally, check to ensure samples are in the same order in counts and metadata. Both DESeq
@@ -181,6 +186,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     result@ancestorIdColumns <- ancestorIdColumns
     result@statistics <- statistics
     result@parameters <- paste0("comparisonVariable = ", comparisonVariable, ", groupA = ", groupA, ", groupB = ", groupB, ', method = ', method)
+    result@droppedColumns <- droppedColumns
 
 
     # The resulting data should contain only the samples actually used.
