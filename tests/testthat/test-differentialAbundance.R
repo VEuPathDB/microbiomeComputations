@@ -1,12 +1,12 @@
 # Tests for differential abundance methods
 
 test_that('differentialAbundance returns a correctly formatted data.table', {
-  df <- data.table::copy(testOTU)
-  counts <- round(testOTU[, -c("entity.SampleID")]*1000) # make into "counts"
-  counts[ ,entity.SampleID:= testOTU$entity.SampleID]
-  nSamples <- dim(testOTU)[1]
+  df <- testOTU
+  counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
+  counts[ ,entity.SampleID:= df$entity.SampleID]
+  nSamples <- dim(df)[1]
   sampleMetadata <- data.frame(list(
-    "entity.SampleID" = testOTU[["entity.SampleID"]],
+    "entity.SampleID" = df[["entity.SampleID"]],
     "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T),
     "entity.cat3" = rep(paste0("cat3_", letters[1:3]), nSamples/3, replace=T),
     "entity.cat4" = rep(paste0("cat4_", letters[1:4]), nSamples/4, replace=T)
@@ -106,7 +106,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
 
 test_that("differentialAbundance returns a ComputeResult with the correct slots" , {
 
-  df <- data.table::copy(testOTU)
+  df <- testOTU
   counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
   counts[ ,entity.SampleID:= df$entity.SampleID]
   nSamples <- dim(df)[1]
@@ -132,7 +132,7 @@ test_that("differentialAbundance returns a ComputeResult with the correct slots"
 
 test_that("differentialAbundance fails with improper inputs", {
 
-  df <- data.table::copy(testOTU)
+  df <- testOTU
   counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
   counts[ ,entity.SampleID:= df$entity.SampleID]
   nSamples <- dim(df)[1]
@@ -163,7 +163,7 @@ test_that("differentialAbundance fails with improper inputs", {
 
 test_that("differentialAbundance catches deseq errors", {
 
-  df <- data.table::copy(testOTU)
+  df <- testOTU
   counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
   counts[ ,entity.SampleID:= df$entity.SampleID]
   nSamples <- dim(df)[1]
