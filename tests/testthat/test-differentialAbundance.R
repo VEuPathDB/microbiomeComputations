@@ -2,20 +2,20 @@
 
 test_that('differentialAbundance returns a correctly formatted data.table', {
   df <- data.table::copy(testOTU)
-  counts_test <- round(testOTU[, -c("entity.SampleID")]*1000) # make into "counts"
-  counts_test[ ,entity.SampleID:= testOTU$entity.SampleID]
+  counts <- round(testOTU[, -c("entity.SampleID")]*1000) # make into "counts"
+  counts[ ,entity.SampleID:= testOTU$entity.SampleID]
   nSamples <- dim(testOTU)[1]
-  sampleMetadata_test <- data.frame(list(
+  sampleMetadata <- data.frame(list(
     "entity.SampleID" = testOTU[["entity.SampleID"]],
     "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T),
-    "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
-    "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T)
+    "entity.cat3" = rep(paste0("cat3_", letters[1:3]), nSamples/3, replace=T),
+    "entity.cat4" = rep(paste0("cat4_", letters[1:4]), nSamples/4, replace=T)
     ))
 
 
   data <- microbiomeComputations::AbsoluteAbundanceData(
-              data = counts_test,
-              sampleMetadata = sampleMetadata_test,
+              data = counts,
+              sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
   
   # Binary comparisonVariable
@@ -46,11 +46,11 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
 
   # When defined groups end up subsetting the incoming data
   result <- differentialAbundance(data, comparisonVariable = "entity.cat4", groupA = c('cat4_a'), groupB = c('cat4_b'), method='DESeq', verbose=F)
-  expect_equal(length(result@droppedColumns), 381)
+  expect_equal(length(result@droppedColumns), 407)
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
-  expect_equal(nrow(sampleMetadata_test[entity.cat4 %in% c('cat4_a','cat4_b'), ]), nrow(dt))
+  expect_equal(nrow(sampleMetadata[entity.cat4 %in% c('cat4_a','cat4_b'), ]), nrow(dt))
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
@@ -77,11 +77,11 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
 
   # With only some comparisonVariable values found in the metadata
   result <- differentialAbundance(data, comparisonVariable = "entity.cat4", groupA = c('cat4_a','test'), groupB = c('cat4_b'), method='DESeq', verbose=F)
-  expect_equal(length(result@droppedColumns), 381)
+  expect_equal(length(result@droppedColumns), 407)
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
-  expect_equal(nrow(sampleMetadata_test[entity.cat4 %in% c('cat4_a','cat4_b'), ]), nrow(dt))
+  expect_equal(nrow(sampleMetadata[entity.cat4 %in% c('cat4_a','cat4_b'), ]), nrow(dt))
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
@@ -91,7 +91,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   # With samples ordered differently in the metadata and abundance data
   data@data <- data@data[288:1, ]
   result <- differentialAbundance(data, comparisonVariable = "entity.cat4", groupA = c('cat4_a'), groupB = c('cat4_b'), method='DESeq', verbose=T)
-  expect_equal(length(result@droppedColumns), 381)
+  expect_equal(length(result@droppedColumns), 407)
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
