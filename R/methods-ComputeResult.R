@@ -86,7 +86,7 @@ setGeneric("writeStatistics",
 setMethod("writeStatistics", signature("ComputeResult"), function(object, pattern = NULL, verbose = c(TRUE, FALSE)) {
   verbose <- veupathUtils::matchArg(verbose)
 
-  outJson <- jsonlite::toJSON(object@statistics, digits = NA) # digits=NA for max precision
+  outJson <- jsonlite::toJSON(lapply(result@statistics, as.character), digits = NA) # digits=NA for max precision
 
   if (is.null(pattern)) { 
     pattern <- object@name

@@ -120,12 +120,14 @@ test_that("ComputeResult writeStatistics returns formatted json.", {
                                            )),
               data = df)
 
-  outJson <- jsonlite::toJSON(result@statistics, digits=NA)
+  # transform to character, just like in the real method
+  outJson <- jsonlite::toJSON(lapply(result@statistics, as.character), digits=NA)
   jsonList <- jsonlite::fromJSON(outJson)
-  expect_equal(nrow(jsonList), nStats)
+  
+  expect_equal(length(jsonList$stat_float), nStats) # Check we still have enough stats
   expect_equal(names(jsonList), c('stat_float','stat_char','stat_with_missing'))
-  expect_equal(unname(unlist(lapply(jsonList,class))), c('numeric','character','numeric'))
-  expect_equal(jsonList$stat_with_missing, result@statistics$stat_with_missing)
-  expect_equal(jsonList$stat_float, result@statistics$stat_float)
+  expect_equal(unname(unlist(lapply(jsonList,class))), c('character','character','character'))
+  expect_equal(jsonList$stat_with_missing, as.character(result@statistics$stat_with_missing))
+  expect_equal(jsonList$stat_float, as.character(result@statistics$stat_float))
 
 })
