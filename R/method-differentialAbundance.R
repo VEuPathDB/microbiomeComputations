@@ -12,6 +12,7 @@
 #' @import veupathUtils
 #' @import data.table
 #' @importFrom purrr none
+#' @importFrom purrr discard
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("differentialAbundance",
@@ -108,13 +109,12 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     ## Format data for the different differential abundance methods.
 
     # First, remove id columns and any columns that are all 0s.
-    cleanedData <- veupathUtils::dropZeroColumns(df[, -..allIdColumns])
-    dfCleaned <- cleanedData$data
-    droppedColumns <- cleanedData$droppedColumns
+    cleanedData <- purrr::discard(df[, -..allIdColumns], function(col) {identical(union(unique(col), c(0, NA)), c(0, NA))})
+    droppedColumns <- setdiff(names(df[, -..allIdColumns]), names(cleanedData))
 
     # Next, transpose abundance data to get a counts matrix with taxa as rows and samples as columns
-    counts <- data.table::transpose(dfCleaned)
-    rownames(counts) <- names(dfCleaned)
+    counts <- data.table::transpose(cleanedData)
+    rownames(counts) <- names(cleanedData)
     colnames(counts) <- df[[recordIdColumn]]
 
     # Then, format metadata. Recall samples are rows and variables are columns
