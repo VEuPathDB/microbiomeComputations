@@ -121,7 +121,8 @@ test_that("ComputeResult writeStatistics returns formatted json.", {
               data = df)
 
   # transform to character, just like in the real method
-  outJson <- jsonlite::toJSON(lapply(result@statistics, as.character), digits=NA)
+  charObject <- data.frame(lapply(result@statistics, as.character))
+  outJson <- jsonlite::toJSON(charObject)
   jsonList <- jsonlite::fromJSON(outJson)
   
   expect_equal(length(jsonList$stat_float), nStats) # Check we still have enough stats
