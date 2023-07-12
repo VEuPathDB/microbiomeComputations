@@ -86,7 +86,10 @@ setGeneric("writeStatistics",
 setMethod("writeStatistics", signature("ComputeResult"), function(object, pattern = NULL, verbose = c(TRUE, FALSE)) {
   verbose <- veupathUtils::matchArg(verbose)
 
-  outJson <- jsonlite::toJSON(object@statistics, digits = NA) # digits=NA for max precision
+  # Convert all to character but maintain structure 
+  outObject <- data.frame(lapply(object@statistics, as.character))
+
+  outJson <- jsonlite::toJSON(outObject)
 
   if (is.null(pattern)) { 
     pattern <- object@name
