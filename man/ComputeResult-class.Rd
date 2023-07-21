@@ -27,5 +27,7 @@ This includes their representation in R, as JSON and how they are written to fil
 \item{\code{computationDetails}}{An optional message about the computed results.}
 
 \item{\code{parameters}}{A record of the input parameters used to generate the computed results.}
+
+\item{\code{droppedColumns}}{A character vector of column names that have been dropped for being unsuitable for the computation.}
 }}
 
