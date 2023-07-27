@@ -26,7 +26,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     naToZero <- data@imputeZero
     ancestorIdColumns <- data@ancestorIdColumns
     allIdColumns <- c(recordIdColumn, ancestorIdColumns)
-    sampleMetadata <- data@sampleMetadata
+    sampleMetadata <- copy(data@sampleMetadata)
 
 
     ## Initialize and check inputs
@@ -52,34 +52,40 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
+    # Determine if comparison variable is numeric.
+    isNumericComparisonVar <- identical(class(sampleMetadata[[comparisonVariable]]), "numeric")
+
     ## Check that groups are provided, if needed, and if they are provided,
     ## that they match at least one value in the comparisonVariable column.
     ## Eventually let's move this all into a Comparator class or similar.
     uniqueComparisonVariableValues <- sort(unique(sampleMetadata[[comparisonVariable]]))
-    
-    if (!!length(groupA) && !!length(groupB)) {
-      # Does each group contain at least one string that matches a value in the comparisonValue column?
-      if (!any(groupA %in% uniqueComparisonVariableValues)) {
-        stop("At least one value in groupA must exist as a value in the comparisonValue sampleMetadata column.")
-      }
-      if (!any(groupB %in% uniqueComparisonVariableValues)) {
-        stop("At least one value in groupB must exist as a value in the comparisonValue sampleMetadata column.")
-      }
 
-      # Alert that we discard groupA/B values that are not found in the comparisonVariable
-      if (!all(groupA %in% uniqueComparisonVariableValues)) {
-        veupathUtils::logWithTime("Found values in groupA that do not exist in the comparisonVariable. Removing these values.", verbose)
-        groupA <- groupA[groupA %in% uniqueComparisonVariableValues]
-      }
-      if (!all(groupB %in% uniqueComparisonVariableValues)) {
-        veupathUtils::logWithTime("Found values in groupB that do not exist in the comparisonVariable. Removing these values.", verbose)
-        groupB <- groupB[groupB %in% uniqueComparisonVariableValues]
-      }
+    if (!!length(groupA) && !!length(groupB)) {
 
       # Do not allow duplicated values
       if (!!length(intersect(groupA, groupB))) {
         veupathUtils::logWithTime("groupA and groupB cannot share members.", verbose)
         stop()
+      }
+
+      if (!isNumericComparisonVar) {
+        # Does each group contain at least one string that matches a value in the comparisonValue column?
+        if (!any(groupA %in% uniqueComparisonVariableValues)) {
+          stop("At least one value in groupA must exist as a value in the comparisonValue sampleMetadata column.")
+        }
+        if (!any(groupB %in% uniqueComparisonVariableValues)) {
+          stop("At least one value in groupB must exist as a value in the comparisonValue sampleMetadata column.")
+        }
+
+        # Alert that we discard groupA/B values that are not found in the comparisonVariable
+        if (!all(groupA %in% uniqueComparisonVariableValues)) {
+          veupathUtils::logWithTime("Found values in groupA that do not exist in the comparisonVariable. Removing these values.", verbose)
+          groupA <- groupA[groupA %in% uniqueComparisonVariableValues]
+        }
+        if (!all(groupB %in% uniqueComparisonVariableValues)) {
+          veupathUtils::logWithTime("Found values in groupB that do not exist in the comparisonVariable. Removing these values.", verbose)
+          groupB <- groupB[groupB %in% uniqueComparisonVariableValues]
+        }
       }
 
     } else if (length(uniqueComparisonVariableValues) == 2) {
@@ -92,7 +98,22 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     }
 
     # Subset to only include samples with metadata defined in groupA and groupB
+    if (isNumericComparisonVar) {
+      inGroupA <- Reduce(`+`, lapply(groupA, whichInBin, values = sampleMetadata[[comparisonVariable]]))
+      inGroupB <- Reduce(`+`, lapply(groupB, whichInBin, values = sampleMetadata[[comparisonVariable]]))
+
+      #### @ANN check to make sure inGroupA /in inGroupB = /empty
+
+      # Make the comparisonVariable a character vector and replace the in-group values with a bin.
+      sampleMetadata[, (comparisonVariable) := as.character(get(comparisonVariable))]
+      
+      # Can replace values with whatever the first value is in that group
+      sampleMetadata[!!inGroupA, c(comparisonVariable)] <- groupA[1]
+      sampleMetadata[!!inGroupB, c(comparisonVariable)] <- groupB[1]
+    }
+
     sampleMetadata <- sampleMetadata[get(comparisonVariable) %in% c(groupA, groupB), ]
+
     keepSamples <- sampleMetadata[[recordIdColumn]]
     veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with ", comparisonVariable, "in either groupA or groupB. The calculation will continue with only these samples."), verbose)
 
