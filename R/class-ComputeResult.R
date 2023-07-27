@@ -71,6 +71,7 @@ check_compute_result <- function(object) {
 #' @slot statistics An optional data.frame of values. This data frame is not required to have rows or cols map to samples.
 #' @slot computationDetails An optional message about the computed results.
 #' @slot parameters A record of the input parameters used to generate the computed results.
+#' @slot droppedColumns A character vector of column names that have been dropped for being unsuitable for the computation.
 #' @name ComputeResult-class
 #' @rdname ComputeResult-class
 #' @export
@@ -82,7 +83,8 @@ ComputeResult <- setClass("ComputeResult", representation(
     computedVariableMetadata = 'VariableMetadataList',
     statistics = 'data.frame',
     computationDetails = 'character',
-    parameters = 'character'
+    parameters = 'character',
+    droppedColumns = 'character'
 ), prototype = prototype(
     name = NA_character_,
     recordIdColumn = NA_character_,
