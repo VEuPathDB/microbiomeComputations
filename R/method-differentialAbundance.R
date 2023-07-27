@@ -100,6 +100,11 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
     # Subset to only include samples with metadata defined in groupA and groupB
     if (isNumericComparisonVar) {
+      # We need to turn the numeric comparison variable into a categorical one with those values
+      # that fall within group A or group B bins marked with some string we know.
+
+      # Collect all instances where the comparisonVariable has values in the bins from each group.
+      # So inGroupA is a vector with 0 if the value in comparisonVariable is not within any of the group A bins and >0 otherwise.
       inGroupA <- Reduce(`+`, lapply(groupA, whichInBin, values = sampleMetadata[[comparisonVariable]]))
       inGroupB <- Reduce(`+`, lapply(groupB, whichInBin, values = sampleMetadata[[comparisonVariable]]))
 
@@ -110,7 +115,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
       # Make the comparisonVariable a character vector and replace the in-group values with a bin.
       sampleMetadata[, (comparisonVariable) := as.character(get(comparisonVariable))]
       
-      # Can replace values with whatever the first value is in that group
+      # Can replace values in sampleMetadata with whatever the first value is in that group.
       sampleMetadata[!!inGroupA, c(comparisonVariable)] <- groupA[1]
       sampleMetadata[!!inGroupB, c(comparisonVariable)] <- groupB[1]
     }

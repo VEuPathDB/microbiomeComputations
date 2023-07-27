@@ -1,7 +1,7 @@
 # Tests for differential abundance methods
 
 test_that('differentialAbundance returns a correctly formatted data.table', {
-  set.seed(1)
+
   df <- testOTU
   counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
   counts[ ,entity.SampleID:= df$entity.SampleID]
