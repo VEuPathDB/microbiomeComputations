@@ -46,7 +46,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
-  expect_equal(nrow(testSampleMetadata[entity.cat4 %in% c('cat4_a','cat4_b'), ]), nrow(dt))
+  expect_equal(sum(testSampleMetadata[,'entity.cat4'] %in% c('cat4_a','cat4_b')), nrow(dt))
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
@@ -83,14 +83,14 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
-  expect_equal(nrow(testSampleMetadata[entity.cat4 %in% c('cat4_a','cat4_b'), ]), nrow(dt))
+  expect_equal(sum(testSampleMetadata[,'entity.cat4'] %in% c('cat4_a','cat4_b')), nrow(dt))
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
   # With samples ordered differently in the metadata and abundance data
-  data@data <- data@data[288:1, ]
+  testData@data <- testData@data[288:1, ]
   result <- differentialAbundance(testData, comparisonVariable = "entity.cat4", groupA = c('cat4_a'), groupB = c('cat4_b'), method='DESeq', verbose=T)
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
