@@ -102,7 +102,9 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
       inGroupA <- Reduce(`+`, lapply(groupA, whichInBin, values = sampleMetadata[[comparisonVariable]]))
       inGroupB <- Reduce(`+`, lapply(groupB, whichInBin, values = sampleMetadata[[comparisonVariable]]))
 
-      #### @ANN check to make sure inGroupA /in inGroupB = /empty
+      if ((any(inGroupA * inGroupB) > 0)) {
+        stop("Group A and Group B cannot have overlapping bins.")
+      }
 
       # Make the comparisonVariable a character vector and replace the in-group values with a bin.
       sampleMetadata[, (comparisonVariable) := as.character(get(comparisonVariable))]

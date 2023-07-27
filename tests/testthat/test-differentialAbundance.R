@@ -53,7 +53,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
 
-  # With a continuous variable @ANN go add print nsamples multiple places in the method to debug!!!
+  # With a continuous variable
   result <- differentialAbundance(testData, comparisonVariable = "entity.contA", groupA = c('[2, 3)','[3, 4)'), groupB = c('[4, 5)'), method='DESeq', verbose=F)
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
@@ -156,6 +156,9 @@ test_that("differentialAbundance fails with improper inputs", {
 
   # Fail when values are duplicated in groupA and groupB
   expect_error(differentialAbundance(testData, comparisonVariable = "entity.cat4", groupA = c('cat4_a','cat4_b'), groupB = c('cat4_a','cat4_c'), method='DESeq', verbose=F))
+
+  # Fail when bins in Group A and Group B overlap
+  expect_error(differentialAbundance(testData, comparisonVariable = "entity.contA", groupA = c('[2, 3)','[3, 4)'), groupB = c('[4, 5)', '[1.5, 2.5)'), method='DESeq', verbose=F))
 
 })
 
