@@ -105,8 +105,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
       # Collect all instances where the comparisonVariable has values in the bins from each group.
       # So inGroupA is a vector with 0 if the value in comparisonVariable is not within any of the group A bins and >0 otherwise.
-      inGroupA <- Reduce(`+`, lapply(groupA, whichInBin, values = sampleMetadata[[comparisonVariable]]))
-      inGroupB <- Reduce(`+`, lapply(groupB, whichInBin, values = sampleMetadata[[comparisonVariable]]))
+      inGroupA <- Reduce(`+`, lapply(groupA, veupathUtils::whichInBin, values = sampleMetadata[[comparisonVariable]]))
+      inGroupB <- Reduce(`+`, lapply(groupB, veupathUtils::whichInBin, values = sampleMetadata[[comparisonVariable]]))
 
       if ((any(inGroupA * inGroupB) > 0)) {
         stop("Group A and Group B cannot have overlapping bins.")
