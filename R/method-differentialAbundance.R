@@ -16,12 +16,12 @@
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("differentialAbundance",
-  function(data, comparisonVariable, groupA, groupB, method = c('DESeq', 'ANCOMBC'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
+  function(data, comparisonVariable, groupA, groupB, method = c('DESeq', 'ANCOMBC', 'MaAsLin2'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
   signature = c("data")
 )
 
 #'@export
-setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(data, comparisonVariable, groupA, groupB, method = c('DESeq', 'ANCOMBC'), verbose = c(TRUE, FALSE)) {
+setMethod("differentialAbundance", signature("AbundanceData"), function(data, comparisonVariable, groupA, groupB, method = c('DESeq', 'ANCOMBC', 'MaAsLin2'), verbose = c(TRUE, FALSE)) {
     df <- data@data
     recordIdColumn <- data@recordIdColumn
     naToZero <- data@imputeZero
@@ -141,20 +141,25 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     droppedColumns <- setdiff(names(df[, -..allIdColumns]), names(cleanedData))
 
     # Next, transpose abundance data to get a counts matrix with taxa as rows and samples as columns
-    counts <- data.table::transpose(cleanedData)
-    rownames(counts) <- names(cleanedData)
-    colnames(counts) <- df[[recordIdColumn]]
+    if (!identical(method, 'MaAsLin2')) {
+      counts <- data.table::transpose(cleanedData)
+      rownames(counts) <- names(cleanedData)
+      colnames(counts) <- df[[recordIdColumn]]
+    } else {
+      counts <- cleanedData
+      rownames(counts) <- df[[recordIdColumn]]
+    }
 
     # Then, format metadata. Recall samples are rows and variables are columns
     rownames(sampleMetadata) <- sampleMetadata[[recordIdColumn]]
 
     # Finally, check to ensure samples are in the same order in counts and metadata. Both DESeq
     # and ANCOMBC expect the order to match, and will not perform this check.
-    if (!identical(rownames(sampleMetadata), colnames(counts))){
-      # Reorder sampleMetadata to match counts
-      veupathUtils::logWithTime("Sample order differs between data and metadata. Reordering data based on the metadata sample order.", verbose)
-      data.table::setcolorder(counts, rownames(sampleMetadata))
-    }
+    # if (!identical(rownames(sampleMetadata), colnames(counts))){
+    #   # Reorder sampleMetadata to match counts
+    #   veupathUtils::logWithTime("Sample order differs between data and metadata. Reordering data based on the metadata sample order.", verbose)
+    #   data.table::setcolorder(counts, rownames(sampleMetadata))
+    # }
     veupathUtils::logWithTime(paste0("Abundance data formatted for differential abundance computation. Proceeding with method=",method), verbose)
     
     ## Compute differential abundance
@@ -201,6 +206,27 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
                   fix_formula = comparisonVariable, rand_formula = NULL,
                   p_adj_method = "holm", prv_cut=0,
                   group = comparisonVariable)
+
+    } else if (identical(method, 'MaAsLin2')) {
+
+      maaslinOutput <- Maaslin2(
+        input_data = counts, 
+        input_metadata = sampleMetadata,
+        output = "maaslin_output",
+        fixed_effects = c(comparisonVariable),
+        analysis_method = "LM", # default LM
+        normalization = "TSS", # default TSS
+        transform = "LOG", # default LOG
+        plot_heatmap = F,
+        plot_scatter = F)
+
+      # Coefficient is not exactly right, but we could calculate log2FC ourselves pretty easily.
+      # see https://forum.biobakery.org/t/trying-to-understand-coef-column-and-how-to-convert-it-to-fold-change/3136/8
+
+      statistics <- data.frame(log2foldChange = maaslinOutput$results$coef,
+                          pValue = maaslinOutput$results$pval,
+                          adjustedPValue = maaslinOutput$results$qval,
+                          pointID = maaslinOutput$results$feature)
 
     } else {
       stop('Unaccepted differential abundance method. Accepted methods are "DESeq" and "ANCOMBC".')

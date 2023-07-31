@@ -197,3 +197,32 @@ test_that("differentialAbundance catches deseq errors", {
 
 
 })
+
+test_that("differentialAbundance handles non-integer data",{
+    df <- testOTU
+  counts <- df[, -c("entity.SampleID")]*1000
+  counts[ ,entity.SampleID:= df$entity.SampleID]
+  nSamples <- dim(df)[1]
+  testSampleMetadata <- data.frame(list(
+    "entity.SampleID" = df[["entity.SampleID"]],
+    "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T),
+    "entity.cat3" = rep(paste0("cat3_", letters[1:3]), nSamples/3, replace=T),
+    "entity.cat4" = rep(paste0("cat4_", letters[1:4]), nSamples/4, replace=T),
+    "entity.contA" = rnorm(nSamples, sd=5)
+    ))
+
+
+  testData <- microbiomeComputations::AbundanceData(
+              data = counts,
+              sampleMetadata = testSampleMetadata,
+              recordIdColumn = 'entity.SampleID')
+
+  result <- differentialAbundance(testData,
+              comparisonVariable = "entity.cat4",
+              groupA = c('cat4_a'),
+              groupB = c('cat4_b'),
+              method='MaAsLin2',
+              verbose=T)
+  dt <- result@data
+  stats <- result@statistics
+})
