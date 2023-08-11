@@ -1,11 +1,12 @@
 #' Correlation
 #'
-#' This function returns correlation coefficients and significance values for all-to-all correlation of variables in two datasets.
+#' This function returns correlation coefficients for all abundance variables vs all continuous sample metadata variables.
+#' Soon this function will be expanded to take multiple abundance datasets, and to run all-to-all correlations
+#' for abundance variables.
 #' 
-#' @param data whatAmI? Abundance data i guess
-#' @param secondMatrix data table or something (assay 2) to correlate against abundace data. Optional
-#' @param method string. Can be X, Y, or Z
-#' @param verbose boolean
+#' @param data AbundanceData object
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @import data.table
@@ -48,41 +49,43 @@ setMethod("correlation", signature("AbundanceData"), function(data, method = c('
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
-    ## TODO Check that samples match. If not, reorder so they do
+    # Check that the order of sample ids match. If not, reorder so they do
+    if (!identical(df[[recordIdColumn]], sampleMetadata[[recordIdColumn]])) {
+      # Reorder sampleMetadata so that it matches the order in df
+      sampleMetadata <- sampleMetadata[match(df[[recordIdColumn]],sampleMetadata[[recordIdColumn]]), ]
+      veupathUtils::logWithTime("Reordered sampleMetadata rows based on abundance data sample id order.", verbose)
+    }
 
     ## Find numeric metadata
     numericMetadataCols <- veupathUtils::findNumericCols(sampleMetadata)
+    if (length(numericMetadataCols) < 1) {
+      stop("correlation requires at least one continuous metadata variable.")
+    }
 
-    ## (remember here samples are rows and vars are cols). Abundance data should be same!
 
     ## Compute correlation
     # Resulting data table has column "rn" = row names of the correlation matrix (so taxa names), and the other
     # column names are the vars from sample metadata that we use
     corrResult <- data.table::as.data.table(cor(df[, -..allIdColumns], sampleMetadata[, ..numericMetadataCols], method = method), keep.rownames = T)
 
-    melted <- melt(corrResult, id.vars=c('rn'))
-    # Output: rn = taxa or gene name, variable = metadata variable, value = correlation coefficient
-    data.table::setnames(melted, c('rn','variable','value'), c('var1','var2','corrCoeff'))
-
-    # Format results
-    statistics <- data.frame(
-      var1 = melted[['var1']],
-      var2 = melted[['var2']],
-      corrCoeff = melted[['corrCoeff']]
-      # pValue = TODO,
-      # adjustedPValue = TODO,
-    )
-
     veupathUtils::logWithTime(paste0('Completed method=',method,'. Formatting results.'), verbose)
+
+
+    ## Format results
+    meltedCorrResult <- melt(corrResult, id.vars=c('rn'))
+    statistics <- data.frame(
+      var1 = meltedCorrResult[['rn']],
+      var2 = meltedCorrResult[['variable']],
+      corrCoeff = meltedCorrResult[['value']]
+    )
     
-    ## Construct the ComputeResult
+    # Construct the ComputeResult
     result <- new("ComputeResult")
     result@name <- 'correlation'
     result@recordIdColumn <- recordIdColumn
     result@ancestorIdColumns <- ancestorIdColumns
     result@statistics <- statistics
     result@parameters <- paste0('method = ', method)
-    # result@droppedColumns <- droppedColumns   TODO - should be added when we handle NAs
 
 
     # The resulting data should contain only the samples actually used.
