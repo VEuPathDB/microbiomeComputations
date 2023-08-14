@@ -28,7 +28,7 @@ test_that('correlation returns a correctly formatted data.table', {
   # Check stats (all correlation outputs)
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('var1','var2','corrCoeff'))
+  expect_equal(names(stats), c('var1','var2','correlationCoef'))
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata))) # Should be number of taxa * number of metadata vars
 
 
@@ -42,7 +42,7 @@ test_that('correlation returns a correctly formatted data.table', {
   # Check stats (all correlation outputs)
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('var1','var2','corrCoeff'))
+  expect_equal(names(stats), c('var1','var2','correlationCoef'))
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata))) # Should be number of taxa * number of metadata vars
 
 
@@ -57,7 +57,7 @@ test_that('correlation returns a correctly formatted data.table', {
   # Check stats (all correlation outputs)
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('var1','var2','corrCoeff'))
+  expect_equal(names(stats), c('var1','var2','correlationCoef'))
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata))) # Should be number of taxa * number of metadata vars
 
 })

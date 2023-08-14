@@ -76,7 +76,7 @@ setMethod("correlation", signature("AbundanceData"), function(data, method = c('
     statistics <- data.frame(
       var1 = meltedCorrResult[['rn']],
       var2 = meltedCorrResult[['variable']],
-      corrCoeff = meltedCorrResult[['value']]
+      correlationCoef = meltedCorrResult[['value']]
     )
     
     # Construct the ComputeResult
