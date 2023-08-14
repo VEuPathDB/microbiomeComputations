@@ -39,6 +39,7 @@ Collate:
     'class-ComputeResult.R'
     'method-alphaDiv.R'
     'method-betaDiv.R'
+    'method-correlation.R'
     'method-differentialAbundance.R'
     'method-rankedAbundance.R'
     'methods-ComputeResult.R'
