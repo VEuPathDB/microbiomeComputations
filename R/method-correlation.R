@@ -61,6 +61,13 @@ setMethod("correlation", signature("AbundanceData"), function(data, method = c('
       # Use the data shape to find appropriate columns in the metadata
       inputMetadataCols <- veupathUtils::findColNamesByPredicate(variables, function(x) {identical(x@dataShape@value, "CONTINUOUS")})
 
+      # If any are dates, we'll need to coerce them to numeric for the correlation, and then back again.
+      dateMetadataCols <- veupathUtils::findColNamesByPredicate(variables, function(x) {identical(x@dataShape@value, "CONTINUOUS") && identical(x@dataType@value, "DATE")})
+      if (!!length(dateMetadataCols)) {
+        veupathUtils::logWithTime("Converting date variables to numeric", verbose)
+        sampleMetadata[, (dateMetadataCols) := lapply(.SD, as.numeric), .SDcols = dateMetadataCols]
+      }
+
     } else {
       warning("No variable metadata supplied. Using all numeric columns of sampleMetadata for correlation.")
       inputMetadataCols <- veupathUtils::findNumericCols(sampleMetadata)

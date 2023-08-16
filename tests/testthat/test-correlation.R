@@ -2,19 +2,18 @@
 
 test_that('correlation returns a correctly formatted data.table', {
   df <- testOTU
-  counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
-  counts[ ,entity.SampleID:= df$entity.SampleID]
   nSamples <- dim(df)[1]
   sampleMetadata <- data.frame(list(
     "entity.SampleID" = df[["entity.SampleID"]],
     "entity.contA" = rnorm(nSamples),
     "entity.contB" = rnorm(nSamples),
-    "entity.contC" = rnorm(nSamples)
+    "entity.contC" = rnorm(nSamples),
+    "entity.dateA" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
     ))
 
 
-  data <- microbiomeComputations::AbsoluteAbundanceData(
-              data = counts,
+  data <- microbiomeComputations::AbundanceData(
+              data = df,
               sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
   
@@ -71,6 +70,11 @@ test_that('correlation returns a correctly formatted data.table', {
       variableClass = new("VariableClass", value = 'native'),
       variableSpec = new("VariableSpec", variableId = 'contB', entityId = 'entity'),
       dataType = new("DataType", value = 'NUMBER'),
+      dataShape = new("DataShape", value = 'CONTINUOUS')),
+    new("VariableMetadata",
+      variableClass = new("VariableClass", value = 'native'),
+      variableSpec = new("VariableSpec", variableId = 'dateA', entityId = 'entity'),
+      dataType = new("DataType", value = 'DATE'),
       dataShape = new("DataShape", value = 'CONTINUOUS'))
   ))
 
