@@ -18,8 +18,8 @@ test_that('correlation returns a correctly formatted data.table', {
               sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
   
-  ## All continuous sample variables
-  result <- correlation(data, 'pearson', FALSE)
+  ## All numeric sample variables
+  result <- correlation(data, 'pearson', variables = NULL, FALSE)
   # Check data (only sample ids)
   dt <- result@data
   expect_s3_class(dt, 'data.table')
@@ -49,6 +49,32 @@ test_that('correlation returns a correctly formatted data.table', {
   ## With samples ordered differently in the abundance data and metadata
   data@data <- data@data[288:1, ]
   result <- correlation(data, 'spearman', FALSE)
+  # Check data (only sample ids)
+  dt <- result@data
+  expect_s3_class(dt, 'data.table')
+  expect_equal(names(dt), c('SampleID'))
+  expect_equal(nrow(dt), nSamples)
+  # Check stats (all correlation outputs)
+  stats <- result@statistics
+  expect_s3_class(stats, 'data.frame')
+  expect_equal(names(stats), c('var1','var2','correlationCoef'))
+  expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata))) # Should be number of taxa * number of metadata vars
+
+
+  ## With specified variables
+  variables <- new("VariableMetadataList", SimpleList(
+    new("VariableMetadata",
+      variableSpec = new("VariableSpec", variableId = 'contA', entityId = 'entity'),
+      dataType = new("DataType", value = 'NUMBER'),
+      dataShape = new("DataShape", value = 'CONTINUOUS')),
+    new("VariableMetadata",
+      variableClass = new("VariableClass", value = 'native'),
+      variableSpec = new("VariableSpec", variableId = 'contB', entityId = 'entity'),
+      dataType = new("DataType", value = 'NUMBER'),
+      dataShape = new("DataShape", value = 'CONTINUOUS'))
+  ))
+
+  result <- correlation(data, 'spearman', variables, FALSE)
   # Check data (only sample ids)
   dt <- result@data
   expect_s3_class(dt, 'data.table')

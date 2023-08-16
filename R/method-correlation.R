@@ -13,12 +13,12 @@
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("correlation",
-  function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) standardGeneric("correlation"),
+  function(data, method = c('spearman','pearson'), variables = NULL, verbose = c(TRUE, FALSE)) standardGeneric("correlation"),
   signature = c("data")
 )
 
 #'@export
-setMethod("correlation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("correlation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), variables = NULL, verbose = c(TRUE, FALSE)) {
     df <- data@data
     recordIdColumn <- data@recordIdColumn
     naToZero <- data@imputeZero
@@ -56,9 +56,16 @@ setMethod("correlation", signature("AbundanceData"), function(data, method = c('
       veupathUtils::logWithTime("Reordered sampleMetadata rows based on abundance data sample id order.", verbose)
     }
 
-    ## Find numeric metadata
-    numericMetadataCols <- veupathUtils::findNumericCols(sampleMetadata)
-    if (length(numericMetadataCols) < 1) {
+    ## Extract appropriate metadata columns
+    if (!is.null(variables)) {
+      # Use the data shape to find appropriate columns in the metadata
+      inputMetadataCols <- veupathUtils::findColNamesByPredicate(variables, function(x) {identical(x@dataShape@value, "CONTINUOUS")})
+
+    } else {
+      warning("No variable metadata supplied. Using all numeric columns of sampleMetadata for correlation.")
+      inputMetadataCols <- veupathUtils::findNumericCols(sampleMetadata)
+    }
+    if (length(inputMetadataCols) < 1) {
       stop("correlation requires at least one continuous metadata variable.")
     }
 
@@ -66,7 +73,7 @@ setMethod("correlation", signature("AbundanceData"), function(data, method = c('
     ## Compute correlation
     # Resulting data table has column "rn" = row names of the correlation matrix (so taxa names), and the other
     # column names are the vars from sample metadata that we use
-    corrResult <- data.table::as.data.table(cor(df[, -..allIdColumns], sampleMetadata[, ..numericMetadataCols], method = method), keep.rownames = T)
+    corrResult <- data.table::as.data.table(cor(df[, -..allIdColumns], sampleMetadata[, ..inputMetadataCols], method = method), keep.rownames = T)
 
     veupathUtils::logWithTime(paste0('Completed method=',method,'. Formatting results.'), verbose)
 
