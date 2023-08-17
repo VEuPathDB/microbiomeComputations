@@ -4,8 +4,8 @@
 #' 
 #' @param data AbsoluteAbundanceData object
 #' @param comparisonVariable string identifying the metadata column to be used when grouping samples.
-#' @param groupA array of strings, each string indicating a value in the comparisonVariable column. Samples with these metadata values will be included in Group A for the differential abundance calculation. Must have no overlap with groupB
-#' @param groupB array of strings, each string indicating a value in the comparisonVariable column. Samples with these metadata values will be included in Group B for the differential abundance calculation. Must have no overlap with groupA.
+#' @param groupA array of strings or a BinList, with each string indicating a value in the comparisonVariable column or each bin a different range for a continuous variable. Samples with these metadata values will be included in Group A for the differential abundance calculation. Must have no overlap with groupB
+#' @param groupB array of strings or a BinList, with each string indicating a value in the comparisonVariable column or each bin a different range for a continuous variable. Samples with these metadata values will be included in Group B for the differential abundance calculation. Must have no overlap with groupA.
 #' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
@@ -53,8 +53,13 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
+    # Err if the class of groupA does not match that of groupB
+    if (!identical(class(groupA), class(groupB))) {
+      stop("groupA and groupB must either both be character vectors or both be BinLists.")
+    }
+
     # Determine if comparison variable is numeric.
-    isNumericComparisonVar <- identical(class(sampleMetadata[[comparisonVariable]]), "numeric")
+    isNumericComparisonVar <- identical(class(groupA)[1], "BinList")
 
     ## Check that groups are provided, if needed, and if they are provided,
     ## that they match at least one value in the comparisonVariable column.
@@ -63,13 +68,14 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
     if (!!length(groupA) && !!length(groupB)) {
 
-      # Do not allow duplicated values
-      if (!!length(intersect(groupA, groupB))) {
-        veupathUtils::logWithTime("groupA and groupB cannot share members.", verbose)
-        stop()
-      }
 
       if (!isNumericComparisonVar) {
+
+        # Do not allow duplicated values
+        if (!!length(intersect(groupA, groupB))) {
+          veupathUtils::logWithTime("groupA and groupB cannot share members.", verbose)
+          stop()
+        }
         # Does each group contain at least one string that matches a value in the comparisonValue column?
         if (!any(groupA %in% uniqueComparisonVariableValues)) {
           stop("At least one value in groupA must exist as a value in the comparisonValue sampleMetadata column.")
@@ -87,6 +93,13 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
           veupathUtils::logWithTime("Found values in groupB that do not exist in the comparisonVariable. Removing these values.", verbose)
           groupB <- groupB[groupB %in% uniqueComparisonVariableValues]
         }
+      } else {
+        # TODO checks for bin lists
+        # BinList already checks to make sure there are no overlaps within one list
+        # Check that there is no overlap between group a and b bins. This is actually tough because have to
+        # check that the bin ranges don't overlap, can't just check that the exact same bins don't exist
+        # in each. 
+        veupathUtils::logWithTime("No checks exist yet to validate groups supplied as BinLists. Use at your own risk!")
       }
 
     } else if (length(uniqueComparisonVariableValues) == 2) {
@@ -105,8 +118,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
 
       # Collect all instances where the comparisonVariable has values in the bins from each group.
       # So inGroupA is a vector with 0 if the value in comparisonVariable is not within any of the group A bins and >0 otherwise.
-      inGroupA <- Reduce(`+`, lapply(groupA, veupathUtils::whichInBin, values = sampleMetadata[[comparisonVariable]]))
-      inGroupB <- Reduce(`+`, lapply(groupB, veupathUtils::whichInBin, values = sampleMetadata[[comparisonVariable]]))
+      inGroupA <- veupathUtils::whichValuesInBinList(sampleMetadata[[comparisonVariable]], groupA)
+      inGroupB <- veupathUtils::whichValuesInBinList(sampleMetadata[[comparisonVariable]], groupB)
 
       if ((any(inGroupA * inGroupB) > 0)) {
         stop("Group A and Group B cannot have overlapping bins.")

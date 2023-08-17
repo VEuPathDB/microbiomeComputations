@@ -61,7 +61,15 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
 
 
   # With a continuous variable
-  result <- differentialAbundance(testData, comparisonVariable = "entity.contA", groupA = c('[2, 3)','[3, 4)'), groupB = c('[4, 5)'), method='DESeq', verbose=F)
+  bin1 <- veupathUtils::Bin(binStart=2, binEnd=3, binLabel="[2, 3)")
+  bin2 <- veupathUtils::Bin(binStart=3, binEnd=4, binLabel="[3, 4)")
+  bin3 <- veupathUtils::Bin(binStart=4, binEnd=5, binLabel="[4, 5)")
+  bin4 <- veupathUtils::Bin(binStart=5, binEnd=6, binLabel="[5, 6)")
+
+  groupABins <- veupathUtils::BinList(S4Vectors::SimpleList(c(bin1, bin2)))
+  groupBBins <- veupathUtils::BinList(S4Vectors::SimpleList(c(bin3, bin4)))
+
+  result <- differentialAbundance(testData, comparisonVariable = "entity.contA", groupA = groupABins, groupB = groupBBins, method='DESeq', verbose=F)
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
