@@ -11,7 +11,8 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
     "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T),
     "entity.cat3" = rep(paste0("cat3_", letters[1:3]), nSamples/3, replace=T),
     "entity.cat4" = rep(paste0("cat4_", letters[1:4]), nSamples/4, replace=T),
-    "entity.contA" = rnorm(nSamples, sd=5)
+    "entity.contA" = rnorm(nSamples, sd=5),
+    "entity.dateA" = sample(seq(as.Date('1988/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
     ))
 
 
@@ -73,7 +74,25 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
-  expect_equal(nrow(dt), sum((testSampleMetadata[['entity.contA']] >= 2) * (testSampleMetadata[['entity.contA']] < 5)))
+  expect_equal(nrow(dt), sum((testSampleMetadata[['entity.contA']] >= 2) * (testSampleMetadata[['entity.contA']] < 6)))
+  stats <- result@statistics
+  expect_s3_class(stats, 'data.frame')
+  expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
+  expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
+
+  ## With dates
+  bin1 <- Bin(binStart=as.Date('1989-01-01'), binEnd=as.Date('1990-01-01'), binLabel='1989')
+  bin2 <- Bin(binStart=as.Date('1990-01-01'), binEnd=as.Date('1991-01-01'), binLabel='1990')
+  bin3 <- Bin(binStart=as.Date('1991-01-01'), binEnd=as.Date('1992-01-01'), binLabel='1991')
+  bin4 <- Bin(binStart=as.Date('1992-01-01'), binEnd=as.Date('1993-01-01'), binLabel='1992')
+  groupABins <- BinList(S4Vectors::SimpleList(c(bin1, bin2)))
+  groupBBins <- BinList(S4Vectors::SimpleList(c(bin3, bin4)))
+
+  result <- differentialAbundance(testData, comparisonVariable = "entity.dateA", groupA = groupABins, groupB = groupBBins, method='DESeq', verbose=F)
+  dt <- result@data
+  expect_equal(names(dt), c('SampleID'))
+  expect_s3_class(dt, 'data.table')
+  expect_equal(nrow(dt), sum((testSampleMetadata[['entity.dateA']] >= as.Date('1989-01-01')) * (testSampleMetadata[['entity.dateA']] < as.Date('1993-01-01'))))
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
@@ -161,7 +180,8 @@ test_that("differentialAbundance fails with improper inputs", {
     "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
     "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
     "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
-    "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T)
+    "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T),
+    "entity.contA" = rnorm(nSamples, sd=5)
     ))
 
 
@@ -180,7 +200,14 @@ test_that("differentialAbundance fails with improper inputs", {
   expect_error(differentialAbundance(testData, comparisonVariable = "entity.cat4", groupA = c('cat4_a','cat4_b'), groupB = c('cat4_a','cat4_c'), method='DESeq', verbose=F))
 
   # Fail when bins in Group A and Group B overlap
-  expect_error(differentialAbundance(testData, comparisonVariable = "entity.contA", groupA = c('[2, 3)','[3, 4)'), groupB = c('[4, 5)', '[1.5, 2.5)'), method='DESeq', verbose=F))
+  bin1 <- veupathUtils::Bin(binStart=2, binEnd=3, binLabel="[2, 3)")
+  bin2 <- veupathUtils::Bin(binStart=3, binEnd=4, binLabel="[3, 4)")
+  bin3 <- veupathUtils::Bin(binStart=3, binEnd=5, binLabel="[3, 5)")
+  bin4 <- veupathUtils::Bin(binStart=5, binEnd=6, binLabel="[5, 6)")
+  groupABins <- BinList(S4Vectors::SimpleList(c(bin1, bin2)))
+  groupBBins <- BinList(S4Vectors::SimpleList(c(bin3, bin4)))
+
+  expect_error(differentialAbundance(testData, comparisonVariable = "entity.contA", groupA = groupABins, groupB = groupBBins, method='DESeq', verbose=F))
 
 })
 

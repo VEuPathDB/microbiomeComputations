@@ -58,8 +58,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
       stop("groupA and groupB must either both be character vectors or both be BinLists.")
     }
 
-    # Determine if comparison variable is numeric.
-    isNumericComparisonVar <- identical(class(groupA)[1], "BinList")
+    # Determine if comparison variable has been binned
+    isComparisonVarBinned <- identical(class(groupA)[1], "BinList")
 
     ## Check that groups are provided, if needed, and if they are provided,
     ## that they match at least one value in the comparisonVariable column.
@@ -69,7 +69,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     if (!!length(groupA) && !!length(groupB)) {
 
 
-      if (!isNumericComparisonVar) {
+      if (!isComparisonVarBinned) {
 
         # Do not allow duplicated values
         if (!!length(intersect(groupA, groupB))) {
@@ -93,13 +93,6 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
           veupathUtils::logWithTime("Found values in groupB that do not exist in the comparisonVariable. Removing these values.", verbose)
           groupB <- groupB[groupB %in% uniqueComparisonVariableValues]
         }
-      } else {
-        # TODO checks for bin lists
-        # BinList already checks to make sure there are no overlaps within one list
-        # Check that there is no overlap between group a and b bins. This is actually tough because have to
-        # check that the bin ranges don't overlap, can't just check that the exact same bins don't exist
-        # in each. 
-        veupathUtils::logWithTime("No checks exist yet to validate groups supplied as BinLists. Use at your own risk!")
       }
 
     } else if (length(uniqueComparisonVariableValues) == 2) {
@@ -112,7 +105,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
     }
 
     # Subset to only include samples with metadata defined in groupA and groupB
-    if (isNumericComparisonVar) {
+    if (isComparisonVarBinned) {
       # We need to turn the numeric comparison variable into a categorical one with those values
       # that fall within group A or group B bins marked with some string we know.
 
@@ -128,11 +121,19 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData"), function(
       # Make the comparisonVariable a character vector and replace the in-group values with a bin.
       sampleMetadata[, (comparisonVariable) := as.character(get(comparisonVariable))]
       
-      # Can replace values in sampleMetadata with whatever the first value is in that group.
-      sampleMetadata[!!inGroupA, c(comparisonVariable)] <- groupA[1]
-      sampleMetadata[!!inGroupB, c(comparisonVariable)] <- groupB[1]
+      # Now we can reassign groupA and groupB...
+      groupA <- "groupA"
+      groupB <- "groupB"
+
+      # ... and can replace values in sampleMetadata our new group values
+      # We don't care about the values in the comparisonVariable column anymore. They were only
+      # useful to help us assign groups.
+      sampleMetadata[inGroupA, c(comparisonVariable)] <- groupA
+      sampleMetadata[inGroupB, c(comparisonVariable)] <- groupB
+
     }
 
+    # Filter sampleMetadata to keep only those sampels that are within either group A or B
     sampleMetadata <- sampleMetadata[get(comparisonVariable) %in% c(groupA, groupB), ]
 
     keepSamples <- sampleMetadata[[recordIdColumn]]
