@@ -97,6 +97,9 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
 
     # sampleMetadata has already been filtered so it now only contains the samples we care about
     keepSamples <- sampleMetadata[[recordIdColumn]]
+    if (!length(keepSamples)) {
+      stop("No samples remain after subsetting based on the comparator variable.")
+    }
     veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with ", comparatorColName, "in either groupA or groupB. The calculation will continue with only these samples."), verbose)
 
     # Subset the abundance data based on the kept samples
