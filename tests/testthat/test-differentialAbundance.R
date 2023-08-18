@@ -264,7 +264,7 @@ test_that("differentialAbundance returns a ComputeResult with the correct slots"
   )
 
   result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', verbose=F)
-  # expect_equal(result@parameters, 'comparisonVariable = entity.binA, groupA = binA_a, groupB = binA_b, method = DESeq')
+  expect_equal(result@parameters, 'recordIdColumn = entity.SampleID, comparatorColName = entity.binA, method = DESeq, groupA =binA_a, groupB = binA_b')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
   expect_equal(class(result@droppedColumns), 'character')
 })

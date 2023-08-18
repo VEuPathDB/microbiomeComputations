@@ -182,7 +182,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
     result@recordIdColumn <- recordIdColumn
     result@ancestorIdColumns <- ancestorIdColumns
     result@statistics <- statistics
-    result@parameters <- paste0("comparatorColName = ", comparatorColName, ', method = ', method)
+    result@parameters <- paste0('recordIdColumn = ', recordIdColumn,", comparatorColName = ", comparatorColName, ', method = ', method, ', groupA =', getGroupLabels(comparator, "groupA"), ', groupB = ', getGroupLabels(comparator, "groupB"))
     result@droppedColumns <- droppedColumns
 
 
@@ -192,7 +192,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
 
 
     validObject(result)
-    veupathUtils::logWithTime(paste('Differential abundance computation completed with parameters recordIdColumn=', recordIdColumn, "comparatorColName = ", comparatorColName, ", method = ", method), verbose)
+    veupathUtils::logWithTime(paste('Differential abundance computation completed with parameters recordIdColumn = ', recordIdColumn,", comparatorColName = ", comparatorColName, ', method = ', method, ', groupA =', getGroupLabels(comparator, "groupA"), ', groupB = ', getGroupLabels(comparator, "groupB")), verbose)
     
     return(result)
 })
