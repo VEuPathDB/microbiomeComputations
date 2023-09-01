@@ -63,10 +63,10 @@ test_that('Comparator validation works', {
 
 test_that("getGroupLabels returns bin labels", {
   # With a continuous variable
-  bin1 <- veupathUtils::Bin(binStart=2, binEnd=3, binLabel="[2, 3)")
-  bin2 <- veupathUtils::Bin(binStart=3, binEnd=4, binLabel="[3, 4)")
-  bin3 <- veupathUtils::Bin(binStart=4, binEnd=5, binLabel="[4, 5)")
-  bin4 <- veupathUtils::Bin(binStart=5, binEnd=6, binLabel="[5, 6)")
+  bin1 <- veupathUtils::Bin(binStart='2', binEnd='3', binLabel="[2, 3)")
+  bin2 <- veupathUtils::Bin(binStart='3', binEnd='4', binLabel="[3, 4)")
+  bin3 <- veupathUtils::Bin(binStart='4', binEnd='5', binLabel="[4, 5)")
+  bin4 <- veupathUtils::Bin(binStart='5', binEnd='6', binLabel="[5, 6)")
 
   groupABins <- veupathUtils::BinList(S4Vectors::SimpleList(c(bin1, bin2)))
   groupBBins <- veupathUtils::BinList(S4Vectors::SimpleList(c(bin3, bin4)))
