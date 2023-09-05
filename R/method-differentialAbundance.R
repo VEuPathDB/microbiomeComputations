@@ -125,7 +125,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
     if (!length(keepSamples)) {
       stop("No samples remain after subsetting based on the comparator variable.")
     }
-    veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with ", comparatorColName, "in either groupA or groupB. The calculation will continue with only these samples."), verbose)
+    veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with the value of ", comparatorColName, "in either groupA or groupB. The calculation will continue with only these samples."), verbose)
 
     # Subset the abundance data based on the kept samples
     df <- df[get(recordIdColumn) %in% keepSamples, ]
