@@ -65,21 +65,12 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
 
     # Subset to only include samples with metadata defined in groupA and groupB
     if (identical(comparator@variable@dataShape@value, "CONTINUOUS")) {
+      
       # Ensure bin starts and ends are numeric
-      comparator@groupA <- veupathUtils::BinList(lapply(comparator@groupA, function(bin) {
-        return(veupathUtils::Bin(
-          binStart = as.numeric(bin@binStart),
-          binEnd = as.numeric(bin@binEnd),
-          binLabel = bin@binLabel
-        ))
-      }))
-      comparator@groupB <- veupathUtils::BinList(lapply(comparator@groupB, function(bin) {
-        return(veupathUtils::Bin(
-          binStart = as.numeric(bin@binStart),
-          binEnd = as.numeric(bin@binEnd),
-          binLabel = bin@binLabel
-        ))
-      }))
+      comparator@groupA <- veupathUtils::as.numeric(comparator@groupA)
+      comparator@groupB <- veupathUtils::as.numeric(comparator@groupB)
+
+
       # We need to turn the numeric comparison variable into a categorical one with those values
       # that fall within group A or group B bins marked with some string we know.
 
