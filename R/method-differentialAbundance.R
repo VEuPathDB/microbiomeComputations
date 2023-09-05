@@ -75,8 +75,13 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
 
       # Collect all instances where the comparatorColName has values in the bins from each group.
       # So inGroupA is a vector with 0 if the value in comparatorColName is not within any of the group A bins and >0 otherwise.
+      print(comparator@groupA)
+      print(comparator@groupB)
       inGroupA <- veupathUtils::whichValuesInBinList(sampleMetadata[[comparatorColName]], comparator@groupA)
       inGroupB <- veupathUtils::whichValuesInBinList(sampleMetadata[[comparatorColName]], comparator@groupB)
+
+      print(inGroupA)
+      print(inGroupB)
 
       # Eventually move this check to Comparator validation. See #47
       if ((any(inGroupA * inGroupB) > 0)) {
