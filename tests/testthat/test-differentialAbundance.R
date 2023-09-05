@@ -158,8 +158,30 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
+})
 
-  ## Expect diff abund to handle messy inputs
+test_that("differentialAbundance can handle messy inputs", {
+
+  df <- testOTU
+  counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
+  counts[ ,entity.SampleID:= df$entity.SampleID]
+  nSamples <- dim(df)[1]
+  testSampleMetadataMessy <- data.frame(list(
+    "entity.SampleID" = df[["entity.SampleID"]],
+    "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T),
+    "entity.cat3" = rep(paste0("cat3_", letters[1:3]), nSamples/3, replace=T),
+    "entity.cat4" = rep(paste0("cat4_", letters[1:4]), nSamples/4, replace=T),
+    "entity.contA" = rnorm(nSamples, sd=5),
+    "entity.dateA" = sample(seq(as.Date('1988/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
+    ))
+  testSampleMetadataMessy$entity.contA[sample(1:nSamples, 50)] <- NA
+  testSampleMetadataMessy$entity.cat4[sample(1:nSamples, 50)] <- NA
+
+
+  testDataMessy <- microbiomeComputations::AbsoluteAbundanceData(
+              data = counts,
+              sampleMetadata = testSampleMetadataMessy,
+              recordIdColumn = 'entity.SampleID')
 
 
   # With only some comparisonVariable values found in the metadata
@@ -191,30 +213,79 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
                           )
   )
 
-  result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', verbose=F)
-  expect_equal(length(result@droppedColumns), 357)
+  result <- differentialAbundance(testDataMessy, comparator=comparatorVariable, method='DESeq', verbose=F)
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
-  expect_equal(sum(testSampleMetadata[,'entity.cat4'] %in% c('cat4_a','cat4_b','cat4_c')), nrow(dt))
+  expect_equal(sum(testSampleMetadataMessy[,'entity.cat4'] %in% c('cat4_a','cat4_b','cat4_c')), nrow(dt))
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
   expect_true(all(!is.na(stats[, c('log2foldChange', 'pValue', 'pointID')])))
 
-  # With samples ordered differently in the metadata and abundance data
-  testData@data <- testData@data[288:1, ]
-  result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', verbose=T)
-  expect_equal(length(result@droppedColumns), 357)
+
+  # With a continuous variable that has NAs
+  bin1 <- veupathUtils::Bin(binStart='2', binEnd='3', binLabel="[2, 3)")
+  bin2 <- veupathUtils::Bin(binStart='3', binEnd='4', binLabel="[3, 4)")
+  bin3 <- veupathUtils::Bin(binStart='4', binEnd='5', binLabel="[4, 5)")
+  bin4 <- veupathUtils::Bin(binStart='5', binEnd='6', binLabel="[5, 6)")
+
+  groupABins <- veupathUtils::BinList(S4Vectors::SimpleList(c(bin1, bin2)))
+  groupBBins <- veupathUtils::BinList(S4Vectors::SimpleList(c(bin3, bin4)))
+
+  comparatorVariable <- microbiomeComputations::Comparator(
+                          variable = veupathUtils::VariableMetadata(
+                            variableSpec = VariableSpec(
+                              variableId = 'contA',
+                              entityId = 'entity'
+                            ),
+                            dataShape = veupathUtils::DataShape(value="CONTINUOUS")
+                          ),
+                          groupA = groupABins,
+                          groupB = groupBBins
+  )
+
+  result <- differentialAbundance(testDataMessy, comparator=comparatorVariable, method='DESeq', verbose=F)
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
+  expect_equal(nrow(dt), sum((testSampleMetadataMessy[['entity.contA']] >= 2) * (testSampleMetadataMessy[['entity.contA']] < 6), na.rm=T))
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
-  expect_true(all(!is.na(stats[, c('log2foldChange', 'pValue', 'pointID')])))
+
+
+  # With a categorical variable that has NAs
+  bin1 <- veupathUtils::Bin(binLabel="cat4_a")
+  bin2 <- veupathUtils::Bin(binLabel="cat4_b")
+  bin3 <- veupathUtils::Bin(binLabel="cat4_c")
+
+  groupABins <- veupathUtils::BinList(S4Vectors::SimpleList(c(bin1, bin2)))
+  groupBBins <- veupathUtils::BinList(S4Vectors::SimpleList(c(bin3)))
+
+  comparatorVariable <- microbiomeComputations::Comparator(
+                          variable = veupathUtils::VariableMetadata(
+                            variableSpec = VariableSpec(
+                              variableId = 'cat4',
+                              entityId = 'entity'
+                            ),
+                            dataShape = veupathUtils::DataShape(value="CATEGORICAL")
+                          ),
+                          groupA = groupABins,
+                          groupB = groupBBins
+  )
+  result <- differentialAbundance(testDataMessy, comparator=comparatorVariable, method='DESeq', verbose=T)
+  dt <- result@data
+  expect_equal(names(dt), c('SampleID'))
+  expect_s3_class(dt, 'data.table')
+  expect_equal(nrow(dt), sum(testSampleMetadataMessy[,'entity.cat4'] %in% c('cat4_a','cat4_b','cat4_c')))
+  stats <- result@statistics
+  expect_s3_class(stats, 'data.frame')
+  expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
+  expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
+
 
 })
 

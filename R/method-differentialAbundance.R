@@ -52,6 +52,16 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
+    # Remove samples with NA from data and metadata
+    if (any(is.na(sampleMetadata[[comparatorColName]]))) {
+      veupathUtils::logWithTime("Found NAs in comparator variable. Removing these samples.", verbose)
+      samplesWithData <- which(!is.na(sampleMetadata[[comparatorColName]]))
+      # Keep samples with data. Recall the AbundanceData object requires samples to be in the same order
+      # in both the data and metadata
+      sampleMetadata <- sampleMetadata[samplesWithData, ]
+      df <- df[samplesWithData, ]
+    }
+
 
     # Subset to only include samples with metadata defined in groupA and groupB
     if (identical(comparator@variable@dataShape@value, "CONTINUOUS")) {
@@ -75,14 +85,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
 
       # Collect all instances where the comparatorColName has values in the bins from each group.
       # So inGroupA is a vector with 0 if the value in comparatorColName is not within any of the group A bins and >0 otherwise.
-      lapply(comparator@groupA, print)
-      lapply(comparator@groupB, print)
-      print(sampleMetadata[[comparatorColName]])
       inGroupA <- veupathUtils::whichValuesInBinList(sampleMetadata[[comparatorColName]], comparator@groupA)
       inGroupB <- veupathUtils::whichValuesInBinList(sampleMetadata[[comparatorColName]], comparator@groupB)
-
-      print(inGroupA)
-      print(inGroupB)
 
       # Eventually move this check to Comparator validation. See #47
       if ((any(inGroupA * inGroupB) > 0)) {
