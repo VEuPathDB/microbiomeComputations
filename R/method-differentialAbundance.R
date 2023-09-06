@@ -52,9 +52,25 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
+    # Remove samples with NA from data and metadata
+    if (any(is.na(sampleMetadata[[comparatorColName]]))) {
+      veupathUtils::logWithTime("Found NAs in comparator variable. Removing these samples.", verbose)
+      samplesWithData <- which(!is.na(sampleMetadata[[comparatorColName]]))
+      # Keep samples with data. Recall the AbundanceData object requires samples to be in the same order
+      # in both the data and metadata
+      sampleMetadata <- sampleMetadata[samplesWithData, ]
+      df <- df[samplesWithData, ]
+    }
+
 
     # Subset to only include samples with metadata defined in groupA and groupB
     if (identical(comparator@variable@dataShape@value, "CONTINUOUS")) {
+      
+      # Ensure bin starts and ends are numeric
+      comparator@groupA <- veupathUtils::as.numeric(comparator@groupA)
+      comparator@groupB <- veupathUtils::as.numeric(comparator@groupB)
+
+
       # We need to turn the numeric comparison variable into a categorical one with those values
       # that fall within group A or group B bins marked with some string we know.
 
@@ -100,7 +116,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
     if (!length(keepSamples)) {
       stop("No samples remain after subsetting based on the comparator variable.")
     }
-    veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with ", comparatorColName, "in either groupA or groupB. The calculation will continue with only these samples."), verbose)
+    veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with the value of ", comparatorColName, "in either groupA or groupB. The calculation will continue with only these samples."), verbose)
 
     # Subset the abundance data based on the kept samples
     df <- df[get(recordIdColumn) %in% keepSamples, ]
