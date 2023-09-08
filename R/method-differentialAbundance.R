@@ -67,8 +67,8 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
     if (identical(comparator@variable@dataShape@value, "CONTINUOUS")) {
       
       # Ensure bin starts and ends are numeric
-      comparator@groupA <- veupathUtils::as.numeric(comparator@groupA)
-      comparator@groupB <- veupathUtils::as.numeric(comparator@groupB)
+      comparator@groupA <- as.numeric(comparator@groupA)
+      comparator@groupB <- as.numeric(comparator@groupB)
 
 
       # We need to turn the numeric comparison variable into a categorical one with those values
