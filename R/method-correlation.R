@@ -4,7 +4,7 @@
 #' Soon this function will be expanded to take multiple abundance datasets, and to run all-to-all correlations
 #' for abundance variables.
 #' 
-#' @param data AbundanceData object
+#' @param  AbundanceData object
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
@@ -13,12 +13,38 @@
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("correlation",
-  function(data, method = c('spearman','pearson'), variables = NULL, verbose = c(TRUE, FALSE)) standardGeneric("correlation"),
-  signature = c("data")
+  function(data1, data2, method = c('spearman','pearson'), ..., verbose = c(TRUE, FALSE)) standardGeneric("correlation"),
+  signature = c("data1","data2")
 )
 
+setMethod("correlation", signature("data.table", "data.table"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  # data table correlation 
+
+  # Check that the number of rows match. We'll do all cols by all cols
+
+  # Check that all values are numeric
+
+  ## Compute correlation
+  # Resulting data table has column "rn" = row names of the correlation matrix (so taxa names), and the other
+  # column names are the vars from sample metadata that we use
+  corrResult <- data.table::as.data.table(cor(data1, data2, method = method), keep.rownames = T)
+
+  veupathUtils::logWithTime(paste0('Completed method=',method,'. Formatting results.'), verbose)
+
+
+  ## Format results
+  meltedCorrResult <- melt(corrResult, id.vars=c('rn'))
+  statistics <- data.frame(
+    data1 = meltedCorrResult[['rn']],
+    data2 = meltedCorrResult[['variable']],
+    correlationCoef = meltedCorrResult[['value']]
+  )
+
+})
+
 #'@export
-setMethod("correlation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), variables = NULL, verbose = c(TRUE, FALSE)) {
+#' This is where the names should go, because they know what's data1 and data 2 and can do the appropriate renaming
+setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), variables = NULL, verbose = c(TRUE, FALSE)) {
     df <- data@data
     recordIdColumn <- data@recordIdColumn
     naToZero <- data@imputeZero

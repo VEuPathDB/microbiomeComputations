@@ -1,5 +1,29 @@
 # Tests for differential abundance methods
 
+test_that('correlation works on data tables', {
+  nSamples = 200
+
+  testData1 <- data.table(
+    "contA1" = rnorm(nSamples),
+    "contB1" = rnorm(nSamples),
+    "contC1" = rnorm(nSamples)
+    # "dateA1" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
+  )
+
+  testData2 <- data.table(
+    "contA2" = rnorm(nSamples),
+    "contB2" = rnorm(nSamples),
+    "contC2" = rnorm(nSamples)
+    # "dateA2" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
+  )
+
+  corrResult <- correlation(testData1, testData2, 'spearman', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData2))
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
+})
+
 test_that('correlation returns a correctly formatted data.table', {
   df <- testOTU
   nSamples <- dim(df)[1]
