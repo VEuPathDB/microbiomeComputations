@@ -1,6 +1,6 @@
 Package: microbiomeComputations
 Title: Compute Results for Microbiome Analyses
-Version: 2.1.2
+Version: 3.0.2
 Authors@R: 
     c(person(given = "Danielle",
            family = "Callan",
@@ -36,12 +36,14 @@ Collate:
     'RcppExports.R'
     'class-AbundanceData.R'
     'class-AbsoluteAbundanceData.R'
+    'class-Comparator.R'
     'class-ComputeResult.R'
     'method-alphaDiv.R'
     'method-betaDiv.R'
     'method-correlation.R'
     'method-differentialAbundance.R'
     'method-rankedAbundance.R'
+    'methods-Comparator.R'
     'methods-ComputeResult.R'
     'microbiomeComputations-package.R'
     'utils.R'

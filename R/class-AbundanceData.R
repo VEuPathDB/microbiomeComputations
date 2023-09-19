@@ -42,6 +42,10 @@ check_abundance_data <- function(object) {
         msg <- paste("Samples do not match between the sample metadata and abundance data.")
         errors <- c(errors, msg)
       }
+      if (!identical(sampleMetadata[[record_id_col]], df[[record_id_col]])) {
+        msg <- paste("Samples in the sample metadata are not in the same order as in the abundance data.")
+        errors <- c(errors, msg)
+      }
     }
 
     
