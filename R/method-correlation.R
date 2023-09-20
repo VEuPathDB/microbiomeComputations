@@ -13,7 +13,7 @@
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("correlation",
-  function(data1, data2, method = c('spearman','pearson'), ..., verbose = c(TRUE, FALSE)) standardGeneric("correlation"),
+  function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), ...) standardGeneric("correlation"),
   signature = c("data1","data2")
 )
 
@@ -46,7 +46,7 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 
 #' This is where the names should go, because they know what's data1 and data 2 and can do the appropriate renaming
 #'@export
-setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(data1, data2, method = c('spearman','pearson'), variables = NULL, data2Name = NULL,data1Name = NULL, verbose = c(TRUE, FALSE)) {
+setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), variables = NULL, data1Name = "data1", data2Name = "data2") {
     df1 <- data1@data
     recordIdColumn1 <- data1@recordIdColumn
     naToZero <- data1@imputeZero
@@ -118,13 +118,9 @@ setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(
 
 
     ## Format results
-    print(class(data1)[1])
-    print(names(corrResult))
-    print(data1Name)
-    # names(corrResult)[names(corrResult) == "data1"] <- ifelse(!!length(data1Name), data1Name, class(data1)[1])
-    names(corrResult)[names(corrResult) == "data1"] <- ifelse(!is.null(data1Name), "test", "wrong")
-    names(corrResult)[names(corrResult) == "data2"] <- ifelse(!is.null(data2Name), data2Name, class(data2)[1])
-    print(head(corrResult))
+    # Rename the correlation results columns so that they are a little more friendly
+    names(corrResult)[names(corrResult) == "data1"] <- data1Name
+    names(corrResult)[names(corrResult) == "data2"] <- data2Name
 
     
     # Construct the ComputeResult

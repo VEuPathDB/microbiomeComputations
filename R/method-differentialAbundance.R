@@ -25,7 +25,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
     naToZero <- data@imputeZero
     ancestorIdColumns <- data@ancestorIdColumns
     allIdColumns <- c(recordIdColumn, ancestorIdColumns)
-    sampleMetadata <- copy(data@sampleMetadata)
+    sampleMetadata <- copy(data@sampleMetadata@data)
     comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
 
 

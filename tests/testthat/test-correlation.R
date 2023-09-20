@@ -1,6 +1,6 @@
 # Tests for differential abundance methods
 
-test_that('correlation works on data tables', {
+test_that('correlation works with two data tables', {
   nSamples = 200
 
   testData1 <- data.table(
@@ -24,7 +24,7 @@ test_that('correlation works on data tables', {
 
 })
 
-test_that('correlation returns a correctly formatted data.table', {
+test_that('correlation returns an appropriately structured result for abundance data vs metadata', {
   df <- testOTU
   nSamples <- dim(df)[1]
   sampleMetadata <- SampleMetadata(
@@ -56,8 +56,8 @@ test_that('correlation returns a correctly formatted data.table', {
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('data1','data2','correlationCoef'))
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
-  expect_equal(as.character(unique(stats$var1)), names(testOTU)[2:length(names(testOTU))])
-  expect_equal(as.character(unique(stats$var2)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
+  expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
 
 
   ## With method = spearman
@@ -70,10 +70,10 @@ test_that('correlation returns a correctly formatted data.table', {
   # Check stats (all correlation outputs)
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('var1','var2','correlationCoef'))
+  expect_equal(names(stats), c('data1','data2','correlationCoef'))
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
-  expect_equal(as.character(unique(stats$var1)), names(testOTU)[2:length(names(testOTU))])
-  expect_equal(as.character(unique(stats$var2)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
+  expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
 
 
   ## With samples ordered differently in the abundance data and metadata
@@ -87,10 +87,10 @@ test_that('correlation returns a correctly formatted data.table', {
   # Check stats (all correlation outputs)
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('var1','var2','correlationCoef'))
+  expect_equal(names(stats), c('data1','data2','correlationCoef'))
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
-  expect_equal(as.character(unique(stats$var1)), names(testOTU)[2:length(names(testOTU))])
-  expect_equal(as.character(unique(stats$var2)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
+  expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
 
 
   ## With specified variables
@@ -115,10 +115,10 @@ test_that('correlation returns a correctly formatted data.table', {
   # Check stats (all correlation outputs)
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('var1','var2','correlationCoef'))
+  expect_equal(names(stats), c('data1','data2','correlationCoef'))
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(variables)) # Should be number of taxa * number of metadata vars
-  expect_equal(as.character(unique(stats$var1)), names(testOTU)[2:length(names(testOTU))])
-  expect_equal(as.character(unique(stats$var2)), c('entity.contA', 'entity.contB'))
+  expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
+  expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.contB'))
 
   ## With a date <3
     variables <- new("VariableMetadataList", SimpleList(
@@ -142,10 +142,10 @@ test_that('correlation returns a correctly formatted data.table', {
   # Check stats (all correlation outputs)
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('var1','var2','correlationCoef'))
+  expect_equal(names(stats), c('data1','data2','correlationCoef'))
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(variables)) # Should be number of taxa * number of metadata vars
-  expect_equal(as.character(unique(stats$var1)), names(testOTU)[2:length(names(testOTU))])
-  expect_equal(as.character(unique(stats$var2)), c('entity.contA', 'entity.dateA'))
+  expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
+  expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.dateA'))
 
 
 })
@@ -166,7 +166,10 @@ test_that("correlation returns a ComputeResult with the correct slots" , {
 
   data <- microbiomeComputations::AbundanceData(
               data = df,
-              sampleMetadata = sampleMetadata,
+              sampleMetadata = SampleMetadata(
+                data = sampleMetadata,
+                recordIdColumn = "entity.SampleID"
+              ),
               recordIdColumn = 'entity.SampleID')
 
   variables <- new("VariableMetadataList", SimpleList(
@@ -199,13 +202,16 @@ test_that("correlation fails with improper inputs", {
   counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
   counts[ ,entity.SampleID:= df$entity.SampleID]
   nSamples <- dim(df)[1]
-  sampleMetadata <- data.frame(list(
-    "entity.SampleID" = df[["entity.SampleID"]],
-    "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
-    "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
-    "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
-    "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T)
-    ))
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
+      "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
+      "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
+      "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )
 
 
   data <- microbiomeComputations::AbsoluteAbundanceData(

@@ -8,10 +8,10 @@
   data1,
   data2,
   method = c("spearman", "pearson"),
+  verbose = c(TRUE, FALSE),
   variables = NULL,
-  data2Name = NULL,
-  data1Name = NULL,
-  verbose = c(TRUE, FALSE)
+  data1Name = "data1",
+  data2Name = "data2"
 )
 }
 \description{

@@ -18,7 +18,10 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
 
   testData <- microbiomeComputations::AbsoluteAbundanceData(
               data = counts,
-              sampleMetadata = testSampleMetadata,
+              sampleMetadata = SampleMetadata(
+                data = testSampleMetadata,
+                recordIdColumn = "entity.SampleID"
+              ),
               recordIdColumn = 'entity.SampleID')
 
 
@@ -180,7 +183,10 @@ test_that("differentialAbundance can handle messy inputs", {
 
   testDataMessy <- microbiomeComputations::AbsoluteAbundanceData(
               data = counts,
-              sampleMetadata = testSampleMetadataMessy,
+              sampleMetadata = SampleMetadata(
+                data = testSampleMetadataMessy,
+                recordIdColumm = "entity.SampleID"
+              ),
               recordIdColumn = 'entity.SampleID')
 
 
@@ -296,13 +302,16 @@ test_that("differentialAbundance returns a ComputeResult with the correct slots"
   counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
   counts[ ,entity.SampleID:= df$entity.SampleID]
   nSamples <- dim(df)[1]
-  sampleMetadata <- data.frame(list(
-    "entity.SampleID" = df[["entity.SampleID"]],
-    "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
-    "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
-    "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
-    "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T)
-    ))
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
+      "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
+      "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
+      "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )
 
 
   testData <- microbiomeComputations::AbsoluteAbundanceData(
@@ -346,14 +355,17 @@ test_that("differentialAbundance fails with improper inputs", {
   counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
   counts[ ,entity.SampleID:= df$entity.SampleID]
   nSamples <- dim(df)[1]
-  sampleMetadata <- data.frame(list(
-    "entity.SampleID" = df[["entity.SampleID"]],
-    "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
-    "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
-    "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
-    "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T),
-    "entity.contA" = rnorm(nSamples, sd=5)
-    ))
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.binA" = sample(c("binA_a", "binA_b"), nSamples, replace=T),
+      "entity.cat2" = sample(c("cat2_a", "cat2_b"), nSamples, replace=T),
+      "entity.cat3" = sample(paste0("cat3_", letters[1:3]), nSamples, replace=T),
+      "entity.cat4" = sample(paste0("cat4_", letters[1:4]), nSamples, replace=T),
+      "entity.contA" = rnorm(nSamples, sd=5)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )
 
 
   testData <- microbiomeComputations::AbsoluteAbundanceData(
@@ -392,10 +404,13 @@ test_that("differentialAbundance catches deseq errors", {
   counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
   counts[ ,entity.SampleID:= df$entity.SampleID]
   nSamples <- dim(df)[1]
-  sampleMetadata <- data.frame(list(
-    "entity.SampleID" = df[["entity.SampleID"]],
-    "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T)
-    ))
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T)
+      )),
+    recordIdColumn ="entity.SampleID"
+  )
 
   comparatorVariable <- microbiomeComputations::Comparator(
                           variable = veupathUtils::VariableMetadata(

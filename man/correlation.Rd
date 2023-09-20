@@ -8,8 +8,8 @@ correlation(
   data1,
   data2,
   method = c("spearman", "pearson"),
-  ...,
-  verbose = c(TRUE, FALSE)
+  verbose = c(TRUE, FALSE),
+  ...
 )
 }
 \arguments{

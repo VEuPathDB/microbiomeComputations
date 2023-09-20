@@ -34,11 +34,11 @@ Suggests:
 Config/testthat/edition: 3
 Collate: 
     'RcppExports.R'
+    'class-SampleMetadata.R'
     'class-AbundanceData.R'
     'class-AbsoluteAbundanceData.R'
     'class-Comparator.R'
     'class-ComputeResult.R'
-    'class-SampleMetadata.R'
     'method-alphaDiv.R'
     'method-betaDiv.R'
     'method-correlation.R'

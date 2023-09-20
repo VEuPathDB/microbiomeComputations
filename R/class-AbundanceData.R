@@ -36,7 +36,7 @@ check_abundance_data <- function(object) {
       errors <- c(errors, msg)
     }
 
-    if (!!length(object@sampleMetadata)) {
+    if (!!length(object@sampleMetadata@data)) {
       sampleMetadata <- object@sampleMetadata
       if (!setequal(sampleMetadata@data[[sampleMetadata@recordIdColumn]], df[[record_id_col]])) {
         msg <- paste("Samples do not match between the sample metadata and abundance data.")
@@ -64,6 +64,7 @@ check_abundance_data <- function(object) {
 #' @slot imputeZero A logical indicating whether NA/ null values should be replaced with zeros.
 #' @name AbundanceData-class
 #' @rdname AbundanceData-class
+#' @include class-SampleMetadata.R
 #' @export 
 AbundanceData <- setClass("AbundanceData", representation(
     data = 'data.frame',
