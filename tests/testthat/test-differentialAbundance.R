@@ -185,7 +185,7 @@ test_that("differentialAbundance can handle messy inputs", {
               data = counts,
               sampleMetadata = SampleMetadata(
                 data = testSampleMetadataMessy,
-                recordIdColumm = "entity.SampleID"
+                recordIdColumn = "entity.SampleID"
               ),
               recordIdColumn = 'entity.SampleID')
 

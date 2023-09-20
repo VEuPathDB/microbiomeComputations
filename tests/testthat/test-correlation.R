@@ -155,21 +155,20 @@ test_that("correlation returns a ComputeResult with the correct slots" , {
 
   df <- testOTU
   nSamples <- dim(df)[1]
-  sampleMetadata <- data.frame(list(
-    "entity.SampleID" = df[["entity.SampleID"]],
-    "entity.contA" = rnorm(nSamples),
-    "entity.contB" = rnorm(nSamples),
-    "entity.contC" = rnorm(nSamples),
-    "entity.dateA" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
-    ))
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.contA" = rnorm(nSamples),
+      "entity.contB" = rnorm(nSamples),
+      "entity.contC" = rnorm(nSamples),
+      "entity.dateA" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )
 
 
   data <- microbiomeComputations::AbundanceData(
               data = df,
-              sampleMetadata = SampleMetadata(
-                data = sampleMetadata,
-                recordIdColumn = "entity.SampleID"
-              ),
               recordIdColumn = 'entity.SampleID')
 
   variables <- new("VariableMetadataList", SimpleList(
@@ -185,12 +184,12 @@ test_that("correlation returns a ComputeResult with the correct slots" , {
   ))
 
   ## Pearson with date and numeric
-  result <- correlation(data, 'pearson', variables = variables, verbose = FALSE)
+  result <- correlation(data, sampleMetadata, 'pearson', variables = variables, verbose = FALSE)
   expect_equal(result@parameters, 'method = pearson')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
 
   ## With spearman
-  result <- correlation(data, 'spearman', variables = variables, verbose = FALSE)
+  result <- correlation(data, sampleMetadata, 'spearman', variables = variables, verbose = FALSE)
   expect_equal(result@parameters, 'method = spearman')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
 
@@ -220,5 +219,5 @@ test_that("correlation fails with improper inputs", {
               recordIdColumn = 'entity.SampleID')
 
   # Fail when we send in only categorical data
-  expect_error(correlation(data, verbose=F))
+  expect_error(correlation(data, sampleMetadata, verbose=F))
 })
