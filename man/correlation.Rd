@@ -4,14 +4,20 @@
 \alias{correlation}
 \title{Correlation}
 \usage{
-correlation(data, method = c("spearman", "pearson"), verbose = c(TRUE, FALSE))
+correlation(
+  data1,
+  data2,
+  method = c("spearman", "pearson"),
+  ...,
+  verbose = c(TRUE, FALSE)
+)
 }
 \arguments{
-\item{data}{AbundanceData object}
-
 \item{method}{string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'}
 
 \item{verbose}{boolean indicating if timed logging is desired}
+
+\item{AbundanceData}{object}
 }
 \value{
 ComputeResult object

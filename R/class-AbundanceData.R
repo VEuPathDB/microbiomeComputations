@@ -38,11 +38,11 @@ check_abundance_data <- function(object) {
 
     if (!!length(object@sampleMetadata)) {
       sampleMetadata <- object@sampleMetadata
-      if (!setequal(sampleMetadata[[record_id_col]], df[[record_id_col]])) {
+      if (!setequal(sampleMetadata@data[[sampleMetadata@recordIdColumn]], df[[record_id_col]])) {
         msg <- paste("Samples do not match between the sample metadata and abundance data.")
         errors <- c(errors, msg)
       }
-      if (!identical(sampleMetadata[[record_id_col]], df[[record_id_col]])) {
+      if (!identical(sampleMetadata@data[[sampleMetadata@recordIdColumn]], df[[record_id_col]])) {
         msg <- paste("Samples in the sample metadata are not in the same order as in the abundance data.")
         errors <- c(errors, msg)
       }
@@ -58,7 +58,7 @@ check_abundance_data <- function(object) {
 #' A class for working with microbiome or ecological abundance data.
 #' 
 #' @slot data A data.frame of abundance values with species as columns and samples as rows
-#' @slot sampleMetadata A data.frame of metadata about the samples with samples as rows and metadata variables as columns
+#' @slot sampleMetadata A SampleMetadata object of metadata about the samples with samples as rows and metadata variables as columns
 #' @slot recordIdColumn The name of the column containing IDs for the samples. All other columns will be treated as abundance values.
 #' @slot ancestorIdColumns A character vector of column names representing parent entities of the recordIdColumn.
 #' @slot imputeZero A logical indicating whether NA/ null values should be replaced with zeros.
@@ -67,7 +67,7 @@ check_abundance_data <- function(object) {
 #' @export 
 AbundanceData <- setClass("AbundanceData", representation(
     data = 'data.frame',
-    sampleMetadata = 'data.frame',
+    sampleMetadata = 'SampleMetadata',
     recordIdColumn = 'character',
     ancestorIdColumns = 'character',
     imputeZero = 'logical'

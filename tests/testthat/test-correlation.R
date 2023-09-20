@@ -27,13 +27,16 @@ test_that('correlation works on data tables', {
 test_that('correlation returns a correctly formatted data.table', {
   df <- testOTU
   nSamples <- dim(df)[1]
-  sampleMetadata <- data.frame(list(
-    "entity.SampleID" = df[["entity.SampleID"]],
-    "entity.contA" = rnorm(nSamples),
-    "entity.contB" = rnorm(nSamples),
-    "entity.contC" = rnorm(nSamples),
-    "entity.dateA" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
-    ))
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.contA" = rnorm(nSamples),
+      "entity.contB" = rnorm(nSamples),
+      "entity.contC" = rnorm(nSamples),
+      "entity.dateA" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )
 
 
   data <- microbiomeComputations::AbundanceData(
@@ -42,7 +45,7 @@ test_that('correlation returns a correctly formatted data.table', {
               recordIdColumn = 'entity.SampleID')
   
   ## All numeric sample variables
-  result <- correlation(data, 'pearson', variables = NULL, verbose = FALSE)
+  result <- correlation(data, sampleMetadata, 'pearson', variables = NULL, verbose = FALSE)
   # Check data (only sample ids)
   dt <- result@data
   expect_s3_class(dt, 'data.table')
@@ -51,14 +54,14 @@ test_that('correlation returns a correctly formatted data.table', {
   # Check stats (all correlation outputs)
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('var1','var2','correlationCoef'))
-  expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata))) # Should be number of taxa * number of metadata vars
+  expect_equal(names(stats), c('data1','data2','correlationCoef'))
+  expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
   expect_equal(as.character(unique(stats$var1)), names(testOTU)[2:length(names(testOTU))])
   expect_equal(as.character(unique(stats$var2)), c('entity.contA', 'entity.contB', 'entity.contC'))
 
 
   ## With method = spearman
-  result <- correlation(data, 'spearman', variables = NULL, verbose = FALSE)
+  result <- correlation(data, sampleMetadata, 'spearman', variables = NULL, verbose = FALSE)
   # Check data (only sample ids)
   dt <- result@data
   expect_s3_class(dt, 'data.table')
@@ -68,14 +71,14 @@ test_that('correlation returns a correctly formatted data.table', {
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('var1','var2','correlationCoef'))
-  expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata))) # Should be number of taxa * number of metadata vars
+  expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
   expect_equal(as.character(unique(stats$var1)), names(testOTU)[2:length(names(testOTU))])
   expect_equal(as.character(unique(stats$var2)), c('entity.contA', 'entity.contB', 'entity.contC'))
 
 
   ## With samples ordered differently in the abundance data and metadata
   data@data <- data@data[288:1, ]
-  result <- correlation(data, 'spearman', variables = NULL, verbose = FALSE)
+  result <- correlation(data, sampleMetadata, 'spearman', variables = NULL, verbose = FALSE)
   # Check data (only sample ids)
   dt <- result@data
   expect_s3_class(dt, 'data.table')
@@ -85,7 +88,7 @@ test_that('correlation returns a correctly formatted data.table', {
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('var1','var2','correlationCoef'))
-  expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata))) # Should be number of taxa * number of metadata vars
+  expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
   expect_equal(as.character(unique(stats$var1)), names(testOTU)[2:length(names(testOTU))])
   expect_equal(as.character(unique(stats$var2)), c('entity.contA', 'entity.contB', 'entity.contC'))
 
@@ -103,7 +106,7 @@ test_that('correlation returns a correctly formatted data.table', {
       dataShape = new("DataShape", value = 'CONTINUOUS'))
   ))
 
-  result <- correlation(data, 'spearman', variables  = variables, verbose = FALSE)
+  result <- correlation(data, sampleMetadata, 'spearman', variables  = variables, verbose = FALSE)
   # Check data (only sample ids)
   dt <- result@data
   expect_s3_class(dt, 'data.table')
@@ -130,7 +133,7 @@ test_that('correlation returns a correctly formatted data.table', {
       dataShape = new("DataShape", value = 'CONTINUOUS'))
   ))
 
-  result <- correlation(data, 'spearman', variables = variables, verbose =FALSE)
+  result <- correlation(data, sampleMetadata, 'spearman', variables = variables, verbose =FALSE)
   # Check data (only sample ids)
   dt <- result@data
   expect_s3_class(dt, 'data.table')
