@@ -13,17 +13,17 @@ correlation(
 )
 }
 \arguments{
+\item{data1}{first dataset. An AbundanceData object or data.table}
+
+\item{data2}{second dataset. A SampleMetadata object (if data1 is class AbundanceData) or a data.table}
+
 \item{method}{string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'}
 
 \item{verbose}{boolean indicating if timed logging is desired}
-
-\item{AbundanceData}{object}
 }
 \value{
 ComputeResult object
 }
 \description{
-This function returns correlation coefficients for all abundance variables vs all continuous sample metadata variables.
-Soon this function will be expanded to take multiple abundance datasets, and to run all-to-all correlations
-for abundance variables.
+This function returns correlation coefficients for variables in one dataset against variables in a second dataset
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/method-correlation.R
 \name{correlation,AbundanceData,SampleMetadata-method}
 \alias{correlation,AbundanceData,SampleMetadata-method}
-\title{This is where the names should go, because they know what's data1 and data 2 and can do the appropriate renaming}
+\title{Correlation of abundance data and metadata}
 \usage{
 \S4method{correlation}{AbundanceData,SampleMetadata}(
   data1,
@@ -14,6 +14,21 @@
   data2Name = "data2"
 )
 }
+\arguments{
+\item{data1}{AbundanceData object. Will correlate abundance variables with specified variables in data2}
+
+\item{data2}{SampleMetadata object}
+
+\item{method}{string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'}
+
+\item{verbose}{boolean indicating if timed logging is desired}
+
+\item{variables}{VariableMetadataList object with variables corresponding to columns in the SampleMetadata object.}
+
+\item{data1Name}{string name for column in the correlation results that corresponds to variables from data1}
+
+\item{data2Name}{string name for column in the correlation results that corresponds to variables from data2}
+}
 \description{
-This is where the names should go, because they know what's data1 and data 2 and can do the appropriate renaming
+This function returns the correlation of all columns of an AbundanceData object with appropriate columns of a SampleMetadata object.
 }
