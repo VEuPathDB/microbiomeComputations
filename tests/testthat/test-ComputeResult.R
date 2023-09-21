@@ -102,7 +102,7 @@ test_that("ComputeResult writeMeta method returns well formatted json", {
   jsonlist <- jsonlite::fromJSON(veupathUtils::toJSON(result@computedVariableMetadata))
 
   expect_equal(names(jsonlist), 'variables')
-  expect_equal(names(jsonlist$variables), c("variableClass","variableSpec","plotReference","displayName","displayRangeMin","displayRangeMax","dataType","dataShape","isCollection","imputeZero"))
+  expect_equal(names(jsonlist$variables), c("variableClass","variableSpec","plotReference","displayName","displayRangeMin","displayRangeMax","dataType","dataShape","isCollection","imputeZero","hasStudyDependentVocabulary"))
 })
 
 

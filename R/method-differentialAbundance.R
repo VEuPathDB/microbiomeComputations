@@ -3,9 +3,7 @@
 #' This function returns the fold change and associated p value for a differential abundance analysis comparing samples in two groups.
 #' 
 #' @param data AbsoluteAbundanceData object
-#' @param comparisonVariable string identifying the metadata column to be used when grouping samples.
-#' @param groupA array of strings, each string indicating a value in the comparisonVariable column. Samples with these metadata values will be included in Group A for the differential abundance calculation. Must have no overlap with groupB
-#' @param groupB array of strings, each string indicating a value in the comparisonVariable column. Samples with these metadata values will be included in Group B for the differential abundance calculation. Must have no overlap with groupA.
+#' @param comparator Comparator object specifying the variable and values or bins to be used in dividing samples into groups.
 #' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
@@ -16,18 +14,19 @@
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("differentialAbundance",
-  function(data, comparisonVariable, groupA, groupB, method = c('DESeq', 'ANCOMBC', 'MaAsLin2'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
-  signature = c("data")
+  function(data, comparator, method = c('DESeq', 'ANCOMBC', 'MaAsLin2'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
+  signature = c("data", "comparator")
 )
 
 #'@export
-setMethod("differentialAbundance", signature("AbundanceData"), function(data, comparisonVariable, groupA, groupB, method = c('DESeq', 'ANCOMBC', 'MaAsLin2'), verbose = c(TRUE, FALSE)) {
+setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparator"), function(data, comparator, method = c('DESeq', 'ANCOMBC', 'MaAsLin2'), verbose = c(TRUE, FALSE)) {
     df <- data@data
     recordIdColumn <- data@recordIdColumn
     naToZero <- data@imputeZero
     ancestorIdColumns <- data@ancestorIdColumns
     allIdColumns <- c(recordIdColumn, ancestorIdColumns)
     sampleMetadata <- copy(data@sampleMetadata)
+    comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
 
 
     ## Initialize and check inputs
@@ -53,85 +52,74 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
       veupathUtils::logWithTime("Replaced NAs with 0", verbose)
     }
 
-    # Determine if comparison variable is numeric.
-    isNumericComparisonVar <- identical(class(sampleMetadata[[comparisonVariable]]), "numeric")
-
-    ## Check that groups are provided, if needed, and if they are provided,
-    ## that they match at least one value in the comparisonVariable column.
-    ## Eventually let's move this all into a Comparator class or similar.
-    uniqueComparisonVariableValues <- sort(unique(sampleMetadata[[comparisonVariable]]))
-
-    if (!!length(groupA) && !!length(groupB)) {
-
-      # Do not allow duplicated values
-      if (!!length(intersect(groupA, groupB))) {
-        veupathUtils::logWithTime("groupA and groupB cannot share members.", verbose)
-        stop()
-      }
-
-      if (!isNumericComparisonVar) {
-        # Does each group contain at least one string that matches a value in the comparisonValue column?
-        if (!any(groupA %in% uniqueComparisonVariableValues)) {
-          stop("At least one value in groupA must exist as a value in the comparisonValue sampleMetadata column.")
-        }
-        if (!any(groupB %in% uniqueComparisonVariableValues)) {
-          stop("At least one value in groupB must exist as a value in the comparisonValue sampleMetadata column.")
-        }
-
-        # Alert that we discard groupA/B values that are not found in the comparisonVariable
-        if (!all(groupA %in% uniqueComparisonVariableValues)) {
-          veupathUtils::logWithTime("Found values in groupA that do not exist in the comparisonVariable. Removing these values.", verbose)
-          groupA <- groupA[groupA %in% uniqueComparisonVariableValues]
-        }
-        if (!all(groupB %in% uniqueComparisonVariableValues)) {
-          veupathUtils::logWithTime("Found values in groupB that do not exist in the comparisonVariable. Removing these values.", verbose)
-          groupB <- groupB[groupB %in% uniqueComparisonVariableValues]
-        }
-      }
-
-    } else if (length(uniqueComparisonVariableValues) == 2) {
-      # Ignore any groups passed to us and set the groups to be these two values
-      veupathUtils::logWithTime("Only two values found in the comparisonVariable sampleMetadata column. Using these two values as groupA and groupB.", verbose)
-      groupA <- c(uniqueComparisonVariableValues[1])
-      groupB <- c(uniqueComparisonVariableValues[2])
-    } else {
-      stop("Must supply two groups (groupA and groupB) for the differential abundance calculation.")
+    # Remove samples with NA from data and metadata
+    if (any(is.na(sampleMetadata[[comparatorColName]]))) {
+      veupathUtils::logWithTime("Found NAs in comparator variable. Removing these samples.", verbose)
+      samplesWithData <- which(!is.na(sampleMetadata[[comparatorColName]]))
+      # Keep samples with data. Recall the AbundanceData object requires samples to be in the same order
+      # in both the data and metadata
+      sampleMetadata <- sampleMetadata[samplesWithData, ]
+      df <- df[samplesWithData, ]
     }
 
+
     # Subset to only include samples with metadata defined in groupA and groupB
-    if (isNumericComparisonVar) {
+    if (identical(comparator@variable@dataShape@value, "CONTINUOUS")) {
+      
+      # Ensure bin starts and ends are numeric
+      comparator@groupA <- as.numeric(comparator@groupA)
+      comparator@groupB <- as.numeric(comparator@groupB)
+
+
       # We need to turn the numeric comparison variable into a categorical one with those values
       # that fall within group A or group B bins marked with some string we know.
 
-      # Collect all instances where the comparisonVariable has values in the bins from each group.
-      # So inGroupA is a vector with 0 if the value in comparisonVariable is not within any of the group A bins and >0 otherwise.
-      inGroupA <- Reduce(`+`, lapply(groupA, veupathUtils::whichInBin, values = sampleMetadata[[comparisonVariable]]))
-      inGroupB <- Reduce(`+`, lapply(groupB, veupathUtils::whichInBin, values = sampleMetadata[[comparisonVariable]]))
+      # Collect all instances where the comparatorColName has values in the bins from each group.
+      # So inGroupA is a vector with 0 if the value in comparatorColName is not within any of the group A bins and >0 otherwise.
+      inGroupA <- veupathUtils::whichValuesInBinList(sampleMetadata[[comparatorColName]], comparator@groupA)
+      inGroupB <- veupathUtils::whichValuesInBinList(sampleMetadata[[comparatorColName]], comparator@groupB)
 
+      # Eventually move this check to Comparator validation. See #47
       if ((any(inGroupA * inGroupB) > 0)) {
         stop("Group A and Group B cannot have overlapping bins.")
       }
 
-      # Make the comparisonVariable a character vector and replace the in-group values with a bin.
-      sampleMetadata[, (comparisonVariable) := as.character(get(comparisonVariable))]
+      # Make the comparatorColName a character vector and replace the in-group values with a bin.
+      sampleMetadata[, (comparatorColName) := as.character(get(comparatorColName))]
       
-      # Can replace values in sampleMetadata with whatever the first value is in that group.
-      sampleMetadata[!!inGroupA, c(comparisonVariable)] <- groupA[1]
-      sampleMetadata[!!inGroupB, c(comparisonVariable)] <- groupB[1]
-    }
+      # Now we can reassign groupA and groupB and can replace values in sampleMetadata our new group values
+      # We don't care about the values in the comparisonVariable column anymore. They were only
+      # useful to help us assign groups.
+      sampleMetadata[inGroupA, c(comparatorColName)] <- "groupA"
+      sampleMetadata[inGroupB, c(comparatorColName)] <- "groupB"
 
-    sampleMetadata <- sampleMetadata[get(comparisonVariable) %in% c(groupA, groupB), ]
+      # Finally, subset the sampleMetadata to only include those samples in groupA or B
+      sampleMetadata <- sampleMetadata[get(comparatorColName) %in% c("groupA", "groupB"), ]
 
+    } else {
+      # The comparator must be ordinal, binary, or categorical
+      groupAValues <- getGroupLabels(comparator, "groupA")
+      groupBValues <- getGroupLabels(comparator, "groupB")
+
+      # Filter sampleMetadata to keep only those samples that are labeled as groupA or groupB. Filter
+      # data *before* reassigning values to 'groupA' and 'groupB' to avoid issues with the original variable
+      # value being 'groupA' or 'groupB'
+      sampleMetadata <- sampleMetadata[get(comparatorColName) %in% c(groupAValues, groupBValues), ]
+
+      # Turn comparatorColName into a binary variable
+      sampleMetadata[get(comparatorColName) %in% groupAValues, c(comparatorColName)] <- 'groupA'
+      sampleMetadata[get(comparatorColName) %in% groupBValues, c(comparatorColName)] <- 'groupB'
+    } 
+
+    # sampleMetadata has already been filtered so it now only contains the samples we care about
     keepSamples <- sampleMetadata[[recordIdColumn]]
-    veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with ", comparisonVariable, "in either groupA or groupB. The calculation will continue with only these samples."), verbose)
+    if (!length(keepSamples)) {
+      stop("No samples remain after subsetting based on the comparator variable.")
+    }
+    veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with the value of ", comparatorColName, "in either groupA or groupB. The calculation will continue with only these samples."), verbose)
 
-    # Subset the original data based on the kept samples
+    # Subset the abundance data based on the kept samples
     df <- df[get(recordIdColumn) %in% keepSamples, ]
-    sampleMetadata <- sampleMetadata[get(recordIdColumn) %in% keepSamples, ]
-
-    # Turn comparisonVariable into a binary variable
-    sampleMetadata[get(comparisonVariable) %in% groupA, c(comparisonVariable)] <- 'groupA'
-    sampleMetadata[get(comparisonVariable) %in% groupB, c(comparisonVariable)] <- 'groupB'
 
 
     ## Format data for the different differential abundance methods.
@@ -170,7 +158,7 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
         # Create DESeqDataSet (dds)
         dds <- DESeq2::DESeqDataSetFromMatrix(countData = counts,
                                               colData = sampleMetadata,
-                                              design = as.formula(paste0("~",comparisonVariable)),
+                                              design = as.formula(paste0("~",comparatorColName)),
                                               tidy = FALSE)
 
         # Estimate size factors before running deseq to avoid errors about 0 counts
@@ -203,9 +191,9 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
       # Currently getting this error: Error in is.infinite(o1) : default method not implemented for type 'list'
       # Ignoring for now.
       output_abs = ANCOMBC::ancombc2(data = se, assay_name = "counts", tax_level = NULL,
-                  fix_formula = comparisonVariable, rand_formula = NULL,
+                  fix_formula = comparatorColName, rand_formula = NULL,
                   p_adj_method = "holm", prv_cut=0,
-                  group = comparisonVariable)
+                  group = comparatorColName)
 
     } else if (identical(method, 'MaAsLin2')) {
 
@@ -239,7 +227,7 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
     result@recordIdColumn <- recordIdColumn
     result@ancestorIdColumns <- ancestorIdColumns
     result@statistics <- statistics
-    result@parameters <- paste0("comparisonVariable = ", comparisonVariable, ", groupA = ", groupA, ", groupB = ", groupB, ', method = ', method)
+    result@parameters <- paste0('recordIdColumn = ', recordIdColumn,", comparatorColName = ", comparatorColName, ', method = ', method, ', groupA =', getGroupLabels(comparator, "groupA"), ', groupB = ', getGroupLabels(comparator, "groupB"))
     result@droppedColumns <- droppedColumns
 
 
@@ -249,7 +237,7 @@ setMethod("differentialAbundance", signature("AbundanceData"), function(data, co
 
 
     validObject(result)
-    veupathUtils::logWithTime(paste('Differential abundance computation completed with parameters recordIdColumn=', recordIdColumn, "comparisonVariable = ", comparisonVariable, ", groupA = ", groupA, ", groupB = ", groupB, ', method = ', method), verbose)
+    veupathUtils::logWithTime(paste('Differential abundance computation completed with parameters recordIdColumn = ', recordIdColumn,", comparatorColName = ", comparatorColName, ', method = ', method, ', groupA =', getGroupLabels(comparator, "groupA"), ', groupB = ', getGroupLabels(comparator, "groupB")), verbose)
     
     return(result)
 })

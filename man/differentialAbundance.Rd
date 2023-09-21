@@ -6,9 +6,7 @@
 \usage{
 differentialAbundance(
   data,
-  comparisonVariable,
-  groupA,
-  groupB,
+  comparator,
   method = c("DESeq", "ANCOMBC"),
   verbose = c(TRUE, FALSE)
 )
@@ -16,11 +14,7 @@ differentialAbundance(
 \arguments{
 \item{data}{AbsoluteAbundanceData object}
 
-\item{comparisonVariable}{string identifying the metadata column to be used when grouping samples.}
-
-\item{groupA}{array of strings, each string indicating a value in the comparisonVariable column. Samples with these metadata values will be included in Group A for the differential abundance calculation. Must have no overlap with groupB}
-
-\item{groupB}{array of strings, each string indicating a value in the comparisonVariable column. Samples with these metadata values will be included in Group B for the differential abundance calculation. Must have no overlap with groupA.}
+\item{comparator}{Comparator object specifying the variable and values or bins to be used in dividing samples into groups.}
 
 \item{method}{string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.}
 
