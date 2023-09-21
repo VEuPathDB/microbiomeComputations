@@ -7,17 +7,20 @@ test_that('correlation works with two data tables', {
     "contA1" = rnorm(nSamples),
     "contB1" = rnorm(nSamples),
     "contC1" = rnorm(nSamples)
-    # "dateA1" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
   )
 
   testData2 <- data.table(
     "contA2" = rnorm(nSamples),
     "contB2" = rnorm(nSamples),
     "contC2" = rnorm(nSamples)
-    # "dateA2" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
   )
 
   corrResult <- correlation(testData1, testData2, 'spearman', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData2))
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
+  corrResult <- correlation(testData1, testData2, 'pearson', verbose=F)
   expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
   expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData2))
   expect_true(!all(is.na(corrResult$correlationCoef)))
@@ -58,6 +61,7 @@ test_that('correlation returns an appropriately structured result for abundance 
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
   expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
   expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_true(all(!is.na(stats)))
 
 
   ## With method = spearman
@@ -74,6 +78,7 @@ test_that('correlation returns an appropriately structured result for abundance 
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
   expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
   expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_true(all(!is.na(stats)))
 
 
   ## With samples ordered differently in the abundance data and metadata
@@ -91,6 +96,7 @@ test_that('correlation returns an appropriately structured result for abundance 
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
   expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
   expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_true(all(!is.na(stats)))
 
 
   ## With specified variables
@@ -119,6 +125,7 @@ test_that('correlation returns an appropriately structured result for abundance 
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(variables)) # Should be number of taxa * number of metadata vars
   expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
   expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.contB'))
+  expect_true(all(!is.na(stats)))
 
   ## With a date <3
     variables <- new("VariableMetadataList", SimpleList(
@@ -146,6 +153,7 @@ test_that('correlation returns an appropriately structured result for abundance 
   expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(variables)) # Should be number of taxa * number of metadata vars
   expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
   expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.dateA'))
+  expect_true(all(!is.na(stats)))
 
 
 })
@@ -218,6 +226,13 @@ test_that("correlation fails with improper inputs", {
               sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
 
-  # Fail when we send in only categorical data
+  # Fail when we send in only categorical metadata
   expect_error(correlation(data, sampleMetadata, verbose=F))
+
+  # Fail when we input variables that isn't a VariableMetadataList
+  expect_error(corrleation(data, sampleMetadata, variables='wrong', verbose=F))
+
+  # Fail when sample metadata is missing a sample
+  sampleMetadata@data <- sampleMetadata@data[-1, ]
+  expect_error(corrleation(data, sampleMetadata, verbose=F))
 })
