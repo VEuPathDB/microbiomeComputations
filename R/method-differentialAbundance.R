@@ -1,69 +1,17 @@
-#' Differential abundance
-#'
-#' This function returns the fold change and associated p value for a differential abundance analysis comparing samples in two groups.
-#' 
-#' @param data AbsoluteAbundanceData object
-#' @param comparator Comparator object specifying the variable and values or bins to be used in dividing samples into groups.
-#' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
-#' @param verbose boolean indicating if timed logging is desired
-#' @return ComputeResult object
-#' @import veupathUtils
-#' @import data.table
-#' @importFrom purrr none
-#' @importFrom purrr discard
-#' @useDynLib microbiomeComputations
-#' @export
-setGeneric("differentialAbundance",
-  function(data, comparator, method = c('DESeq', 'ANCOMBC', 'MaAsLin2'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
-  signature = c("data", "comparator")
-)
+# a helper, to reuse and separate some logic
+cleanComparatorVariable <- function(data, comparator) {
+  if (!inherits(data, 'AbundanceData')) stop("data must be of the AbundanceData class.")
+  if (!inherits(comparator, 'Comparator')) stop("comparator must be of the Comparator class.")
 
-#'@export
-setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparator"), function(data, comparator, method = c('DESeq', 'ANCOMBC', 'MaAsLin2'), verbose = c(TRUE, FALSE)) {
-    df <- data@data
-    recordIdColumn <- data@recordIdColumn
-    naToZero <- data@imputeZero
-    ancestorIdColumns <- data@ancestorIdColumns
-    allIdColumns <- c(recordIdColumn, ancestorIdColumns)
-    sampleMetadata <- copy(data@sampleMetadata)
-    comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
+  comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
+  data <- removeIncompleteSamples(data, comparatorColName)
+  df <- getAbundances(data)
+  sampleMetadata <- getSampleMetadata(data)
+  recordIdColumn <- data@recordIdColumn
 
+  veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
 
-    ## Initialize and check inputs
-    method <- veupathUtils::matchArg(method)
-    verbose <- veupathUtils::matchArg(verbose)
-
-    # Check that incoming df meets requirements
-    if (!'data.table' %in% class(df)) {
-      data.table::setDT(df)
-    }
-
-    # Check that incoming metadata meets requirements
-    if (!'data.table' %in% class(sampleMetadata)) {
-      data.table::setDT(sampleMetadata)
-    }
-
-    computeMessage <- ''
-    veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
-
-    # Replace NA values with 0
-    if (naToZero) {
-      veupathUtils::setNaToZero(df)
-      veupathUtils::logWithTime("Replaced NAs with 0", verbose)
-    }
-
-    # Remove samples with NA from data and metadata
-    if (any(is.na(sampleMetadata[[comparatorColName]]))) {
-      veupathUtils::logWithTime("Found NAs in comparator variable. Removing these samples.", verbose)
-      samplesWithData <- which(!is.na(sampleMetadata[[comparatorColName]]))
-      # Keep samples with data. Recall the AbundanceData object requires samples to be in the same order
-      # in both the data and metadata
-      sampleMetadata <- sampleMetadata[samplesWithData, ]
-      df <- df[samplesWithData, ]
-    }
-
-
-    # Subset to only include samples with metadata defined in groupA and groupB
+  # Subset to only include samples with metadata defined in groupA and groupB
     if (identical(comparator@variable@dataShape@value, "CONTINUOUS")) {
       
       # Ensure bin starts and ends are numeric
@@ -121,94 +69,129 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
     # Subset the abundance data based on the kept samples
     df <- df[get(recordIdColumn) %in% keepSamples, ]
 
+    data@data <- df
+    data@sampleMetadata <- sampleMetadata
+    validate(object)
 
-    ## Format data for the different differential abundance methods.
+    return(object)
+}
 
-    # First, remove id columns and any columns that are all 0s.
-    cleanedData <- purrr::discard(df[, -..allIdColumns], function(col) {identical(union(unique(col), c(0, NA)), c(0, NA))})
-    droppedColumns <- setdiff(names(df[, -..allIdColumns]), names(cleanedData))
+#' Differential abundance
+#'
+#' This function returns the fold change and associated p value for a differential abundance analysis comparing samples in two groups.
+#' 
+#' @param data AbsoluteAbundanceData object
+#' @param comparator Comparator object specifying the variable and values or bins to be used in dividing samples into groups.
+#' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
+#' @param verbose boolean indicating if timed logging is desired
+#' @return ComputeResult object
+#' @import veupathUtils
+#' @import data.table
+#' @import DESeq2
+#' @importFrom Maaslin2 Maaslin2
+#' @importFrom purrr none
+#' @importFrom purrr discard
+#' @useDynLib microbiomeComputations
+#' @export
+setGeneric("differentialAbundance",
+  function(data, comparator, method = c('DESeq', 'MaAsLin2'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
+  signature = c("data", "comparator")
+)
 
-    # Next, transpose abundance data to get a counts matrix with taxa as rows and samples as columns
-    if (!identical(method, 'MaAsLin2')) {
-      counts <- data.table::transpose(cleanedData)
-      rownames(counts) <- names(cleanedData)
-      colnames(counts) <- df[[recordIdColumn]]
-    } else {
-      counts <- cleanedData
-      rownames(counts) <- df[[recordIdColumn]]
-    }
+# TODO update plugin
+setGeneric("deseq",
+  function(data, comparator, verbose = c(TRUE, FALSE)) standardGeneric("deseq"),
+  signature = c("data", "comparator")
+)
 
-    # Then, format metadata. Recall samples are rows and variables are columns
-    rownames(sampleMetadata) <- sampleMetadata[[recordIdColumn]]
+setMethod("deseq", signature("AbsoluteAbundanceData", "Comparator"), function(data, comparator, verbose = c(TRUE, FALSE)) {
+  recordIdColumn <- data@recordIdColumn
+  sampleMetadata <- getSampleMetadata(data)
+  comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
 
-    # Finally, check to ensure samples are in the same order in counts and metadata. Both DESeq
-    # and ANCOMBC expect the order to match, and will not perform this check.
-    # if (!identical(rownames(sampleMetadata), colnames(counts))){
-    #   # Reorder sampleMetadata to match counts
-    #   veupathUtils::logWithTime("Sample order differs between data and metadata. Reordering data based on the metadata sample order.", verbose)
-    #   data.table::setcolorder(counts, rownames(sampleMetadata))
-    # }
-    veupathUtils::logWithTime(paste0("Abundance data formatted for differential abundance computation. Proceeding with method=",method), verbose)
-    
-    ## Compute differential abundance
-    if (identical(method, 'DESeq')) {
+  # First, remove id columns and any columns that are all 0s.
+  cleanedData <- purrr::discard(data@data[, -..allIdColumns], function(col) {identical(union(unique(col), c(0, NA)), c(0, NA))})
+  # Next, transpose abundance data to get a counts matrix with taxa as rows and samples as columns
+  counts <- data.table::transpose(cleanedData)
+  rownames(counts) <- names(cleanedData)
+  colnames(counts) <- data@data[[recordIdColumn]]
 
-      deseq_output <- try({
+  # Then, format metadata. Recall samples are rows and variables are columns
+  rownames(sampleMetadata) <- sampleMetadata[[recordIdColumn]]
+  
+  # Finally, check to ensure samples are in the same order in counts and metadata. Both DESeq
+  # and ANCOMBC expect the order to match, and will not perform this check.
+  if (!identical(rownames(sampleMetadata), colnames(counts))){
+    # Reorder sampleMetadata to match counts
+    veupathUtils::logWithTime("Sample order differs between data and metadata. Reordering data based on the metadata sample order.", verbose)
+    data.table::setcolorder(counts, rownames(sampleMetadata))
+  }
 
-        # Create DESeqDataSet (dds)
-        dds <- DESeq2::DESeqDataSetFromMatrix(countData = counts,
-                                              colData = sampleMetadata,
-                                              design = as.formula(paste0("~",comparatorColName)),
-                                              tidy = FALSE)
+  deseq_output <- try({
 
-        # Estimate size factors before running deseq to avoid errors about 0 counts
-        geoMeans = apply(DESeq2::counts(dds), 1, function(x){exp(sum(log(x[x > 0]), na.rm=T) / length(x))})
-        dds <- DESeq2::estimateSizeFactors(dds, geoMeans = geoMeans)
+    # Create DESeqDataSet (dds)
+    dds <- DESeq2::DESeqDataSetFromMatrix(countData = counts,
+                                          colData = sampleMetadata,
+                                          design = as.formula(paste0("~",comparatorColName)),
+                                          tidy = FALSE)
 
-        # Run DESeq
-        deseq_output <- DESeq2::DESeq(dds)
-      })
+    # Estimate size factors before running deseq to avoid errors about 0 counts
+    geoMeans = apply(DESeq2::counts(dds), 1, function(x){exp(sum(log(x[x > 0]), na.rm=T) / length(x))})
+    dds <- DESeq2::estimateSizeFactors(dds, geoMeans = geoMeans)
 
-      if (veupathUtils::is.error(deseq_output)) {
-        veupathUtils::logWithTime(paste0('Differential abundance FAILED with parameters recordIdColumn=', recordIdColumn, ', method =', method, ', verbose =', verbose), verbose)
-        stop()
-      }
+    # Run DESeq
+    deseq_output <- DESeq2::DESeq(dds)
+  })
 
-      # Extract deseq results
-      deseq_results <- DESeq2::results(deseq_output)
+  if (veupathUtils::is.error(deseq_output)) {
+    veupathUtils::logWithTime(paste0('Differential abundance FAILED with parameters recordIdColumn=', recordIdColumn, ', method = DESeq', ', verbose =', verbose), verbose)
+    stop()
+  }
 
-      # Format results for easier access
-      statistics <- data.frame(log2foldChange = deseq_results$log2FoldChange,
-                               pValue = deseq_results$pvalue,
-                               adjustedPValue = deseq_results$padj,
-                               pointID = rownames(counts))
+  # Extract deseq results
+  deseq_results <- DESeq2::results(deseq_output)
 
+  # Format results for easier access
+  statistics <- data.frame(log2foldChange = deseq_results$log2FoldChange,
+                           pValue = deseq_results$pvalue,
+                           adjustedPValue = deseq_results$padj,
+                           pointID = rownames(counts))
 
-    } else if (identical(method, 'ANCOMBC')) {
+  return(statistics)
+})
 
-      se <- TreeSummarizedExperiment::TreeSummarizedExperiment(list(counts = counts), colData = sampleMetadata)
+setMethod("deseq", signature("AbundanceData", "Comparator"), function(data, comparator, verbose = c(TRUE, FALSE)) {
+  stop("Please use the AbsoluteAbundanceData class with DESeq2.")
+})
 
-      # Currently getting this error: Error in is.infinite(o1) : default method not implemented for type 'list'
-      # Ignoring for now.
-      output_abs = ANCOMBC::ancombc2(data = se, assay_name = "counts", tax_level = NULL,
-                  fix_formula = comparatorColName, rand_formula = NULL,
-                  p_adj_method = "holm", prv_cut=0,
-                  group = comparatorColName)
+setGeneric("maaslin",
+  function(data, comparator, verbose = c(TRUE, FALSE)) standardGeneric("maaslin"),
+  signature = c("data", "comparator")
+)
 
-    } else if (identical(method, 'MaAsLin2')) {
+# this leaves room for us to grow into dedicated params (normalization and analysis method etc) for counts if desired
+setMethod("maaslin", signature("AbundanceData", "Comparator",), function(data, comparator, verbose = c(TRUE, FALSE)) {
+  recordIdColumn <- data@recordIdColumn
+  sampleMetadata <- getSampleMetadata(data)
+  comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
+  abundances <- data@data
 
-      maaslinOutput <- Maaslin2(
-        input_data = counts, 
+  # First, remove id columns and any columns that are all 0s.
+  cleanedData <- purrr::discard(abundances[, -..allIdColumns], function(col) {identical(union(unique(col), c(0, NA)), c(0, NA))})
+  rownames(cleanedData) <- abundances[[recordIdColumn]]
+
+  maaslinOutput <- Maaslin2::Maaslin2(
+        input_data = cleanedData, 
         input_metadata = sampleMetadata,
         output = "maaslin_output",
-        fixed_effects = c(comparisonVariable),
+        fixed_effects = c(comparatorColName),
         analysis_method = "LM", # default LM
         normalization = "TSS", # default TSS
         transform = "LOG", # default LOG
         plot_heatmap = F,
         plot_scatter = F)
 
-      # Coefficient is not exactly right, but we could calculate log2FC ourselves pretty easily.
+      # NOTE!!!! Coefficient in place of Log2FC only makes sense for LM
       # see https://forum.biobakery.org/t/trying-to-understand-coef-column-and-how-to-convert-it-to-fold-change/3136/8
 
       statistics <- data.frame(log2foldChange = maaslinOutput$results$coef,
@@ -216,11 +199,47 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
                           adjustedPValue = maaslinOutput$results$qval,
                           pointID = maaslinOutput$results$feature)
 
+  return(statistics)
+})
+
+# this is consistent regardless of rel vs abs abund. the statistical methods will differ depending on that. 
+#'@export
+setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), function(data, comparator, method = c('DESeq', 'Maaslin'), verbose = c(TRUE, FALSE)) {
+    data <- cleanComparatorVariable(data, comparator)
+    recordIdColumn <- data@recordIdColumn
+    ancestorIdColumns <- data@ancestorIdColumns
+    allIdColumns <- c(recordIdColumn, ancestorIdColumns)
+    comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
+
+    ## Initialize and check inputs
+    method <- veupathUtils::matchArg(method)
+    verbose <- veupathUtils::matchArg(verbose)
+    
+    ## Compute differential abundance
+    if (identical(method, 'DESeq')) {
+      statistics <- deseq(data, comparator)
+#    } else if (identical(method, 'ANCOMBC')) {
+#
+#      se <- TreeSummarizedExperiment::TreeSummarizedExperiment(list(counts = counts), colData = sampleMetadata)
+#
+#      # Currently getting this error: Error in is.infinite(o1) : default method not implemented for type 'list'
+#      # Ignoring for now.
+#      output_abs = ANCOMBC::ancombc2(data = se, assay_name = "counts", tax_level = NULL,
+#                  fix_formula = comparatorColName, rand_formula = NULL,
+#                  p_adj_method = "holm", prv_cut=0,
+#                  group = comparatorColName)
+#
+    } else if (identical(method, 'MaAsLin2')) {
+      statistics <- maaslin(data, comparator)
     } else {
-      stop('Unaccepted differential abundance method. Accepted methods are "DESeq" and "ANCOMBC".')
+      stop('Unaccepted differential abundance method. Accepted methods are "DESeq" and "Maaslin".')
     }
     veupathUtils::logWithTime(paste0('Completed method=',method,'. Formatting results.'), verbose)
     
+    # TODO make sure i understood/ did this right..
+    # is this droppedTaxa ?? can we rename it?
+    droppedColumns <- setdiff(names(abundances[, -..allIdColumns]), statistics$pointID)
+
     ## Construct the ComputeResult
     result <- new("ComputeResult")
     result@name <- 'differentialAbundance'
@@ -232,7 +251,7 @@ setMethod("differentialAbundance", signature("AbsoluteAbundanceData", "Comparato
 
 
     # The resulting data should contain only the samples actually used.
-    result@data <- df[, ..allIdColumns]
+    result@data <- data@data[, ..allIdColumns]
     names(result@data) <- stripEntityIdFromColumnHeader(names(result@data))
 
 
