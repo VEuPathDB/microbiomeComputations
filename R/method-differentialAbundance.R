@@ -5,11 +5,11 @@ cleanComparatorVariable <- function(data, comparator) {
 
   comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
   data <- removeIncompleteSamples(data, comparatorColName)
-  df <- getAbundances(data)
+  abundances <- getAbundances(data)
   sampleMetadata <- getSampleMetadata(data)
   recordIdColumn <- data@recordIdColumn
 
-  veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
+  veupathUtils::logWithTime(paste("Received abundance table with", nrow(abundances), "samples and", (ncol(abundances)-1), "taxa."), verbose)
 
   # Subset to only include samples with metadata defined in groupA and groupB
     if (identical(comparator@variable@dataShape@value, "CONTINUOUS")) {
@@ -64,39 +64,17 @@ cleanComparatorVariable <- function(data, comparator) {
     if (!length(keepSamples)) {
       stop("No samples remain after subsetting based on the comparator variable.")
     }
-    veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with the value of ", comparatorColName, "in either groupA or groupB. The calculation will continue with only these samples."), verbose)
+    veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with a value for ", comparatorColName, " in either groupA or groupB. The calculation will continue with only these samples."), verbose)
 
     # Subset the abundance data based on the kept samples
-    df <- df[get(recordIdColumn) %in% keepSamples, ]
+    abundances <- abundances[get(recordIdColumn) %in% keepSamples, ]
 
-    data@data <- df
+    data@data <- abundances
     data@sampleMetadata <- sampleMetadata
-    validate(object)
+    validObject(object)
 
     return(object)
 }
-
-#' Differential abundance
-#'
-#' This function returns the fold change and associated p value for a differential abundance analysis comparing samples in two groups.
-#' 
-#' @param data AbsoluteAbundanceData object
-#' @param comparator Comparator object specifying the variable and values or bins to be used in dividing samples into groups.
-#' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
-#' @param verbose boolean indicating if timed logging is desired
-#' @return ComputeResult object
-#' @import veupathUtils
-#' @import data.table
-#' @import DESeq2
-#' @importFrom Maaslin2 Maaslin2
-#' @importFrom purrr none
-#' @importFrom purrr discard
-#' @useDynLib microbiomeComputations
-#' @export
-setGeneric("differentialAbundance",
-  function(data, comparator, method = c('DESeq', 'MaAsLin2'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
-  signature = c("data", "comparator")
-)
 
 # TODO update plugin
 setGeneric("deseq",
@@ -170,7 +148,7 @@ setGeneric("maaslin",
 )
 
 # this leaves room for us to grow into dedicated params (normalization and analysis method etc) for counts if desired
-setMethod("maaslin", signature("AbundanceData", "Comparator",), function(data, comparator, verbose = c(TRUE, FALSE)) {
+setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, comparator, verbose = c(TRUE, FALSE)) {
   recordIdColumn <- data@recordIdColumn
   sampleMetadata <- getSampleMetadata(data)
   comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
@@ -201,6 +179,28 @@ setMethod("maaslin", signature("AbundanceData", "Comparator",), function(data, c
 
   return(statistics)
 })
+
+#' Differential abundance
+#'
+#' This function returns the fold change and associated p value for a differential abundance analysis comparing samples in two groups.
+#' 
+#' @param data AbsoluteAbundanceData object
+#' @param comparator Comparator object specifying the variable and values or bins to be used in dividing samples into groups.
+#' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
+#' @param verbose boolean indicating if timed logging is desired
+#' @return ComputeResult object
+#' @import veupathUtils
+#' @import data.table
+#' @import DESeq2
+#' @importFrom Maaslin2 Maaslin2
+#' @importFrom purrr none
+#' @importFrom purrr discard
+#' @useDynLib microbiomeComputations
+#' @export
+setGeneric("differentialAbundance",
+  function(data, comparator, method = c('DESeq', 'Maaslin'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
+  signature = c("data", "comparator")
+)
 
 # this is consistent regardless of rel vs abs abund. the statistical methods will differ depending on that. 
 #'@export

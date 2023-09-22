@@ -42,6 +42,7 @@ Collate:
     'method-betaDiv.R'
     'method-differentialAbundance.R'
     'method-rankedAbundance.R'
+    'methods-AbundanceData.R'
     'methods-Comparator.R'
     'methods-ComputeResult.R'
     'microbiomeComputations-package.R'

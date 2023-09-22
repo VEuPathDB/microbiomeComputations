@@ -451,11 +451,33 @@ test_that("differentialAbundance handles non-integer data",{
               sampleMetadata = testSampleMetadata,
               recordIdColumn = 'entity.SampleID')
 
+  comparatorVariable <- microbiomeComputations::Comparator(
+                          variable = veupathUtils::VariableMetadata(
+                            variableSpec = VariableSpec(
+                              variableId = 'cat4',
+                              entityId = 'entity'
+                            ),
+                            dataShape = veupathUtils::DataShape(value="CATEGORICAL")
+                          ),
+                          groupA = veupathUtils::BinList(
+                            S4Vectors::SimpleList(
+                              c(veupathUtils::Bin(
+                                binLabel="cat4_a"
+                              ))
+                            )
+                          ),
+                          groupB = veupathUtils::BinList(
+                            S4Vectors::SimpleList(
+                              c(veupathUtils::Bin(
+                                binLabel="cat4_b"
+                              ))
+                            )
+                          )
+  )
+
   result <- differentialAbundance(testData,
-              comparisonVariable = "entity.cat4",
-              groupA = c('cat4_a'),
-              groupB = c('cat4_b'),
-              method='MaAsLin2',
+              comparator = comparatorVariable,
+              method='Maaslin',
               verbose=T)
   dt <- result@data
   stats <- result@statistics
