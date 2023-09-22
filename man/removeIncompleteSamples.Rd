@@ -4,7 +4,11 @@
 \alias{removeIncompleteSamples}
 \title{Drop samples with incomplete SampleMetadata}
 \usage{
-removeIncompleteSamples(object, colName = character())
+removeIncompleteSamples(
+  object,
+  colName = character(),
+  verbose = c(TRUE, FALSE)
+)
 }
 \arguments{
 \item{object}{AbundanceData}
