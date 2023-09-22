@@ -89,7 +89,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
-  expect_equal(sum(testSampleMetadata[,'entity.cat4'] %in% c('cat4_a','cat4_b')), nrow(dt))
+  expect_equal(sum(testSampleMetadata$entity.cat4 %in% c('cat4_a','cat4_b')), nrow(dt))
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
@@ -217,7 +217,7 @@ test_that("differentialAbundance can handle messy inputs", {
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
-  expect_equal(sum(testSampleMetadataMessy[,'entity.cat4'] %in% c('cat4_a','cat4_b','cat4_c')), nrow(dt))
+  expect_equal(sum(testSampleMetadataMessy$entity.cat4 %in% c('cat4_a','cat4_b','cat4_c')), nrow(dt))
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
@@ -280,7 +280,7 @@ test_that("differentialAbundance can handle messy inputs", {
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
-  expect_equal(nrow(dt), sum(testSampleMetadataMessy[,'entity.cat4'] %in% c('cat4_a','cat4_b','cat4_c')))
+  expect_equal(nrow(dt), sum(testSampleMetadataMessy$entity.cat4 %in% c('cat4_a','cat4_b','cat4_c')))
   stats <- result@statistics
   expect_s3_class(stats, 'data.frame')
   expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
@@ -432,9 +432,9 @@ test_that("differentialAbundance catches deseq errors", {
 
 })
 
-test_that("differentialAbundance handles non-integer data",{
+test_that("differentialAbundance method Maaslin does stuff",{
     df <- testOTU
-  counts <- df[, -c("entity.SampleID")]*1000
+  counts <- round(df[, -c("entity.SampleID")]*1000)
   counts[ ,entity.SampleID:= df$entity.SampleID]
   nSamples <- dim(df)[1]
   testSampleMetadata <- data.frame(list(
@@ -446,10 +446,16 @@ test_that("differentialAbundance handles non-integer data",{
     ))
 
 
-  testData <- microbiomeComputations::AbundanceData(
+  testCountsData <- microbiomeComputations::AbsoluteAbundanceData(
               data = counts,
               sampleMetadata = testSampleMetadata,
               recordIdColumn = 'entity.SampleID')
+
+  tetData <- microbiomeComputations::AbundanceData(
+    data = df,
+    sampleMetadata = testSampleMetadata,
+    recordIdColumn = 'entity.SampleID'
+  )
 
   comparatorVariable <- microbiomeComputations::Comparator(
                           variable = veupathUtils::VariableMetadata(
@@ -478,7 +484,21 @@ test_that("differentialAbundance handles non-integer data",{
   result <- differentialAbundance(testData,
               comparator = comparatorVariable,
               method='Maaslin',
-              verbose=T)
+              verbose=F)
   dt <- result@data
   stats <- result@statistics
+
+
+  resultCounts <- differentialAbundance(testCountsData,
+              comparator = comparatorVariable,
+              method='Maaslin',
+              verbose=F)
+  dtCounts <- result@data
+  statsCounts <- result@statistics
+
+  expect_equal(dt, dtCounts)
+  #kind of naively figuring the one is more sensitive/ specific than the other
+  expect_true(length(stats$pointID) > 0)
+  expect_true(length(statsCounts$pointID) > 0)
+  expect_true(all(stats$pointID %in% statsCounts$pointID))
 })

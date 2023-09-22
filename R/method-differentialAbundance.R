@@ -1,10 +1,10 @@
 # a helper, to reuse and separate some logic
-cleanComparatorVariable <- function(data, comparator) {
+cleanComparatorVariable <- function(data, comparator, verbose = c(TRUE, FALS)) {
   if (!inherits(data, 'AbundanceData')) stop("data must be of the AbundanceData class.")
   if (!inherits(comparator, 'Comparator')) stop("comparator must be of the Comparator class.")
 
   comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
-  data <- removeIncompleteSamples(data, comparatorColName)
+  data <- removeIncompleteSamples(data, comparatorColName, verbose)
   abundances <- getAbundances(data)
   sampleMetadata <- getSampleMetadata(data)
   recordIdColumn <- data@recordIdColumn
@@ -71,9 +71,9 @@ cleanComparatorVariable <- function(data, comparator) {
 
     data@data <- abundances
     data@sampleMetadata <- sampleMetadata
-    validObject(object)
+    validObject(data)
 
-    return(object)
+    return(data)
 }
 
 # TODO update plugin
@@ -157,6 +157,7 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
   # First, remove id columns and any columns that are all 0s.
   cleanedData <- purrr::discard(abundances[, -..allIdColumns], function(col) {identical(union(unique(col), c(0, NA)), c(0, NA))})
   rownames(cleanedData) <- abundances[[recordIdColumn]]
+  rownames(sampleMetadata) <- sampleMetadata[[recordIdColumn]]
 
   maaslinOutput <- Maaslin2::Maaslin2(
         input_data = cleanedData, 
@@ -205,7 +206,7 @@ setGeneric("differentialAbundance",
 # this is consistent regardless of rel vs abs abund. the statistical methods will differ depending on that. 
 #'@export
 setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), function(data, comparator, method = c('DESeq', 'Maaslin'), verbose = c(TRUE, FALSE)) {
-    data <- cleanComparatorVariable(data, comparator)
+    data <- cleanComparatorVariable(data, comparator, verbose)
     recordIdColumn <- data@recordIdColumn
     ancestorIdColumns <- data@ancestorIdColumns
     allIdColumns <- c(recordIdColumn, ancestorIdColumns)
@@ -217,7 +218,7 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
     
     ## Compute differential abundance
     if (identical(method, 'DESeq')) {
-      statistics <- deseq(data, comparator)
+      statistics <- deseq(data, comparator, verbose)
 #    } else if (identical(method, 'ANCOMBC')) {
 #
 #      se <- TreeSummarizedExperiment::TreeSummarizedExperiment(list(counts = counts), colData = sampleMetadata)
@@ -229,8 +230,8 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
 #                  p_adj_method = "holm", prv_cut=0,
 #                  group = comparatorColName)
 #
-    } else if (identical(method, 'MaAsLin2')) {
-      statistics <- maaslin(data, comparator)
+    } else if (identical(method, 'Maaslin')) {
+      statistics <- maaslin(data, comparator, verbose)
     } else {
       stop('Unaccepted differential abundance method. Accepted methods are "DESeq" and "Maaslin".')
     }

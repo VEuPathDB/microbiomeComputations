@@ -72,12 +72,12 @@ setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCo
 #' @return AbundanceData with modified data and sampleMetadata slots
 #' @export
 setGeneric("removeIncompleteSamples",
-  function(object, colName = character()) standardGeneric("removeIncompleteSamples"),
+  function(object, colName = character(), verbose = c(TRUE, FALSE)) standardGeneric("removeIncompleteSamples"),
   signature = c("object")
 )
 
 #'@export 
-setMethod("removeIncompleteSamples", signature("AbundanceData"), function(object, colName = character()) {
+setMethod("removeIncompleteSamples", signature("AbundanceData"), function(object, colName = character(), verbose = c(TRUE, FALSE)) {
   df <- getAbundances(object)
   sampleMetadata <- getSampleMetadata(object)
 
