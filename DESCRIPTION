@@ -15,10 +15,15 @@ Imports:
     data.table,
     DESeq2,
     jsonlite,
+    methods,
     Rcpp (>= 0.11.0),
     stringi,
     vegan,
     veupathUtils,
+Depends:
+    Maaslin2,
+    S4Vectors,
+    purrr
 Remotes:
     VEuPathDB/veupathUtils
 LinkingTo: Rcpp
