@@ -1,5 +1,5 @@
 # a helper, to reuse and separate some logic
-cleanComparatorVariable <- function(data, comparator, verbose = c(TRUE, FALS)) {
+cleanComparatorVariable <- function(data, comparator, verbose = c(TRUE, FALSE)) {
   if (!inherits(data, 'AbundanceData')) stop("data must be of the AbundanceData class.")
   if (!inherits(comparator, 'Comparator')) stop("comparator must be of the Comparator class.")
 
@@ -84,6 +84,8 @@ setGeneric("deseq",
 
 setMethod("deseq", signature("AbsoluteAbundanceData", "Comparator"), function(data, comparator, verbose = c(TRUE, FALSE)) {
   recordIdColumn <- data@recordIdColumn
+  ancestorIdColumns <- data@ancestorIdColumns
+  allIdColumns <- c(recordIdColumn, ancestorIdColumns)
   sampleMetadata <- getSampleMetadata(data)
   comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
 
@@ -130,12 +132,14 @@ setMethod("deseq", signature("AbsoluteAbundanceData", "Comparator"), function(da
   deseq_results <- DESeq2::results(deseq_output)
 
   # Format results for easier access
-  statistics <- data.frame(log2foldChange = deseq_results$log2FoldChange,
+  statistics <- data.frame(effectSize = deseq_results$log2FoldChange,
                            pValue = deseq_results$pvalue,
                            adjustedPValue = deseq_results$padj,
                            pointID = rownames(counts))
 
-  return(statistics)
+  result <- list('effectSizeLabel' = 'log2(FoldChange)', 'statistics' = statistics)
+
+  return(result)
 })
 
 setMethod("deseq", signature("AbundanceData", "Comparator"), function(data, comparator, verbose = c(TRUE, FALSE)) {
@@ -150,6 +154,8 @@ setGeneric("maaslin",
 # this leaves room for us to grow into dedicated params (normalization and analysis method etc) for counts if desired
 setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, comparator, verbose = c(TRUE, FALSE)) {
   recordIdColumn <- data@recordIdColumn
+  ancestorIdColumns <- data@ancestorIdColumns
+  allIdColumns <- c(recordIdColumn, ancestorIdColumns)
   sampleMetadata <- getSampleMetadata(data)
   comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
   abundances <- data@data
@@ -162,7 +168,8 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
   maaslinOutput <- Maaslin2::Maaslin2(
         input_data = cleanedData, 
         input_metadata = sampleMetadata,
-        output = "maaslin_output",
+        output = tempfile("maaslin"),
+        #min_prevalence = 0,
         fixed_effects = c(comparatorColName),
         analysis_method = "LM", # default LM
         normalization = "TSS", # default TSS
@@ -173,12 +180,14 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
       # NOTE!!!! Coefficient in place of Log2FC only makes sense for LM
       # see https://forum.biobakery.org/t/trying-to-understand-coef-column-and-how-to-convert-it-to-fold-change/3136/8
 
-      statistics <- data.frame(log2foldChange = maaslinOutput$results$coef,
+      statistics <- data.frame(effectSize = maaslinOutput$results$coef,
                           pValue = maaslinOutput$results$pval,
                           adjustedPValue = maaslinOutput$results$qval,
                           pointID = maaslinOutput$results$feature)
 
-  return(statistics)
+      result <- list('effectSizeLabel' = 'model coefficient (effect size)', 'statistics' = statistics)
+
+  return(result)
 })
 
 #' Differential abundance
@@ -237,9 +246,8 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
     }
     veupathUtils::logWithTime(paste0('Completed method=',method,'. Formatting results.'), verbose)
     
-    # TODO make sure i understood/ did this right..
-    # is this droppedTaxa ?? can we rename it?
-    droppedColumns <- setdiff(names(abundances[, -..allIdColumns]), statistics$pointID)
+    # this is droppedTaxa, or pathways etc ?? can we rename it?
+    droppedColumns <- setdiff(names(data@data[, -..allIdColumns, with=FALSE]), statistics[[2]]$pointID)
 
     ## Construct the ComputeResult
     result <- new("ComputeResult")

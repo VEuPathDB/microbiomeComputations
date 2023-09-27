@@ -53,11 +53,12 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   dt <- result@data
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
-  stats <- result@statistics
+  stats <- result@statistics[[2]]
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
+  expect_equal(result@statistics[[1]], 'log2(FoldChange)')
+  expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
-  expect_true(all(!is.na(stats[, c('log2foldChange', 'pValue', 'pointID')])))
+  expect_true(all(!is.na(stats[, c('effectSize', 'pValue', 'pointID')])))
 
 
   # When defined groups end up subsetting the incoming data
@@ -90,11 +91,12 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
   expect_equal(sum(testSampleMetadata$entity.cat4 %in% c('cat4_a','cat4_b')), nrow(dt))
-  stats <- result@statistics
+  stats <- result@statistics[[2]]
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
+  expect_equal(result@statistics[[1]], 'log2(FoldChange)')
+  expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
-  expect_true(all(!is.na(stats[, c('log2foldChange', 'pValue', 'pointID')])))
+  expect_true(all(!is.na(stats[, c('effectSize', 'pValue', 'pointID')])))
 
 
   # With a continuous variable
@@ -123,9 +125,10 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
   expect_equal(nrow(dt), sum((testSampleMetadata[['entity.contA']] >= 2) * (testSampleMetadata[['entity.contA']] < 6)))
-  stats <- result@statistics
+  stats <- result@statistics[[2]]
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
+  expect_equal(result@statistics[[1]], 'log2(FoldChange)')
+  expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
   ## With dates
@@ -153,9 +156,10 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
   expect_equal(nrow(dt), sum((testSampleMetadata[['entity.dateA']] >= as.Date('1989-01-01')) * (testSampleMetadata[['entity.dateA']] < as.Date('1993-01-01'))))
-  stats <- result@statistics
+  stats <- result@statistics[[2]]
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
+  expect_equal(result@statistics[[1]], 'log2(FoldChange)')
+  expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
 })
@@ -218,11 +222,12 @@ test_that("differentialAbundance can handle messy inputs", {
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
   expect_equal(sum(testSampleMetadataMessy$entity.cat4 %in% c('cat4_a','cat4_b','cat4_c')), nrow(dt))
-  stats <- result@statistics
+  stats <- result@statistics[[2]]
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
+  expect_equal(result@statistics[[1]], 'log2(FoldChange)')
+  expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
-  expect_true(all(!is.na(stats[, c('log2foldChange', 'pValue', 'pointID')])))
+  expect_true(all(!is.na(stats[, c('effectSize', 'pValue', 'pointID')])))
 
 
   # With a continuous variable that has NAs
@@ -251,9 +256,10 @@ test_that("differentialAbundance can handle messy inputs", {
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
   expect_equal(nrow(dt), sum((testSampleMetadataMessy[['entity.contA']] >= 2) * (testSampleMetadataMessy[['entity.contA']] < 6), na.rm=T))
-  stats <- result@statistics
+  stats <- result@statistics[[2]]
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
+  expect_equal(result@statistics[[1]], 'log2(FoldChange)')
+  expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
 
@@ -281,9 +287,10 @@ test_that("differentialAbundance can handle messy inputs", {
   expect_equal(names(dt), c('SampleID'))
   expect_s3_class(dt, 'data.table')
   expect_equal(nrow(dt), sum(testSampleMetadataMessy$entity.cat4 %in% c('cat4_a','cat4_b','cat4_c')))
-  stats <- result@statistics
+  stats <- result@statistics[[2]]
   expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('log2foldChange','pValue','adjustedPValue','pointID'))
+  expect_equal(result@statistics[[1]], 'log2(FoldChange)')
+  expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
 
@@ -451,7 +458,7 @@ test_that("differentialAbundance method Maaslin does stuff",{
               sampleMetadata = testSampleMetadata,
               recordIdColumn = 'entity.SampleID')
 
-  tetData <- microbiomeComputations::AbundanceData(
+  testData <- microbiomeComputations::AbundanceData(
     data = df,
     sampleMetadata = testSampleMetadata,
     recordIdColumn = 'entity.SampleID'
@@ -486,7 +493,7 @@ test_that("differentialAbundance method Maaslin does stuff",{
               method='Maaslin',
               verbose=F)
   dt <- result@data
-  stats <- result@statistics
+  stats <- result@statistics[[2]]
 
 
   resultCounts <- differentialAbundance(testCountsData,
@@ -494,11 +501,11 @@ test_that("differentialAbundance method Maaslin does stuff",{
               method='Maaslin',
               verbose=F)
   dtCounts <- result@data
-  statsCounts <- result@statistics
+  statsCounts <- result@statistics[[2]]
 
   expect_equal(dt, dtCounts)
-  #kind of naively figuring the one is more sensitive/ specific than the other
+  expect_equal(result@statistics[[1]], 'model coefficient (effect size)')
   expect_true(length(stats$pointID) > 0)
   expect_true(length(statsCounts$pointID) > 0)
-  expect_true(all(stats$pointID %in% statsCounts$pointID))
+  expect_equal(stats, statsCounts)
 })
