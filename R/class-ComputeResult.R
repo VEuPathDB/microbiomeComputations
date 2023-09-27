@@ -68,7 +68,7 @@ check_compute_result <- function(object) {
 #' @slot recordIdColumn The name of the column containing IDs for the samples. All other columns will be treated as computed values.
 #' @slot ancestorIdColumns A character vector of column names representing parent entities of the recordIdColumn.
 #' @slot computedVariableMetadata veupathUtils::VariableMetadataList detailing the computed variables.
-#' @slot statistics An optional data.frame of values. This data frame is not required to have rows or cols map to samples.
+#' @slot statistics An optional slot of any values. List or data.frame are recommended. It is not required to have rows or cols map to samples.
 #' @slot computationDetails An optional message about the computed results.
 #' @slot parameters A record of the input parameters used to generate the computed results.
 #' @slot droppedColumns A character vector of column names that have been dropped for being unsuitable for the computation.
@@ -81,7 +81,7 @@ ComputeResult <- setClass("ComputeResult", representation(
     recordIdColumn = 'character',
     ancestorIdColumns = 'character',
     computedVariableMetadata = 'VariableMetadataList',
-    statistics = 'data.frame',
+    statistics = 'ANY',
     computationDetails = 'character',
     parameters = 'character',
     droppedColumns = 'character'

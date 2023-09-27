@@ -7,7 +7,7 @@
 differentialAbundance(
   data,
   comparator,
-  method = c("DESeq", "ANCOMBC"),
+  method = c("DESeq", "Maaslin"),
   verbose = c(TRUE, FALSE)
 )
 }

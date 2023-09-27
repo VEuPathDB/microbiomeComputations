@@ -21,7 +21,9 @@ check_abundance_data <- function(object) {
       }
     }
 
-    if (!all(unlist(lapply(df[, !(names(df) %in% c(record_id_col, ancestor_id_cols))], is.numeric)))) {
+    allDataColsNumeric <- all(unlist(lapply(df[, !(names(df) %in% c(record_id_col, ancestor_id_cols))], is.numeric)))
+    if (inherits(df, 'data.table')) allDataColsNumeric <- all(unlist(lapply(df[, !(names(df) %in% c(record_id_col, ancestor_id_cols)), with=F], is.numeric)))
+    if (!allDataColsNumeric) {
       msg <- paste("All columns except the ID columns must be numeric.")
       errors <- c(errors, msg)
     }
