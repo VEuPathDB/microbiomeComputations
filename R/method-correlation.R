@@ -63,14 +63,11 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 #' This function returns the correlation of all columns of an AbundanceData object with appropriate columns of a SampleMetadata object.
 #' 
 #' @param data1 AbundanceData object. Will correlate abundance variables with specified variables in data2
-#' @param data2 SampleMetadata object
+#' @param data2 SampleMetadata object. Will assume that all non-ID columns of metadata are appropriate for correlation.
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
-#' @param variables VariableMetadataList object with variables corresponding to columns in the SampleMetadata object.
-#' @param data1Name string name for column in the correlation results that corresponds to variables from data1
-#' @param data2Name string name for column in the correlation results that corresponds to variables from data2
 #' @export
-setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), variables = NULL, data1Name = "data1", data2Name = "data2") {
+setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
     df1 <- data1@data
     recordIdColumn1 <- data1@recordIdColumn
     naToZero <- data1@imputeZero
@@ -96,11 +93,6 @@ setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(
       data.table::setDT(df2)
     }
 
-    # Check that variables is the correct class
-    if (!is.null(variables) && !'VariableMetadataList' %in% class(variables)) {
-      stop("The variables argument must be a VariableMetadataList if defined.")
-    }
-
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df1), "samples and", (ncol(df1)-1), "taxa."), verbose)
 
@@ -120,38 +112,13 @@ setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(
       veupathUtils::logWithTime("Reordered sampleMetadata rows based on abundance data sample id order.", verbose)
     }
 
-    ## Extract appropriate metadata columns
-    if (!is.null(variables)) {
-      # Use the data shape to find appropriate columns in the metadata
-      inputMetadataCols <- veupathUtils::findColNamesByPredicate(variables, function(x) {identical(x@dataShape@value, "CONTINUOUS")})
-
-      # If any are dates, we'll need to coerce them to numeric for the correlation
-      dateMetadataCols <- veupathUtils::findColNamesByPredicate(variables, function(x) {identical(x@dataShape@value, "CONTINUOUS") && identical(x@dataType@value, "DATE")})
-      if (!!length(dateMetadataCols)) {
-        veupathUtils::logWithTime("Converting date variables to numeric", verbose)
-        df2[, (dateMetadataCols) := lapply(.SD, as.numeric), .SDcols = dateMetadataCols]
-      }
-
-    } else {
-      warning("No variable metadata supplied. Using all numeric columns of sampleMetadata for correlation.")
-      inputMetadataCols <- veupathUtils::findNumericCols(df2[, -..allIdColumns2])
-    }
-    if (length(inputMetadataCols) < 1) {
-      stop("correlation requires at least one continuous metadata variable.")
-    }
-
 
     ## Compute correlation
     # Result has columns "data1", "data2", and correlationCoef
-    corrResult <- correlation(df1[, -..allIdColumns1], df2[, ..inputMetadataCols], method = method, verbose = verbose)
+    corrResult <- correlation(df1[, -..allIdColumns1], df2[, -..allIdColumns2], method = method, verbose = verbose)
 
 
     ## Format results
-    # Rename the correlation results columns so that they are a little more friendly
-    names(corrResult)[names(corrResult) == "data1"] <- data1Name
-    names(corrResult)[names(corrResult) == "data2"] <- data2Name
-
-    
     # Construct the ComputeResult
     result <- new("ComputeResult")
     result@name <- 'correlation'
