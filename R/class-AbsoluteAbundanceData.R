@@ -6,6 +6,7 @@ check_absolute_abundance_data <- function(object) {
     all_id_cols <- c(record_id_col, ancestor_id_cols)
 
     numeric_data <- df[, !(names(df) %in% all_id_cols)]
+    if (inherits(df, 'data.table')) numeric_data <- df[, !(names(df) %in% all_id_cols), with=F]
 
     if (!identical(numeric_data, round(numeric_data))) {
       msg <- "Absolute abundance data must be integer numbers."

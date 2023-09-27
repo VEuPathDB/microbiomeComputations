@@ -1,6 +1,6 @@
 Package: microbiomeComputations
 Title: Compute Results for Microbiome Analyses
-Version: 3.0.2
+Version: 3.1.0
 Authors@R: 
     c(person(given = "Danielle",
            family = "Callan",
@@ -13,11 +13,17 @@ Authors@R:
 Imports:
     ape,
     data.table,
+    DESeq2,
     jsonlite,
+    methods,
     Rcpp (>= 0.11.0),
     stringi,
     vegan,
     veupathUtils,
+Depends:
+    Maaslin2,
+    S4Vectors,
+    purrr
 Remotes:
     VEuPathDB/veupathUtils
 LinkingTo: Rcpp
@@ -44,6 +50,7 @@ Collate:
     'method-correlation.R'
     'method-differentialAbundance.R'
     'method-rankedAbundance.R'
+    'methods-AbundanceData.R'
     'methods-Comparator.R'
     'methods-ComputeResult.R'
     'microbiomeComputations-package.R'

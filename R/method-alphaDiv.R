@@ -10,6 +10,8 @@
 #' @importFrom stringi stri_trans_totitle
 #' @import veupathUtils
 #' @import data.table
+#' @importFrom methods new slot validObject
+#' @importFrom stats as.dist as.formula median quantile var
 #' @export
 setGeneric("alphaDiv",
   function(data, method = c('shannon','simpson','evenness'), verbose = c(TRUE, FALSE)) standardGeneric("alphaDiv"),
