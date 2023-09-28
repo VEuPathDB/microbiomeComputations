@@ -4,22 +4,7 @@ check_sample_metadata <- function(object) {
     record_id_col <- object@recordIdColumn
     ancestor_id_cols <- object@ancestorIdColumns
     
-    if (length(record_id_col) != 1) {
-      msg <- "Record ID column must have a single value."
-      errors <- c(errors, msg) 
-    }
-
-    if (!record_id_col %in% names(df)) {
-      msg <- paste("Record ID column is not present in sample metadata data.frame")
-      errors <- c(errors, msg)
-    }
-
-    if (!!length(ancestor_id_cols)) {
-      if (!all(ancestor_id_cols %in% names(df))) {
-        msg <- paste("Not all ancestor ID columns are present in sample metadata data.frame")
-        errors <- c(errors, msg)
-      }
-    }
+    msg <- validateIdColumns(df, record_id_col, ancestor_id_cols)
     
 
     return(if (length(errors) == 0) TRUE else errors)

@@ -120,7 +120,7 @@ test_that("correlation returns a ComputeResult with the correct slots" , {
               data = df,
               recordIdColumn = 'entity.SampleID')
 
-  ## Pearson with date and numeric
+  ## Pearson
   result <- correlation(data, sampleMetadata, 'pearson', verbose = FALSE)
   expect_equal(result@parameters, 'method = pearson')
   expect_equal(result@recordIdColumn, 'entity.SampleID')

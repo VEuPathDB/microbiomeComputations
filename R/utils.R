@@ -79,10 +79,5 @@ validateIdColumns <- function(df, record_id_col=character(), ancestor_id_cols=c(
     }
   }
 
-  if (uniqueN(veupathUtils::strSplit(names(df)[!names(df) %in% ancestor_id_cols], ".", ncol=2, index=1)) > 1) {
-    msg <- paste("All columns must belong to the same entity.")
-    errors <- c(errors, msg)
-  }
-
   return(errors)
 }

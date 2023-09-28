@@ -8,6 +8,12 @@ check_abundance_data <- function(object) {
     msg <- validateIdColumns(df, record_id_col, ancestor_id_cols)
     errors <- c(errors, msg)
 
+    # Abundance data should all come from the same entity
+    if (uniqueN(veupathUtils::strSplit(names(df)[!names(df) %in% ancestor_id_cols], ".", ncol=2, index=1)) > 1) {
+      msg <- paste("All columns must belong to the same entity.")
+      errors <- c(errors, msg)
+    }
+
     allDataColsNumeric <- all(unlist(lapply(df[, !(names(df) %in% c(record_id_col, ancestor_id_cols))], is.numeric)))
     if (inherits(df, 'data.table')) allDataColsNumeric <- all(unlist(lapply(df[, !(names(df) %in% c(record_id_col, ancestor_id_cols)), with=F], is.numeric)))
     if (!allDataColsNumeric) {
@@ -22,6 +28,10 @@ check_abundance_data <- function(object) {
 
     if (!!length(object@sampleMetadata@data)) {
       sampleMetadata <- object@sampleMetadata
+
+      if (!identical(sampleMetadata@recordIdColumn, record_id_col)) {
+        msg <- paste("Records in the sample metadata and the abundance data refer to different entities.")
+      }
       if (!setequal(sampleMetadata@data[[sampleMetadata@recordIdColumn]], df[[record_id_col]])) {
         msg <- paste("Samples do not match between the sample metadata and abundance data.")
         errors <- c(errors, msg)
