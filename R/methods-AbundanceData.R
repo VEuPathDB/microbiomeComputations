@@ -91,7 +91,10 @@ setMethod("removeIncompleteSamples", signature("AbundanceData"), function(object
     df <- df[samplesWithData, ]
 
     object@data <- df
-    object@sampleMetadata <- sampleMetadata
+    object@sampleMetadata <- SampleMetadata(
+      data = sampleMetadata,
+      recordIdColumn = object@sampleMetadata@recordIdColumn
+    )
     validObject(object)
   }
 

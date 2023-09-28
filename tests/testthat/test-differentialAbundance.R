@@ -459,13 +459,16 @@ test_that("differentialAbundance method Maaslin does stuff",{
   counts <- round(df[, -c("entity.SampleID")]*1000)
   counts[ ,entity.SampleID:= df$entity.SampleID]
   nSamples <- dim(df)[1]
-  testSampleMetadata <- data.frame(list(
+  testSampleMetadata <- SampleMetadata(
+    data = data.frame(list(
     "entity.SampleID" = df[["entity.SampleID"]],
     "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T),
     "entity.cat3" = rep(paste0("cat3_", letters[1:3]), nSamples/3, replace=T),
     "entity.cat4" = rep(paste0("cat4_", letters[1:4]), nSamples/4, replace=T),
     "entity.contA" = rnorm(nSamples, sd=5)
-    ))
+    )),
+    recordIdColumn ="entity.SampleID"
+  )
 
 
   testCountsData <- microbiomeComputations::AbsoluteAbundanceData(
