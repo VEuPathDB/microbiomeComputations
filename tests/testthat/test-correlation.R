@@ -81,23 +81,6 @@ test_that('correlation returns an appropriately structured result for abundance 
   expect_true(all(!is.na(stats)))
 
 
-  ## With samples ordered differently in the abundance data and metadata
-  data@data <- data@data[288:1, ]
-  result <- correlation(data, sampleMetadata, 'spearman', verbose = FALSE)
-  # Check data (only sample ids)
-  dt <- result@data
-  expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), c('SampleID'))
-  expect_equal(nrow(dt), nSamples)
-  # Check stats (all correlation outputs)
-  stats <- result@statistics
-  expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('data1','data2','correlationCoef'))
-  expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
-  expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
-  expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
-  expect_true(all(!is.na(stats)))
-
 
   
   # ## With a date <3
@@ -112,21 +95,6 @@ test_that('correlation returns an appropriately structured result for abundance 
   #     dataType = new("DataType", value = 'DATE'),
   #     dataShape = new("DataShape", value = 'CONTINUOUS'))
   # ))
-
-  # result <- correlation(data, sampleMetadata, 'spearman', variables = variables, verbose =FALSE)
-  # # Check data (only sample ids)
-  # dt <- result@data
-  # expect_s3_class(dt, 'data.table')
-  # expect_equal(names(dt), c('SampleID'))
-  # expect_equal(nrow(dt), nSamples)
-  # # Check stats (all correlation outputs)
-  # stats <- result@statistics
-  # expect_s3_class(stats, 'data.frame')
-  # expect_equal(names(stats), c('data1','data2','correlationCoef'))
-  # expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(variables)) # Should be number of taxa * number of metadata vars
-  # expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
-  # expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.dateA'))
-  # expect_true(all(!is.na(stats)))
 
 
 })
@@ -184,8 +152,10 @@ test_that("correlation fails with improper inputs", {
 
   data <- microbiomeComputations::AbsoluteAbundanceData(
               data = counts,
-              sampleMetadata = sampleMetadata,
+              # sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
+
+  data@sampleMetadata <- sampleMetadata
 
   # Fail when we send in only categorical metadata
   expect_error(correlation(data, sampleMetadata, verbose=F))

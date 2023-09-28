@@ -68,76 +68,58 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 #' @param verbose boolean indicating if timed logging is desired
 #' @export
 setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-    df1 <- data1@data
-    recordIdColumn1 <- data1@recordIdColumn
-    naToZero <- data1@imputeZero
-    ancestorIdColumns1 <- data1@ancestorIdColumns
-    allIdColumns1 <- c(recordIdColumn1, ancestorIdColumns1)
-    df2 <- data2@data
-    recordIdColumn2 <- data2@recordIdColumn
-    ancestorIdColumns2 <- data2@ancestorIdColumns
-    allIdColumns2 <- c(recordIdColumn2, ancestorIdColumns2)
+
+  # Many of our checks betwee smaple metadata and data live in the object check function of the abudnance class. 
+  # So we can use those (runnning validObject) to do a bunch of checks, then access the data.
+  if (!is.null(data1@sampleMetadata)) {
+    warning("Replacing sampleMetadata in data1 with data2 sampleMetadata")
+  }
+  data1@sampleMetadata <- data2
+  validObject(data1) # Checks that record IDs match
 
 
-    ## Initialize and check inputs
-    method <- veupathUtils::matchArg(method)
-    verbose <- veupathUtils::matchArg(verbose)
-
-    # Check that incoming abundance data meets requirements
-    if (!'data.table' %in% class(df1)) {
-      data.table::setDT(df1)
-    }
-
-    # Check that incoming metadata meets requirements
-    if (!'data.table' %in% class(df2)) {
-      data.table::setDT(df2)
-    }
-
-    computeMessage <- ''
-    veupathUtils::logWithTime(paste("Received df table with", nrow(df1), "samples and", (ncol(df1)-1), "taxa."), verbose)
-
-    # Replace NA values with 0
-    if (naToZero) {
-      veupathUtils::setNaToZero(df1)
-      veupathUtils::logWithTime("Replaced NAs with 0.", verbose)
-    }
-
-    # Ensure the sample IDs, and their order, are the same in both datasets
-    if (!identical(df1[[recordIdColumn1]], df2[[recordIdColumn2]])) {
-      if (!identical(union(df1[[recordIdColumn1]], df2[[recordIdColumn2]]), intersect(df1[[recordIdColumn1]], df2[[recordIdColumn2]]))) {
-        stop("Sample IDs do not match between data1 and data2.")
-      }
-      # Reorder df2 (sample metadata) so that it matches the order in df
-      sampleMetadata <- df2[match(df1[[recordIdColumn1]], df2[[recordIdColumn2]]), ]
-      veupathUtils::logWithTime("Reordered sampleMetadata rows based on abundance data sample id order.", verbose)
-    }
+  df1 <- getAbundances(data1, FALSE) # use the imputeZero flag if it exists
+  recordIdColumn <- data1@recordIdColumn
+  ancestorIdColumns <- data1@ancestorIdColumns
+  allIdColumns <- c(recordIdColumn, ancestorIdColumns)
+  df2 <- getSampleMetadata(data1) # returns a data.table
 
 
-    ## Compute correlation
-    # Result has columns "data1", "data2", and correlationCoef
-    corrResult <- correlation(df1[, -..allIdColumns1], df2[, -..allIdColumns2], method = method, verbose = verbose)
+
+  ## Initialize and check inputs
+  method <- veupathUtils::matchArg(method)
+  verbose <- veupathUtils::matchArg(verbose)
 
 
-    ## Format results
-    # Construct the ComputeResult
-    result <- new("CorrelationComputeResult")
-    result@name <- 'correlation'
-    result@recordIdColumn <- recordIdColumn1
-    result@ancestorIdColumns <- ancestorIdColumns1
-    result@statistics <- corrResult
-    result@parameters <- paste0('method = ', method)
-    result@data1Metadata <- data1@metadata
-    result@data1Variables <- data1@variableMetadata
-    result@data2Variables <- data2@variableMetadata # sampleMetadata has no metadata about itself, only the variables it contains.
+  computeMessage <- ''
+  veupathUtils::logWithTime(paste("Received df table with", nrow(df1), "samples and", (ncol(df1)-1), "taxa."), verbose)
 
 
-    # The resulting data should contain only the samples actually used.
-    result@data <- df1[, ..allIdColumns1]
-    names(result@data) <- stripEntityIdFromColumnHeader(names(result@data))
+  ## Compute correlation
+  # Result has columns "data1", "data2", and correlationCoef
+  corrResult <- correlation(df1[, -..allIdColumns], df2[, -..allIdColumns], method = method, verbose = verbose)
 
 
-    validObject(result)
-    veupathUtils::logWithTime(paste('Correlation computation completed with parameters recordIdColumn=', recordIdColumn1, ', method = ', method), verbose)
-    
-    return(result)
+  ## Format results
+  # Construct the ComputeResult
+  result <- new("CorrelationComputeResult")
+  result@name <- 'correlation'
+  result@recordIdColumn <- recordIdColumn
+  result@ancestorIdColumns <- ancestorIdColumns
+  result@statistics <- corrResult
+  result@parameters <- paste0('method = ', method)
+  result@data1Metadata <- data1@metadata
+  result@data1Variables <- data1@variableMetadata
+  result@data2Variables <- data2@variableMetadata # sampleMetadata has no metadata about itself, only the variables it contains.
+
+
+  # The resulting data should contain only the samples actually used.
+  result@data <- df1[, ..allIdColumns]
+  names(result@data) <- stripEntityIdFromColumnHeader(names(result@data))
+
+
+  validObject(result)
+  veupathUtils::logWithTime(paste('Correlation computation completed with parameters recordIdColumn=', recordIdColumn, ', method = ', method), verbose)
+  
+  return(result)
 })
