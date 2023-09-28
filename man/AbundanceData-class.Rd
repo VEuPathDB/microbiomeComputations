@@ -19,6 +19,10 @@ A class for working with microbiome or ecological abundance data.
 
 \item{\code{ancestorIdColumns}}{A character vector of column names representing parent entities of the recordIdColumn.}
 
+\item{\code{metadata}}{A VariableMetadata object that describes the abundance data itself.}
+
+\item{\code{variableMetadata}}{A VariableMetadataList object that describes all variables in the abundance data. For example, describes each taxon (column).}
+
 \item{\code{imputeZero}}{A logical indicating whether NA/ null values should be replaced with zeros.}
 }}
 

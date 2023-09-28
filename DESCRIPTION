@@ -45,6 +45,7 @@ Collate:
     'class-AbsoluteAbundanceData.R'
     'class-Comparator.R'
     'class-ComputeResult.R'
+    'class-CorrelationComputeResult.R'
     'method-alphaDiv.R'
     'method-betaDiv.R'
     'method-correlation.R'

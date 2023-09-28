@@ -33,13 +33,15 @@ check_sample_metadata <- function(object) {
 #' @slot sampleMetadata A data.frame of metadata about the samples with samples as rows and metadata variables as columns
 #' @slot recordIdColumn The name of the column containing IDs for the samples. 
 #' @slot ancestorIdColumns A character vector of column names representing parent entities of the recordIdColumn.
+#' @slot variableMetadata A VariableMetadataList containing information about the variables contained in data.
 #' @name SampleMetadata-class
 #' @rdname SampleMetadata-class
 #' @export 
 SampleMetadata <- setClass("SampleMetadata", representation(
     data = 'data.frame',
     recordIdColumn = 'character',
-    ancestorIdColumns = 'character'
+    ancestorIdColumns = 'character',
+    variableMetadata = 'VariableMetadataList'
 ), prototype = prototype(
     recordIdColumn = NA_character_
 ), validity = check_sample_metadata)

@@ -8,26 +8,17 @@
   data1,
   data2,
   method = c("spearman", "pearson"),
-  verbose = c(TRUE, FALSE),
-  variables = NULL,
-  data1Name = "data1",
-  data2Name = "data2"
+  verbose = c(TRUE, FALSE)
 )
 }
 \arguments{
 \item{data1}{AbundanceData object. Will correlate abundance variables with specified variables in data2}
 
-\item{data2}{SampleMetadata object}
+\item{data2}{SampleMetadata object. Will assume that all non-ID columns of metadata are appropriate for correlation.}
 
 \item{method}{string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'}
 
 \item{verbose}{boolean indicating if timed logging is desired}
-
-\item{variables}{VariableMetadataList object with variables corresponding to columns in the SampleMetadata object.}
-
-\item{data1Name}{string name for column in the correlation results that corresponds to variables from data1}
-
-\item{data2Name}{string name for column in the correlation results that corresponds to variables from data2}
 }
 \description{
 This function returns the correlation of all columns of an AbundanceData object with appropriate columns of a SampleMetadata object.
