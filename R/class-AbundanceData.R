@@ -3,33 +3,15 @@ check_abundance_data <- function(object) {
     df <- object@data
     record_id_col <- object@recordIdColumn
     ancestor_id_cols <- object@ancestorIdColumns
-    
-    if (length(record_id_col) != 1) {
-      msg <- "Record ID column must have a single value."
-      errors <- c(errors, msg) 
-    }
 
-    if (!record_id_col %in% names(df)) {
-      msg <- paste("Record ID column is not present in abundance data.frame")
-      errors <- c(errors, msg)
-    }
-
-    if (!!length(ancestor_id_cols)) {
-      if (!all(ancestor_id_cols %in% names(df))) {
-        msg <- paste("Not all ancestor ID columns are present in abundance data.frame")
-        errors <- c(errors, msg)
-      }
-    }
+    # Ensure id columns are valid
+    msg <- validateIdColumns(df, record_id_col, ancestor_id_cols)
+    errors <- c(errors, msg)
 
     allDataColsNumeric <- all(unlist(lapply(df[, !(names(df) %in% c(record_id_col, ancestor_id_cols))], is.numeric)))
     if (inherits(df, 'data.table')) allDataColsNumeric <- all(unlist(lapply(df[, !(names(df) %in% c(record_id_col, ancestor_id_cols)), with=F], is.numeric)))
     if (!allDataColsNumeric) {
       msg <- paste("All columns except the ID columns must be numeric.")
-      errors <- c(errors, msg)
-    }
-
-    if (uniqueN(veupathUtils::strSplit(names(df)[!names(df) %in% ancestor_id_cols], ".", ncol=2, index=1)) > 1) {
-      msg <- paste("All columns must belong to the same entity.")
       errors <- c(errors, msg)
     }
 
