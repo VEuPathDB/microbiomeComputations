@@ -14,6 +14,8 @@ removeIncompleteSamples(
 \item{object}{AbundanceData}
 
 \item{colName}{String providing the column name in SampleMetadata to check for completeness}
+
+\item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
 AbundanceData with modified data and sampleMetadata slots

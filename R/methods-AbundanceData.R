@@ -69,6 +69,7 @@ setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCo
 #' 
 #' @param object AbundanceData
 #' @param colName String providing the column name in SampleMetadata to check for completeness
+#' @param verbose boolean indicating if timed logging is desired
 #' @return AbundanceData with modified data and sampleMetadata slots
 #' @export
 setGeneric("removeIncompleteSamples",
