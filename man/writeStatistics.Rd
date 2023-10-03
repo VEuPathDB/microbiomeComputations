@@ -8,6 +8,10 @@ writeStatistics(object, pattern = NULL, verbose = c(TRUE, FALSE))
 }
 \arguments{
 \item{object}{ComputeResult with statistics}
+
+\item{pattern}{string to incorporate into tmp file name}
+
+\item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
 filehandle where JSON representation of ComputeResult statistics can be found

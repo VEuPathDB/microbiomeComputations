@@ -5,6 +5,8 @@
 #' has been written in JSON format.
 #' 
 #' @param object ComputeResult 
+#' @param pattern string to incorporate into tmp file name
+#' @param verbose boolean indicating if timed logging is desired
 #' @return filehandle where JSON representation of ComputedVariableMetadata can be found
 #' @export
 setGeneric("writeMeta",
@@ -39,6 +41,8 @@ setMethod("writeMeta", signature("ComputeResult"), function(object, pattern = NU
 #' will return a filehandle where result data
 #' has been written in tab delimited format.
 #' @param object ComputeResult 
+#' @param pattern string to incorporate into tmp file name
+#' @param verbose boolean indicating if timed logging is desired
 #' @return filehandle where tab delimited representation of result data can be found
 #' @export
 setGeneric("writeData",
@@ -75,6 +79,8 @@ setMethod("writeData", signature("ComputeResult"), function(object, pattern = NU
 #' has been written in JSON format.
 #' 
 #' @param object ComputeResult with statistics
+#' @param pattern string to incorporate into tmp file name
+#' @param verbose boolean indicating if timed logging is desired
 #' @return filehandle where JSON representation of ComputeResult statistics can be found
 #' @export
 setGeneric("writeStatistics",
@@ -86,8 +92,12 @@ setGeneric("writeStatistics",
 setMethod("writeStatistics", signature("ComputeResult"), function(object, pattern = NULL, verbose = c(TRUE, FALSE)) {
   verbose <- veupathUtils::matchArg(verbose)
 
-  # Convert all to character but maintain structure 
-  outObject <- data.frame(lapply(object@statistics, as.character))
+  # Convert all to character but maintain structure
+  if (inherits(object@statistics, 'data.frame')) {
+    outObject <- data.frame(lapply(object@statistics, as.character))
+  } else {
+    outObject <- object@statistics
+  }
 
   outJson <- jsonlite::toJSON(outObject)
 

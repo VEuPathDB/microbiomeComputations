@@ -79,7 +79,37 @@ cleanComparatorVariable <- function(data, comparator, verbose = c(TRUE, FALSE)) 
     return(data)
 }
 
-# TODO update plugin
+DifferentialAbundanceResult <- setClass("DifferentialAbundanceResult", representation(
+    effectSizeLabel = 'character',
+    statistics = 'data.frame'
+), prototype = prototype(
+    effectSizeLabel = 'log2(Fold Change)',
+    statistics = data.frame(effectSize = numeric(0),
+                            pValue = numeric(0),
+                            adjustedPValue = numeric(0),
+                            pointID = character(0))
+))
+
+setGeneric("toJSON",
+  function(object, ...) standardGeneric("toJSON"),
+  signature = "object"
+)
+
+setMethod("toJSON", signature("DifferentialAbundanceResult"), function(object, ...) {
+  tmp <- character()
+
+  tmp <- paste0('"effectSizeLabel": ', jsonlite::toJSON(jsonlite::unbox(object@effectSizeLabel)), ',')
+  outObject <- data.frame(lapply(object@statistics, as.character))
+  tmp <- paste0(tmp, paste0('"statistics": ', jsonlite::toJSON(outObject)))
+
+  tmp <- paste0("{", tmp, "}")
+  return(tmp)
+})
+
+# these let jsonlite::toJSON work by using the custom toJSON method for our custom result class
+asJSONGeneric <- getGeneric("asJSON", package = "jsonlite")
+setMethod(asJSONGeneric, "DifferentialAbundanceResult", function(x, ...) toJSON(x))
+
 setGeneric("deseq",
   function(data, comparator, verbose = c(TRUE, FALSE)) standardGeneric("deseq"),
   signature = c("data", "comparator")
@@ -140,7 +170,7 @@ setMethod("deseq", signature("AbsoluteAbundanceData", "Comparator"), function(da
                            adjustedPValue = deseq_results$padj,
                            pointID = rownames(counts))
 
-  result <- list('effectSizeLabel' = 'log2(FoldChange)', 'statistics' = statistics)
+  result <- DifferentialAbundanceResult('effectSizeLabel' = 'log2(FoldChange)', 'statistics' = statistics)
 
   return(result)
 })
@@ -188,7 +218,7 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
                           adjustedPValue = maaslinOutput$results$qval,
                           pointID = maaslinOutput$results$feature)
 
-      result <- list('effectSizeLabel' = 'model coefficient (effect size)', 'statistics' = statistics)
+      result <- DifferentialAbundanceResult('effectSizeLabel' = 'model coefficient (effect size)', 'statistics' = statistics)
 
   return(result)
 })
@@ -250,7 +280,7 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
     veupathUtils::logWithTime(paste0('Completed method=',method,'. Formatting results.'), verbose)
     
     # this is droppedTaxa, or pathways etc ?? can we rename it?
-    droppedColumns <- setdiff(names(data@data[, -..allIdColumns, with=FALSE]), statistics[[2]]$pointID)
+    droppedColumns <- setdiff(names(data@data[, -..allIdColumns, with=FALSE]), statistics@statistics$pointID)
 
     ## Construct the ComputeResult
     result <- new("ComputeResult")

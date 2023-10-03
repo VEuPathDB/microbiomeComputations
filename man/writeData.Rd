@@ -8,6 +8,10 @@ writeData(object, pattern = NULL, verbose = c(TRUE, FALSE))
 }
 \arguments{
 \item{object}{ComputeResult}
+
+\item{pattern}{string to incorporate into tmp file name}
+
+\item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
 filehandle where tab delimited representation of result data can be found
