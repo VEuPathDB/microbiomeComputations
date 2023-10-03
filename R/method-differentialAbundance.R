@@ -226,6 +226,7 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
 #' @param data AbsoluteAbundanceData object
 #' @param comparator Comparator object specifying the variable and values or bins to be used in dividing samples into groups.
 #' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
+#' @param usePValueFloor boolean determines if very small p values should be replaced with the package's P_VALUE_FLOOR value.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
@@ -237,13 +238,13 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("differentialAbundance",
-  function(data, comparator, method = c('DESeq', 'Maaslin'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
+  function(data, comparator, method = c('DESeq', 'Maaslin'), usePValueFloor = c(TRUE, FALSE), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
   signature = c("data", "comparator")
 )
 
 # this is consistent regardless of rel vs abs abund. the statistical methods will differ depending on that. 
 #'@export
-setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), function(data, comparator, method = c('DESeq', 'Maaslin'), verbose = c(TRUE, FALSE)) {
+setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), function(data, comparator, method = c('DESeq', 'Maaslin'), usePValueFloor = c(TRUE, FALSE), verbose = c(TRUE, FALSE)) {
     data <- cleanComparatorVariable(data, comparator, verbose)
     recordIdColumn <- data@recordIdColumn
     ancestorIdColumns <- data@ancestorIdColumns
@@ -253,6 +254,7 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
     ## Initialize and check inputs
     method <- veupathUtils::matchArg(method)
     verbose <- veupathUtils::matchArg(verbose)
+    usePValueFloor <- veupathUtils::matchArg(usePValueFloor)
     
     ## Compute differential abundance
     if (identical(method, 'DESeq')) {
@@ -274,6 +276,16 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
       stop('Unaccepted differential abundance method. Accepted methods are "DESeq" and "Maaslin".')
     }
     veupathUtils::logWithTime(paste0('Completed method=',method,'. Formatting results.'), verbose)
+
+    # Sometimes p-values can be very small, even smaller than the smallest representable number (gives p-value=0). The smallest
+    # representable number changes based on env, so to avoid inconsistency set a p-value floor so that any
+    # returned p-value less than the floor becomes the floor. 
+    # This floor is a constant defined in the microbiomeComputations package.
+    if (usePValueFloor) {
+      statistics@statistics[statistics@statistics$pValue < P_VALUE_FLOOR, "pValue"] <- P_VALUE_FLOOR
+      statistics@statistics[statistics@statistics$pValue == P_VALUE_FLOOR, "adjustedPValue"] <- NA
+    }
+
     
     # this is droppedTaxa, or pathways etc ?? can we rename it?
     droppedColumns <- setdiff(names(data@data[, -..allIdColumns, with=FALSE]), statistics@statistics$pointID)

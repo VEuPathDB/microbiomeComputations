@@ -8,6 +8,7 @@ differentialAbundance(
   data,
   comparator,
   method = c("DESeq", "Maaslin"),
+  usePValueFloor = c(TRUE, FALSE),
   verbose = c(TRUE, FALSE)
 )
 }
@@ -17,6 +18,8 @@ differentialAbundance(
 \item{comparator}{Comparator object specifying the variable and values or bins to be used in dividing samples into groups.}
 
 \item{method}{string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.}
+
+\item{usePValueFloor}{boolean determines if very small p values should be replaced with the package's P_VALUE_FLOOR value.}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }
