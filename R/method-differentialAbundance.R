@@ -96,7 +96,8 @@ setMethod("toJSON", signature("DifferentialAbundanceResult"), function(object, .
   tmp <- character()
 
   tmp <- paste0('"effectSizeLabel": ', jsonlite::toJSON(jsonlite::unbox(object@effectSizeLabel)), ',')
-  tmp <- paste0(tmp, paste0('"statistics": ', jsonlite::toJSON(object@statistics)))
+  outObject <- data.frame(lapply(object@statistics, as.character))
+  tmp <- paste0(tmp, paste0('"statistics": ', jsonlite::toJSON(outObject)))
 
   tmp <- paste0("{", tmp, "}")
   return(tmp)

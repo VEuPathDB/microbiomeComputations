@@ -560,6 +560,9 @@ test_that("toJSON for DifferentialAbundanceResult works",{
 
   expect_true(all(c('effectSizeLabel', 'statistics') %in% names(jsonList)))
   expect_true(all(c('effectSize', 'pValue', 'adjustedPValue', 'pointID') %in% names(jsonList$statistics)))
+  expect_true(is.character(jsonList$statistics$effectSize))
+  expect_true(is.character(jsonList$statistics$pValue))
+  expect_true(is.character(jsonList$statistics$adjustedPValue))
 })
 
 test_that("The smallest pvalue we can get is our p value floor", {
@@ -612,7 +615,5 @@ test_that("The smallest pvalue we can get is our p value floor", {
 
   result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', usePValueFloor = T, verbose=F)
   expect_equal(min(result@statistics@statistics$pValue), P_VALUE_FLOOR)
-
-
 
 })
