@@ -232,7 +232,7 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
 #' @param data AbsoluteAbundanceData object
 #' @param comparator Comparator object specifying the variable and values or bins to be used in dividing samples into groups.
 #' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
-#' @param usePValueFloor boolean determines if very small p values should be replaced with the package's P_VALUE_FLOOR value.
+#' @param pValueFloor numeric value that indicates the smallest p value that should be returned. The default value is P_VALUE_FLOOR defined in this package.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
@@ -244,13 +244,13 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("differentialAbundance",
-  function(data, comparator, method = c('DESeq', 'Maaslin'), usePValueFloor = c(TRUE, FALSE), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
+  function(data, comparator, method = c('DESeq', 'Maaslin'), pValueFloor = P_VALUE_FLOOR, verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
   signature = c("data", "comparator")
 )
 
 # this is consistent regardless of rel vs abs abund. the statistical methods will differ depending on that. 
 #'@export
-setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), function(data, comparator, method = c('DESeq', 'Maaslin'), usePValueFloor = c(TRUE, FALSE), verbose = c(TRUE, FALSE)) {
+setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), function(data, comparator, method = c('DESeq', 'Maaslin'), pValueFloor = P_VALUE_FLOOR, verbose = c(TRUE, FALSE)) {
     data <- cleanComparatorVariable(data, comparator, verbose)
     recordIdColumn <- data@recordIdColumn
     ancestorIdColumns <- data@ancestorIdColumns
@@ -260,7 +260,7 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
     ## Initialize and check inputs
     method <- veupathUtils::matchArg(method)
     verbose <- veupathUtils::matchArg(verbose)
-    usePValueFloor <- veupathUtils::matchArg(usePValueFloor)
+
     
     ## Compute differential abundance
     if (identical(method, 'DESeq')) {
@@ -286,24 +286,23 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
     # Sometimes p-values can be very small, even smaller than the smallest representable number (gives p-value=0). The smallest
     # representable number changes based on env, so to avoid inconsistency set a p-value floor so that any
     # returned p-value less than the floor becomes the floor. 
-    # This floor is a constant defined in the microbiomeComputations package.
-    if (usePValueFloor) {
-      # First set small pvalues to the P_VALUE_FLOOR
-      statistics@statistics[statistics@statistics$pValue < P_VALUE_FLOOR, "pValue"] <- P_VALUE_FLOOR
-      nFlooredPValues <- length(statistics@statistics[statistics@statistics$pValue == P_VALUE_FLOOR, "pValue"])
+    # The default floor is a constant defined in the microbiomeComputations package.
 
-      # Second, calculate the adjustedPValue based on the floor.
-      # We use the Benjamini-Hochberg proceedure (FDR), so adjPValue = min(1, min_{j>=i}(mp_j/j))
-      m <- nrow(statistics@statistics)
-      unflooredPValues <- c(P_VALUE_FLOOR, statistics@statistics[statistics@statistics$pValue > P_VALUE_FLOOR, "pValue"])
-      jValues <- (nFlooredPValues):m
-      possibleAdjustedPValues <- m*unflooredPValues/jValues
-      adjustedPValueFloor <- min(1, min(possibleAdjustedPValues))
+    # First set small pvalues to the pValueFloor
+    statistics@statistics[statistics@statistics$pValue < pValueFloor, "pValue"] <- pValueFloor
+    nFlooredPValues <- length(statistics@statistics[statistics@statistics$pValue == pValueFloor, "pValue"])
 
-      statistics@statistics[statistics@statistics$pValue == P_VALUE_FLOOR, "adjustedPValue"] <- NA
-      statistics@pValueFloor <- P_VALUE_FLOOR
-      statistics@adjustedPValueFloor <- adjustedPValueFloor
-    }
+    # Second, calculate the adjustedPValue based on the floor.
+    # We use the Benjamini-Hochberg proceedure (FDR), so adjPValue = min(1, min_{j>=i}(mp_j/j))
+    m <- nrow(statistics@statistics)
+    unflooredPValues <- c(pValueFloor, statistics@statistics[statistics@statistics$pValue > pValueFloor, "pValue"])
+    jValues <- (nFlooredPValues):m
+    possibleAdjustedPValues <- m*unflooredPValues/jValues
+    adjustedPValueFloor <- min(1, min(possibleAdjustedPValues))
+
+    statistics@statistics[statistics@statistics$pValue == pValueFloor, "adjustedPValue"] <- NA
+    statistics@pValueFloor <- pValueFloor
+    statistics@adjustedPValueFloor <- adjustedPValueFloor
 
     
     # this is droppedTaxa, or pathways etc ?? can we rename it?

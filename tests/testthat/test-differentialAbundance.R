@@ -609,12 +609,12 @@ test_that("The smallest pvalue we can get is our p value floor", {
                           )
   )
 
-  # Try with and without the usePValueFloor flag
-  result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', usePValueFloor = F, verbose=F)
+  # Try with different p value floors
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', pValueFloor = 0, verbose=F)
   expect_equal(min(result@statistics@statistics$pValue), 0)
   expect_equal(min(result@statistics@statistics$adjustedPValue), NA_real_)
 
-  result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', usePValueFloor = T, verbose=F)
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', pValueFloor = P_VALUE_FLOOR, verbose=F)
   expect_equal(min(result@statistics@statistics$pValue), P_VALUE_FLOOR)
   expect_equal(min(result@statistics@statistics$pValue), result@statistics@adjustedPValueFloor)
 
