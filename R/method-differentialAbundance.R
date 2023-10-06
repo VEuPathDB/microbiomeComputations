@@ -78,7 +78,9 @@ cleanComparatorVariable <- function(data, comparator, verbose = c(TRUE, FALSE)) 
 
 DifferentialAbundanceResult <- setClass("DifferentialAbundanceResult", representation(
     effectSizeLabel = 'character',
-    statistics = 'data.frame'
+    statistics = 'data.frame',
+    pValueFloor = 'numeric',
+    adjustedPValueFloor = 'numeric'
 ), prototype = prototype(
     effectSizeLabel = 'log2(Fold Change)',
     statistics = data.frame(effectSize = numeric(0),
@@ -96,6 +98,10 @@ setMethod("toJSON", signature("DifferentialAbundanceResult"), function(object, .
   tmp <- character()
 
   tmp <- paste0('"effectSizeLabel": ', jsonlite::toJSON(jsonlite::unbox(object@effectSizeLabel)), ',')
+  if (!null(object@pValueFloor)) {
+    tmp <- paste0('"pValueFloor": ', jsonlite::toJSON(jsonlite::unbox(object@pValueFloor)), ',')
+    tmp <- paste0('"adjustedPValueFloor": ', jsonlite::toJSON(jsonlite::unbox(object@adjustedPValueFloor)), ',')
+  }
   outObject <- data.frame(lapply(object@statistics, as.character))
   tmp <- paste0(tmp, paste0('"statistics": ', jsonlite::toJSON(outObject)))
 
@@ -283,8 +289,21 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
     # returned p-value less than the floor becomes the floor. 
     # This floor is a constant defined in the microbiomeComputations package.
     if (usePValueFloor) {
+      # First set small pvalues to the P_VALUE_FLOOR
       statistics@statistics[statistics@statistics$pValue < P_VALUE_FLOOR, "pValue"] <- P_VALUE_FLOOR
+      nFlooredPValues <- length(statistics@statistics[statistics@statistics$pValue == P_VALUE_FLOOR, "pValue"])
+
+      # Second, calculate the adjustedPValue based on the floor.
+      # We use the Benjamini-Hochberg proceedure (FDR), so adjPValue = min(1, min_{j>=i}(mp_j/j))
+      m <- nrow(statistics@statistics)
+      unflooredPValues <- c(P_VALUE_FLOOR, statistics@statistics[statistics@statistics$pValue > P_VALUE_FLOOR, "pValue"])
+      jValues <- (nFlooredPValues):m
+      possibleAdjustedPValues <- m*unflooredPValues/jValues
+      adjustedPValueFloor <- min(1, min(possibleAdjustedPValues))
+
       statistics@statistics[statistics@statistics$pValue == P_VALUE_FLOOR, "adjustedPValue"] <- NA
+      statistics@pValueFloor <- P_VALUE_FLOOR
+      statistics@adjustedPValueFloor <- adjustedPValueFloor
     }
 
     
