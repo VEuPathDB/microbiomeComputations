@@ -232,7 +232,7 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
 #' @param data AbsoluteAbundanceData object
 #' @param comparator Comparator object specifying the variable and values or bins to be used in dividing samples into groups.
 #' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
-#' @param pValueFloor numeric value that indicates the smallest p value that should be returned. The default value is P_VALUE_FLOOR defined in this package.
+#' @param pValueFloor numeric value that indicates the smallest p value that should be returned. The corresponding adjusted p value floor will also be updated based on this value. The default value uses the P_VALUE_FLOOR=1e-200 constant defined in this package.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
@@ -290,17 +290,14 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
 
     # First set small pvalues to the pValueFloor
     statistics@statistics[statistics@statistics$pValue < pValueFloor, "pValue"] <- pValueFloor
-    nFlooredPValues <- length(statistics@statistics[statistics@statistics$pValue == pValueFloor, "pValue"])
 
-    # Second, calculate the adjustedPValue based on the floor.
-    # We use the Benjamini-Hochberg proceedure (FDR), so adjPValue = min(1, min_{j>=i}(mp_j/j))
-    m <- nrow(statistics@statistics)
-    unflooredPValues <- c(pValueFloor, statistics@statistics[statistics@statistics$pValue > pValueFloor, "pValue"])
-    jValues <- (nFlooredPValues):m
-    possibleAdjustedPValues <- m*unflooredPValues/jValues
-    adjustedPValueFloor <- min(1, min(possibleAdjustedPValues))
+    # Second, find the adjusted p value for this floored p-value
+    flooredPValues <- c(pValueFloor, statistics@statistics[statistics@statistics$pValue > pValueFloor, "pValue"])
+    adjustedPValuesWithFloor <- stats::p.adjust(flooredPValues)
+    adjustedPValueFloor <- adjustedPValuesWithFloor[1]
 
-    statistics@statistics[statistics@statistics$pValue == pValueFloor, "adjustedPValue"] <- NA
+    # Finally, update the adjusted p-values in the df
+    statistics@statistics[statistics@statistics$pValue == pValueFloor, "adjustedPValue"] <- adjustedPValueFloor
     statistics@pValueFloor <- pValueFloor
     statistics@adjustedPValueFloor <- adjustedPValueFloor
 
