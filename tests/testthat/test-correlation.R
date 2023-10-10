@@ -124,11 +124,15 @@ test_that("correlation returns a ComputeResult with the correct slots" , {
   result <- correlation(data, sampleMetadata, 'pearson', verbose = FALSE)
   expect_equal(result@parameters, 'method = pearson')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
+  expect_equal(result@data1Metadata, 'assay')
+  expect_equal(result@data2Metadata, 'sampleMetadata')
 
   ## With spearman
   result <- correlation(data, sampleMetadata, 'spearman', verbose = FALSE)
   expect_equal(result@parameters, 'method = spearman')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
+  expect_equal(result@data1Metadata, 'assay')
+  expect_equal(result@data2Metadata, 'sampleMetadata')
 
 })
 
