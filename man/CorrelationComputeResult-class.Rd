@@ -30,12 +30,8 @@ This includes their representation in R, as JSON and how they are written to fil
 
 \item{\code{droppedColumns}}{A character vector of column names that have been dropped for being unsuitable for the computation.}
 
-\item{\code{data1Metadata}}{A VariableMetadata object describing the data1 object sent to the correlation function}
+\item{\code{data1Metadata}}{A character describing data1. Should at least describe the name of data1.}
 
-\item{\code{data1Variables}}{A VariableMetadataList object that describes each variable in data1.}
-
-\item{\code{data2Metadata}}{A VariableMetadata object describing the data2 object sent to the correlation function}
-
-\item{\code{data2Variables}}{A VariableMetadataList object that describes each variable in data2.}
+\item{\code{data2Metadata}}{A character describing data2. Should at least describe the name of data2.}
 }}
 

@@ -55,8 +55,6 @@ check_abundance_data <- function(object) {
 #' @slot sampleMetadata A SampleMetadata object of metadata about the samples with samples as rows and metadata variables as columns
 #' @slot recordIdColumn The name of the column containing IDs for the samples. All other columns will be treated as abundance values.
 #' @slot ancestorIdColumns A character vector of column names representing parent entities of the recordIdColumn.
-#' @slot metadata A VariableMetadata object that describes the abundance data itself.
-#' @slot variableMetadata A VariableMetadataList object that describes all variables in the abundance data. For example, describes each taxon (column).
 #' @slot imputeZero A logical indicating whether NA/ null values should be replaced with zeros.
 #' @name AbundanceData-class
 #' @rdname AbundanceData-class
@@ -67,8 +65,6 @@ AbundanceData <- setClass("AbundanceData", representation(
     sampleMetadata = 'SampleMetadata',
     recordIdColumn = 'character',
     ancestorIdColumns = 'character',
-    metadata = 'VariableMetadata',
-    variableMetadata = 'VariableMetadataList',
     imputeZero = 'logical'
 ), prototype = prototype(
     recordIdColumn = NA_character_,

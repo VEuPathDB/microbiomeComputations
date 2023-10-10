@@ -72,7 +72,7 @@ setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(
   # Many of our checks betwee smaple metadata and data live in the object check function of the abudnance class. 
   # So we can use those (runnning validObject) to do a bunch of checks, then access the data.
   if (!is.null(data1@sampleMetadata)) {
-    warning("Replacing sampleMetadata in data1 with data2 sampleMetadata")
+    warning("Replacing sampleMetadata in data1 with data2 sampleMetadata for validation")
   }
   data1@sampleMetadata <- data2
   validObject(data1) # Checks that record IDs match
@@ -108,9 +108,8 @@ setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(
   result@ancestorIdColumns <- ancestorIdColumns
   result@statistics <- corrResult
   result@parameters <- paste0('method = ', method)
-  result@data1Metadata <- data1@metadata
-  result@data1Variables <- data1@variableMetadata
-  result@data2Variables <- data2@variableMetadata # sampleMetadata has no metadata about itself, only the variables it contains.
+  result@data1Metadata <- "assay"
+  result@data2Metadata <- "sampleMetadata"
 
 
   # The resulting data should contain only the samples actually used.

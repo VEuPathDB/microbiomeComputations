@@ -18,7 +18,5 @@ A class for working with metadata.
 \item{\code{recordIdColumn}}{The name of the column containing IDs for the samples.}
 
 \item{\code{ancestorIdColumns}}{A character vector of column names representing parent entities of the recordIdColumn.}
-
-\item{\code{variableMetadata}}{A VariableMetadataList containing information about the variables contained in data.}
 }}
 

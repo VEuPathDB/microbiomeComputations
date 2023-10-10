@@ -541,7 +541,10 @@ test_that("toJSON for DifferentialAbundanceResult works",{
 
   testData <- microbiomeComputations::AbundanceData(
     data = df,
-    sampleMetadata = testSampleMetadata,
+    sampleMetadata = SampleMetadata(
+                      data = testSampleMetadata,
+                      recordIdColumn = "entity.SampleID"
+    ),
     recordIdColumn = 'entity.SampleID'
   )
 

@@ -1,17 +1,17 @@
 check_correlation_compute_result <- function(object) {
     errors <- character()
 
-# ??????
-    # if (is.na(object@name)) {
-    #   msg <- "Compute result must have a name."
-    #   errors <- c(errors, msg)
-    # } else if (length(object@name) != 1) {
-    #   msg <- "Compute result name must have a single value."
-    #   errors <- c(errors, msg) 
-    # }
+    if (!length(object@data1Metadata) > 0) {
+      msg <- "Compute result must include information about data1 in the data1Metadata slot"
+      errors <- c(errors, msg)
+    } else if (!length(object@data2Metadata) > 0) {
+      msg <- "Compute result must include information about data2 in the data2Metadata slot"
+      errors <- c(errors, msg) 
+    }
 
     return(if (length(errors) == 0) TRUE else errors)
 }
+
 
 #' Corrleation Compute Result
 #' 
@@ -27,21 +27,19 @@ check_correlation_compute_result <- function(object) {
 #' @slot computationDetails An optional message about the computed results.
 #' @slot parameters A record of the input parameters used to generate the computed results.
 #' @slot droppedColumns A character vector of column names that have been dropped for being unsuitable for the computation.
-#' @slot data1Metadata A VariableMetadata object describing the data1 object sent to the correlation function
-#' @slot data1Variables A VariableMetadataList object that describes each variable in data1.
-#' @slot data2Metadata A VariableMetadata object describing the data2 object sent to the correlation function
-#' @slot data2Variables A VariableMetadataList object that describes each variable in data2.
+#' @slot data1Metadata A character describing data1. Should at least describe the name of data1.
+#' @slot data2Metadata A character describing data2. Should at least describe the name of data2.
 #' @name CorrelationComputeResult-class
 #' @rdname CorrelationComputeResult-class
 #' @export
 CorrelationComputeResult <- setClass("CorrelationComputeResult", contains="ComputeResult", representation(
-    data1Metadata = "VariableMetadata",
-    data1Variables = "VariableMetadataList",
-    data2Metadata = "VariableMetadata",
-    data2Variables = "VariableMetadataList"
+    data1Metadata = "character",
+    data2Metadata = "character"
 ), prototype = prototype(
     name = NA_character_,
     recordIdColumn = NA_character_,
     computationDetails = NA_character_,
-    parameters = NA_character_
+    parameters = NA_character_,
+    data1Metadata = NA_character_,
+    data2Metadata = NA_character_
 ), validity = check_compute_result)
