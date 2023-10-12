@@ -55,13 +55,13 @@ test_that('correlation returns an appropriately structured result for abundance 
   expect_equal(names(dt), c('SampleID'))
   expect_equal(nrow(dt), nSamples)
   # Check stats (all correlation outputs)
-  stats <- result@statistics
-  expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('data1','data2','correlationCoef'))
-  expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
-  expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
-  expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
-  expect_true(all(!is.na(stats)))
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(nrow(statsData), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
+  expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:length(names(testOTU))])
+  expect_equal(as.character(unique(statsData$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_true(all(!is.na(statsData)))
 
 
   ## With method = spearman
@@ -72,13 +72,13 @@ test_that('correlation returns an appropriately structured result for abundance 
   expect_equal(names(dt), c('SampleID'))
   expect_equal(nrow(dt), nSamples)
   # Check stats (all correlation outputs)
-  stats <- result@statistics
-  expect_s3_class(stats, 'data.frame')
-  expect_equal(names(stats), c('data1','data2','correlationCoef'))
-  expect_equal(nrow(stats), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
-  expect_equal(as.character(unique(stats$data1)), names(testOTU)[2:length(names(testOTU))])
-  expect_equal(as.character(unique(stats$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
-  expect_true(all(!is.na(stats)))
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(nrow(statsData), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
+  expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:length(names(testOTU))])
+  expect_equal(as.character(unique(statsData$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_true(all(!is.na(statsData)))
 
 
 
@@ -124,15 +124,15 @@ test_that("correlation returns a ComputeResult with the correct slots" , {
   result <- correlation(data, sampleMetadata, 'pearson', verbose = FALSE)
   expect_equal(result@parameters, 'method = pearson')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
-  expect_equal(result@data1Metadata, 'assay')
-  expect_equal(result@data2Metadata, 'sampleMetadata')
+  expect_equal(result@statistics@data1Metadata, 'assay')
+  expect_equal(result@statistics@data2Metadata, 'sampleMetadata')
 
   ## With spearman
   result <- correlation(data, sampleMetadata, 'spearman', verbose = FALSE)
   expect_equal(result@parameters, 'method = spearman')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
-  expect_equal(result@data1Metadata, 'assay')
-  expect_equal(result@data2Metadata, 'sampleMetadata')
+  expect_equal(result@statistics@data1Metadata, 'assay')
+  expect_equal(result@statistics@data2Metadata, 'sampleMetadata')
 
 })
 
@@ -167,4 +167,28 @@ test_that("correlation fails with improper inputs", {
   # Fail when sample metadata is missing a sample
   sampleMetadata@data <- sampleMetadata@data[-1, ]
   expect_error(corrleation(data, sampleMetadata, verbose=F))
+})
+
+test_that("toJSON works as expected for the CorrelationResult class", {
+  
+  
+  df <- testOTU
+  nSamples <- dim(df)[1]
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.contA" = rnorm(nSamples),
+      "entity.contB" = rnorm(nSamples),
+      "entity.contC" = rnorm(nSamples)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )
+
+
+  data <- microbiomeComputations::AbundanceData(
+              data = df,
+              recordIdColumn = 'entity.SampleID')
+
+  result <- correlation(data, sampleMetadata, 'pearson', verbose = FALSE)
+  jsonList <- jsonlite::fromJSON(toJSON(result@statistics))
 })
