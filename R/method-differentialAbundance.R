@@ -70,7 +70,10 @@ cleanComparatorVariable <- function(data, comparator, verbose = c(TRUE, FALSE)) 
     abundances <- abundances[get(recordIdColumn) %in% keepSamples, ]
 
     data@data <- abundances
-    data@sampleMetadata <- sampleMetadata
+    data@sampleMetadata <- SampleMetadata(
+      data = sampleMetadata,
+      recordIdColumn = data@sampleMetadata@recordIdColumn
+    )
     validObject(data)
 
     return(data)

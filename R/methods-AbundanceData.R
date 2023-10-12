@@ -47,7 +47,7 @@ setGeneric("getSampleMetadata",
 #'@export 
 setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCopy = c(TRUE, FALSE)) {
   asCopy <- veupathUtils::matchArg(asCopy)
-  dt <- object@sampleMetadata
+  dt <- object@sampleMetadata@data
 
   # Check that incoming dt meets requirements
   if (!inherits(dt, 'data.table')) {
@@ -92,7 +92,10 @@ setMethod("removeIncompleteSamples", signature("AbundanceData"), function(object
     df <- df[samplesWithData, ]
 
     object@data <- df
-    object@sampleMetadata <- sampleMetadata
+    object@sampleMetadata <- SampleMetadata(
+      data = sampleMetadata,
+      recordIdColumn = object@sampleMetadata@recordIdColumn
+    )
     validObject(object)
   }
 
