@@ -13,7 +13,7 @@ A class for working with microbiome or ecological abundance data.
 \describe{
 \item{\code{data}}{A data.frame of abundance values with species as columns and samples as rows}
 
-\item{\code{sampleMetadata}}{A data.frame of metadata about the samples with samples as rows and metadata variables as columns}
+\item{\code{sampleMetadata}}{A SampleMetadata object of metadata about the samples with samples as rows and metadata variables as columns}
 
 \item{\code{recordIdColumn}}{The name of the column containing IDs for the samples. All other columns will be treated as abundance values.}
 
