@@ -601,7 +601,10 @@ test_that("The smallest pvalue we can get is our p value floor", {
 
   testData <- microbiomeComputations::AbsoluteAbundanceData(
     data = counts,
-    sampleMetadata = testSampleMetadata,
+    sampleMetadata = SampleMetadata(
+      data = testSampleMetadata,
+      recordIdColumn = "entity.SampleID"
+    ),
     recordIdColumn = 'entity.SampleID'
   )
 
@@ -633,10 +636,22 @@ test_that("The smallest pvalue we can get is our p value floor", {
   # Try with different p value floors
   result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', pValueFloor = 0, verbose=F)
   expect_equal(min(result@statistics@statistics$pValue), 0)
-  expect_equal(min(result@statistics@statistics$adjustedPValue), NA_real_)
+  expect_equal(min(result@statistics@statistics$adjustedPValue, na.rm=T), 0) # Confirmed NAs are for pvalue=1
 
   result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', pValueFloor = P_VALUE_FLOOR, verbose=F)
   expect_equal(min(result@statistics@statistics$pValue), P_VALUE_FLOOR)
-  expect_equal(min(result@statistics@statistics$pValue), result@statistics@adjustedPValueFloor)
+  expect_equal(min(result@statistics@statistics$adjustedPValue, na.rm=T), result@statistics@adjustedPValueFloor) # Confirmed NAs are for pvalue=1
+
+
+
+  # Repeat with Maaslin
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='Maaslin', pValueFloor = 0, verbose=F)
+  expect_equal(min(result@statistics@statistics$pValue), 0)
+  expect_equal(min(result@statistics@statistics$adjustedPValue), 0)
+
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='Maaslin', pValueFloor = P_VALUE_FLOOR, verbose=F)
+  expect_equal(min(result@statistics@statistics$pValue), P_VALUE_FLOOR)
+  expect_equal(min(result@statistics@statistics$adjustedPValue), result@statistics@adjustedPValueFloor)
+
 
 })

@@ -291,16 +291,20 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
     # returned p-value less than the floor becomes the floor. 
     # The default floor is a constant defined in the microbiomeComputations package.
 
-    # First set small pvalues to the pValueFloor
-    statistics@statistics[statistics@statistics$pValue < pValueFloor, "pValue"] <- pValueFloor
+    # First find indices of the small p-values and update these values to be the pValueFloor
+    smallPValueIndices <- which(statistics@statistics[["pValue"]] < pValueFloor)
+    if (length(smallPValueIndices) > 0) {
+      statistics@statistics[smallPValueIndices, "pValue"] <- pValueFloor
 
-    # Second, find the adjusted p value for this floored p-value
-    flooredPValues <- c(pValueFloor, statistics@statistics[statistics@statistics$pValue > pValueFloor, "pValue"])
-    adjustedPValuesWithFloor <- stats::p.adjust(flooredPValues)
-    adjustedPValueFloor <- adjustedPValuesWithFloor[1]
+      # Second, find the adjusted p value floor by taking the largest adjusted p-value of those p-values that were floored
+      smallAdjPValues <- statistics@statistics[smallPValueIndices, "adjustedPValue"]
+      adjustedPValueFloor <- max(smallAdjPValues)
 
-    # Finally, update the adjusted p-values in the df
-    statistics@statistics[statistics@statistics$pValue == pValueFloor, "adjustedPValue"] <- adjustedPValueFloor
+      # Finally, update the adjusted p-values with the floor
+      statistics@statistics[smallPValueIndices, "adjustedPValue"] <- adjustedPValueFloor
+    } else {
+      adjustedPValueFloor <- NA_real_
+    }
     statistics@pValueFloor <- pValueFloor
     statistics@adjustedPValueFloor <- adjustedPValueFloor
 
