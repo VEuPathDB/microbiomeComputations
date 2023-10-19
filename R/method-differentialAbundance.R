@@ -235,7 +235,9 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
 #' @param data AbsoluteAbundanceData object
 #' @param comparator Comparator object specifying the variable and values or bins to be used in dividing samples into groups.
 #' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
-#' @param pValueFloor numeric value that indicates the smallest p value that should be returned. The corresponding adjusted p value floor will also be updated based on this value. The default value uses the P_VALUE_FLOOR=1e-200 constant defined in this package.
+#' @param pValueFloor numeric value that indicates the smallest p value that should be returned. 
+#' The corresponding adjusted p value floor will also be updated based on this value, and will be set to the maximum adjusted p value of all floored p values.
+#' The default value uses the P_VALUE_FLOOR=1e-200 constant defined in this package.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
