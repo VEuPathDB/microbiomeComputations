@@ -23,7 +23,8 @@ Imports:
 Depends:
     Maaslin2,
     S4Vectors,
-    purrr
+    purrr,
+    R (>= 2.10)
 Remotes:
     VEuPathDB/veupathUtils
 LinkingTo: Rcpp

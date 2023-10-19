@@ -579,9 +579,79 @@ test_that("toJSON for DifferentialAbundanceResult works",{
   stats <- result@statistics
   jsonList <- jsonlite::fromJSON(toJSON(result@statistics))
 
-  expect_true(all(c('effectSizeLabel', 'statistics') %in% names(jsonList)))
+  expect_true(all(c('effectSizeLabel', 'statistics', 'pValueFloor', 'adjustedPValueFloor') %in% names(jsonList)))
   expect_true(all(c('effectSize', 'pValue', 'adjustedPValue', 'pointID') %in% names(jsonList$statistics)))
   expect_true(is.character(jsonList$statistics$effectSize))
   expect_true(is.character(jsonList$statistics$pValue))
   expect_true(is.character(jsonList$statistics$adjustedPValue))
+})
+
+test_that("The smallest pvalue we can get is our p value floor", {
+
+  df <- testOTU
+  counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
+  counts[ ,entity.SampleID:= df$entity.SampleID]
+  nSamples <- dim(df)[1]
+  counts$entity.wowtaxa <- rep(c(1, 100), nSamples/2, replace=T) # will 'wow' us with its significance
+  nSamples <- dim(df)[1]
+  testSampleMetadata <- data.frame(list(
+    "entity.SampleID" = df[["entity.SampleID"]],
+    "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T)
+    ))
+
+  testData <- microbiomeComputations::AbsoluteAbundanceData(
+    data = counts,
+    sampleMetadata = SampleMetadata(
+      data = testSampleMetadata,
+      recordIdColumn = "entity.SampleID"
+    ),
+    recordIdColumn = 'entity.SampleID'
+  )
+
+  # A Binary comparator variable
+  comparatorVariable <- microbiomeComputations::Comparator(
+                          variable = veupathUtils::VariableMetadata(
+                            variableSpec = VariableSpec(
+                              variableId = 'binA',
+                              entityId = 'entity'
+                            ),
+                            dataShape = veupathUtils::DataShape(value="BINARY")
+                          ),
+                          groupA = veupathUtils::BinList(
+                            S4Vectors::SimpleList(
+                              c(veupathUtils::Bin(
+                                binLabel="binA_a"
+                              ))
+                            )
+                          ),
+                          groupB = veupathUtils::BinList(
+                            S4Vectors::SimpleList(
+                              c(veupathUtils::Bin(
+                                binLabel="binA_b"
+                              ))
+                            )
+                          )
+  )
+
+  # Try with different p value floors
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', pValueFloor = 0, verbose=F)
+  expect_equal(min(result@statistics@statistics$pValue), 0)
+  expect_equal(min(result@statistics@statistics$adjustedPValue, na.rm=T), 0) # Confirmed NAs are for pvalue=1
+
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', pValueFloor = P_VALUE_FLOOR, verbose=F)
+  expect_equal(min(result@statistics@statistics$pValue), P_VALUE_FLOOR)
+  expect_equal(min(result@statistics@statistics$adjustedPValue, na.rm=T), result@statistics@adjustedPValueFloor) # Confirmed NAs are for pvalue=1
+
+
+
+  # Repeat with Maaslin
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='Maaslin', pValueFloor = 0, verbose=F)
+  expect_equal(min(result@statistics@statistics$pValue), 0)
+  expect_equal(min(result@statistics@statistics$adjustedPValue), 0)
+
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='Maaslin', pValueFloor = P_VALUE_FLOOR, verbose=F)
+  expect_equal(min(result@statistics@statistics$pValue), P_VALUE_FLOOR)
+  expect_equal(min(result@statistics@statistics$adjustedPValue), result@statistics@adjustedPValueFloor)
+
+
 })

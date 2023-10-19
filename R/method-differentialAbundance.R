@@ -81,7 +81,9 @@ cleanComparatorVariable <- function(data, comparator, verbose = c(TRUE, FALSE)) 
 
 DifferentialAbundanceResult <- setClass("DifferentialAbundanceResult", representation(
     effectSizeLabel = 'character',
-    statistics = 'data.frame'
+    statistics = 'data.frame',
+    pValueFloor = 'numeric',
+    adjustedPValueFloor = 'numeric'
 ), prototype = prototype(
     effectSizeLabel = 'log2(Fold Change)',
     statistics = data.frame(effectSize = numeric(0),
@@ -98,7 +100,10 @@ setGeneric("toJSON",
 setMethod("toJSON", signature("DifferentialAbundanceResult"), function(object, ...) {
   tmp <- character()
 
-  tmp <- paste0('"effectSizeLabel": ', jsonlite::toJSON(jsonlite::unbox(object@effectSizeLabel)), ',')
+  tmp <- paste0(tmp, '"effectSizeLabel": ', jsonlite::toJSON(jsonlite::unbox(object@effectSizeLabel)), ',')
+  tmp <- paste0(tmp, '"pValueFloor": ', jsonlite::toJSON(jsonlite::unbox(object@pValueFloor)), ',')
+  tmp <- paste0(tmp, '"adjustedPValueFloor": ', jsonlite::toJSON(jsonlite::unbox(object@adjustedPValueFloor)), ',')
+
   outObject <- data.frame(lapply(object@statistics, as.character))
   tmp <- paste0(tmp, paste0('"statistics": ', jsonlite::toJSON(outObject)))
 
@@ -230,6 +235,9 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
 #' @param data AbsoluteAbundanceData object
 #' @param comparator Comparator object specifying the variable and values or bins to be used in dividing samples into groups.
 #' @param method string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.
+#' @param pValueFloor numeric value that indicates the smallest p value that should be returned. 
+#' The corresponding adjusted p value floor will also be updated based on this value, and will be set to the maximum adjusted p value of all floored p values.
+#' The default value uses the P_VALUE_FLOOR=1e-200 constant defined in this package.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
@@ -241,13 +249,13 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("differentialAbundance",
-  function(data, comparator, method = c('DESeq', 'Maaslin'), verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
+  function(data, comparator, method = c('DESeq', 'Maaslin'), pValueFloor = P_VALUE_FLOOR, verbose = c(TRUE, FALSE)) standardGeneric("differentialAbundance"),
   signature = c("data", "comparator")
 )
 
 # this is consistent regardless of rel vs abs abund. the statistical methods will differ depending on that. 
 #'@export
-setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), function(data, comparator, method = c('DESeq', 'Maaslin'), verbose = c(TRUE, FALSE)) {
+setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), function(data, comparator, method = c('DESeq', 'Maaslin'), pValueFloor = P_VALUE_FLOOR, verbose = c(TRUE, FALSE)) {
     data <- cleanComparatorVariable(data, comparator, verbose)
     recordIdColumn <- data@recordIdColumn
     ancestorIdColumns <- data@ancestorIdColumns
@@ -257,6 +265,7 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
     ## Initialize and check inputs
     method <- veupathUtils::matchArg(method)
     verbose <- veupathUtils::matchArg(verbose)
+
     
     ## Compute differential abundance
     if (identical(method, 'DESeq')) {
@@ -278,6 +287,29 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
       stop('Unaccepted differential abundance method. Accepted methods are "DESeq" and "Maaslin".')
     }
     veupathUtils::logWithTime(paste0('Completed method=',method,'. Formatting results.'), verbose)
+
+    # Sometimes p-values can be very small, even smaller than the smallest representable number (gives p-value=0). The smallest
+    # representable number changes based on env, so to avoid inconsistency set a p-value floor so that any
+    # returned p-value less than the floor becomes the floor. 
+    # The default floor is a constant defined in the microbiomeComputations package.
+
+    # First find indices of the small p-values and update these values to be the pValueFloor
+    smallPValueIndices <- which(statistics@statistics[["pValue"]] < pValueFloor)
+    if (length(smallPValueIndices) > 0) {
+      statistics@statistics[smallPValueIndices, "pValue"] <- pValueFloor
+
+      # Second, find the adjusted p value floor by taking the largest adjusted p-value of those p-values that were floored
+      smallAdjPValues <- statistics@statistics[smallPValueIndices, "adjustedPValue"]
+      adjustedPValueFloor <- max(smallAdjPValues)
+
+      # Finally, update the adjusted p-values with the floor
+      statistics@statistics[smallPValueIndices, "adjustedPValue"] <- adjustedPValueFloor
+    } else {
+      adjustedPValueFloor <- NA_real_
+    }
+    statistics@pValueFloor <- pValueFloor
+    statistics@adjustedPValueFloor <- adjustedPValueFloor
+
     
     # this is droppedTaxa, or pathways etc ?? can we rename it?
     droppedColumns <- setdiff(names(data@data[, -..allIdColumns, with=FALSE]), statistics@statistics$pointID)
