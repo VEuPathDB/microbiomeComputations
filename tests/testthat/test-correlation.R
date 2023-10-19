@@ -191,4 +191,9 @@ test_that("toJSON works as expected for the CorrelationResult class", {
 
   result <- correlation(data, sampleMetadata, 'pearson', verbose = FALSE)
   jsonList <- jsonlite::fromJSON(toJSON(result@statistics))
+  expect_equal(names(jsonList), c('data1Metadata', 'data2Metadata', 'statistics'))
+  expect_equal(class(jsonList$data1Metadata), "character")
+  expect_equal(class(jsonList$data2Metadata), "character")
+  expect_equal(names(jsonList$statistics), c('data1', 'data2', 'correlationCoef'))
+  expect_equal(unname(unlist(lapply(jsonList$statistics, class))), c('character', 'character', 'character'))
 })

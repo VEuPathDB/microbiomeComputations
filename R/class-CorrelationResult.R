@@ -16,7 +16,7 @@ check_correlation_result <- function(object) {
 #' Corrleation Result
 #' 
 #' A class to represent the computed results from a correlation calculation.
-#' This includes their representation in R, as JSON and how they are written to files.
+#' This includes their representation in R, as JSON, and how they are written to files.
 #' 
 #' @slot statistics An optional slot of any values. List or data.frame are recommended. It is not required to have rows or cols map to samples.
 #' @slot data1Metadata A character describing data1. Should at least describe the name of data1.

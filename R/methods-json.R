@@ -18,7 +18,9 @@ setMethod("toJSON", signature("DifferentialAbundanceResult"), function(object, .
 setMethod("toJSON", signature("CorrelationResult"), function(object, ...) {
   tmp <- character()
 
-  tmp <- paste0('"data1Metadata": ', jsonlite::toJSON(jsonlite::unbox(object@data1Metadata)), ',')
+  # The outputted CorrelationResult json object should have properties data1Metadata, data2Metadata, and statistics.
+  # All values in statistics should be strings.
+  tmp <- paste0(tmp, '"data1Metadata": ', jsonlite::toJSON(jsonlite::unbox(object@data1Metadata)), ',')
   tmp <- paste0(tmp, '"data2Metadata": ', jsonlite::toJSON(jsonlite::unbox(object@data2Metadata)), ',')
   outObject <- data.frame(lapply(object@statistics, as.character))
   tmp <- paste0(tmp, paste0('"statistics": ', jsonlite::toJSON(outObject)))
