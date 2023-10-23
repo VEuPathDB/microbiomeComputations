@@ -175,7 +175,7 @@ setMethod("deseq", signature("AbsoluteAbundanceData", "Comparator"), function(da
                            adjustedPValue = deseq_results$padj,
                            pointID = rownames(counts))
 
-  result <- DifferentialAbundanceResult('effectSizeLabel' = 'log2(FoldChange)', 'statistics' = statistics)
+  result <- DifferentialAbundanceResult('effectSizeLabel' = 'log2(Fold Change)', 'statistics' = statistics)
 
   return(result)
 })
@@ -223,7 +223,7 @@ setMethod("maaslin", signature("AbundanceData", "Comparator"), function(data, co
                           adjustedPValue = maaslinOutput$results$qval,
                           pointID = maaslinOutput$results$feature)
 
-      result <- DifferentialAbundanceResult('effectSizeLabel' = 'model coefficient (effect size)', 'statistics' = statistics)
+      result <- DifferentialAbundanceResult('effectSizeLabel' = 'Model Coefficient (Effect Size)', 'statistics' = statistics)
 
   return(result)
 })
