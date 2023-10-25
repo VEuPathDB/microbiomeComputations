@@ -100,8 +100,8 @@ setGeneric("toJSON",
 setMethod("toJSON", signature("DifferentialAbundanceResult"), function(object, ...) {
   tmp <- character()
 
-  tmp <- paste0(tmp, '"effectSizeLabel": ', jsonlite::toJSON(jsonlite::unbox(object@effectSizeLabel)), ',')
-  tmp <- paste0(tmp, '"pValueFloor": ', jsonlite::toJSON(jsonlite::unbox(object@pValueFloor)), ',')
+  tmp <- paste0(tmp, '"effectSizeLabel": ', jsonlite::toJSON(jsonlite::unbox(as.character(object@effectSizeLabel))), ',')
+  tmp <- paste0(tmp, '"pValueFloor": ', jsonlite::toJSON(jsonlite::unbox(as.character(object@pValueFloor))), ',')
   tmp <- paste0(tmp, '"adjustedPValueFloor": ', jsonlite::toJSON(jsonlite::unbox(object@adjustedPValueFloor)), ',')
 
   outObject <- data.frame(lapply(object@statistics, as.character))
