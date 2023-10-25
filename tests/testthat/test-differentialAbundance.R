@@ -584,6 +584,8 @@ test_that("toJSON for DifferentialAbundanceResult works",{
   expect_true(is.character(jsonList$statistics$effectSize))
   expect_true(is.character(jsonList$statistics$pValue))
   expect_true(is.character(jsonList$statistics$adjustedPValue))
+  expect_true(is.character(jsonList$pValueFloor))
+  expect_true(is.character(jsonList$adjustedPValueFloor))
 })
 
 test_that("The smallest pvalue we can get is our p value floor", {
