@@ -531,12 +531,11 @@ test_that("differentialAbundance method Maaslin does stuff",{
 test_that("toJSON for DifferentialAbundanceResult works",{
   df <- testOTU
   nSamples <- dim(df)[1]
+  df$entity.wowtaxa <- rep(c(0.01, 0.99), nSamples/2, replace=T) # will 'wow' us with its significance
+  nSamples <- dim(df)[1]
   testSampleMetadata <- data.frame(list(
     "entity.SampleID" = df[["entity.SampleID"]],
-    "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T),
-    "entity.cat3" = rep(paste0("cat3_", letters[1:3]), nSamples/3, replace=T),
-    "entity.cat4" = rep(paste0("cat4_", letters[1:4]), nSamples/4, replace=T),
-    "entity.contA" = rnorm(nSamples, sd=5)
+    "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T)
     ))
 
   testData <- microbiomeComputations::AbundanceData(
@@ -551,7 +550,7 @@ test_that("toJSON for DifferentialAbundanceResult works",{
   comparatorVariable <- microbiomeComputations::Comparator(
                           variable = veupathUtils::VariableMetadata(
                             variableSpec = VariableSpec(
-                              variableId = 'cat4',
+                              variableId = 'binA',
                               entityId = 'entity'
                             ),
                             dataShape = veupathUtils::DataShape(value="CATEGORICAL")
@@ -559,14 +558,14 @@ test_that("toJSON for DifferentialAbundanceResult works",{
                           groupA = veupathUtils::BinList(
                             S4Vectors::SimpleList(
                               c(veupathUtils::Bin(
-                                binLabel="cat4_a"
+                                binLabel="binA_a"
                               ))
                             )
                           ),
                           groupB = veupathUtils::BinList(
                             S4Vectors::SimpleList(
                               c(veupathUtils::Bin(
-                                binLabel="cat4_b"
+                                binLabel="binA_b"
                               ))
                             )
                           )
