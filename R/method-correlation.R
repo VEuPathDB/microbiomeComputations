@@ -102,14 +102,17 @@ setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(
 
   ## Format results
   # Construct the ComputeResult
-  result <- new("CorrelationComputeResult")
+  result <- new("ComputeResult")
   result@name <- 'correlation'
   result@recordIdColumn <- recordIdColumn
   result@ancestorIdColumns <- ancestorIdColumns
-  result@statistics <- corrResult
+  statistics <- CorrelationResult(
+    statistics = corrResult,
+    data1Metadata = "assay",
+    data2Metadata = "sampleMetadata"
+  )
+  result@statistics <- statistics
   result@parameters <- paste0('method = ', method)
-  result@data1Metadata <- "assay"
-  result@data2Metadata <- "sampleMetadata"
 
 
   # The resulting data should contain only the samples actually used.
