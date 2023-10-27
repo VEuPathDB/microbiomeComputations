@@ -8,6 +8,7 @@ differentialAbundance(
   data,
   comparator,
   method = c("DESeq", "Maaslin"),
+  pValueFloor = P_VALUE_FLOOR,
   verbose = c(TRUE, FALSE)
 )
 }
@@ -17,6 +18,10 @@ differentialAbundance(
 \item{comparator}{Comparator object specifying the variable and values or bins to be used in dividing samples into groups.}
 
 \item{method}{string defining the the differential abundance method. Accepted values are 'DESeq' and 'ANCOMBC'.}
+
+\item{pValueFloor}{numeric value that indicates the smallest p value that should be returned.
+The corresponding adjusted p value floor will also be updated based on this value, and will be set to the maximum adjusted p value of all floored p values.
+The default value uses the P_VALUE_FLOOR=1e-200 constant defined in this package.}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

@@ -1,6 +1,6 @@
 Package: microbiomeComputations
 Title: Compute Results for Microbiome Analyses
-Version: 3.2.0
+Version: 3.2.4
 Authors@R: 
     c(person(given = "Danielle",
            family = "Callan",
@@ -23,7 +23,8 @@ Imports:
 Depends:
     Maaslin2,
     S4Vectors,
-    purrr
+    purrr,
+    R (>= 2.10)
 Remotes:
     VEuPathDB/veupathUtils
 LinkingTo: Rcpp

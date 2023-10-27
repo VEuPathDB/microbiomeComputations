@@ -58,7 +58,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   expect_s3_class(dt, 'data.table')
   stats <- result@statistics@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(result@statistics@effectSizeLabel, 'log2(FoldChange)')
+  expect_equal(result@statistics@effectSizeLabel, 'log2(Fold Change)')
   expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
   expect_true(all(!is.na(stats[, c('effectSize', 'pValue', 'pointID')])))
@@ -96,7 +96,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   expect_equal(sum(testSampleMetadata$entity.cat4 %in% c('cat4_a','cat4_b')), nrow(dt))
   stats <- result@statistics@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(result@statistics@effectSizeLabel, 'log2(FoldChange)')
+  expect_equal(result@statistics@effectSizeLabel, 'log2(Fold Change)')
   expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
   expect_true(all(!is.na(stats[, c('effectSize', 'pValue', 'pointID')])))
@@ -130,7 +130,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   expect_equal(nrow(dt), sum((testSampleMetadata[['entity.contA']] >= 2) * (testSampleMetadata[['entity.contA']] < 6)))
   stats <- result@statistics@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(result@statistics@effectSizeLabel, 'log2(FoldChange)')
+  expect_equal(result@statistics@effectSizeLabel, 'log2(Fold Change)')
   expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
@@ -161,7 +161,7 @@ test_that('differentialAbundance returns a correctly formatted data.table', {
   expect_equal(nrow(dt), sum((testSampleMetadata[['entity.dateA']] >= as.Date('1989-01-01')) * (testSampleMetadata[['entity.dateA']] < as.Date('1993-01-01'))))
   stats <- result@statistics@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(result@statistics@effectSizeLabel, 'log2(FoldChange)')
+  expect_equal(result@statistics@effectSizeLabel, 'log2(Fold Change)')
   expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
@@ -230,7 +230,7 @@ test_that("differentialAbundance can handle messy inputs", {
   expect_equal(sum(testSampleMetadataMessy$entity.cat4 %in% c('cat4_a','cat4_b','cat4_c')), nrow(dt))
   stats <- result@statistics@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(result@statistics@effectSizeLabel, 'log2(FoldChange)')
+  expect_equal(result@statistics@effectSizeLabel, 'log2(Fold Change)')
   expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
   expect_true(all(!is.na(stats[, c('effectSize', 'pValue', 'pointID')])))
@@ -264,7 +264,7 @@ test_that("differentialAbundance can handle messy inputs", {
   expect_equal(nrow(dt), sum((testSampleMetadataMessy[['entity.contA']] >= 2) * (testSampleMetadataMessy[['entity.contA']] < 6), na.rm=T))
   stats <- result@statistics@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(result@statistics@effectSizeLabel, 'log2(FoldChange)')
+  expect_equal(result@statistics@effectSizeLabel, 'log2(Fold Change)')
   expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
@@ -295,7 +295,7 @@ test_that("differentialAbundance can handle messy inputs", {
   expect_equal(nrow(dt), sum(testSampleMetadataMessy$entity.cat4 %in% c('cat4_a','cat4_b','cat4_c')))
   stats <- result@statistics@statistics
   expect_s3_class(stats, 'data.frame')
-  expect_equal(result@statistics@effectSizeLabel, 'log2(FoldChange)')
+  expect_equal(result@statistics@effectSizeLabel, 'log2(Fold Change)')
   expect_equal(names(stats), c('effectSize','pValue','adjustedPValue','pointID'))
   expect_equal(unname(unlist(lapply(stats, class))), c('numeric','numeric','numeric','character'))
 
@@ -522,7 +522,7 @@ test_that("differentialAbundance method Maaslin does stuff",{
   statsCounts <- result@statistics@statistics
 
   expect_equal(dt, dtCounts)
-  expect_equal(result@statistics@effectSizeLabel, 'model coefficient (effect size)')
+  expect_equal(result@statistics@effectSizeLabel, 'Model Coefficient (Effect Size)')
   expect_true(length(stats$pointID) > 0)
   expect_true(length(statsCounts$pointID) > 0)
   expect_equal(stats, statsCounts)
@@ -531,12 +531,11 @@ test_that("differentialAbundance method Maaslin does stuff",{
 test_that("toJSON for DifferentialAbundanceResult works",{
   df <- testOTU
   nSamples <- dim(df)[1]
+  df$entity.wowtaxa <- rep(c(0.01, 0.99), nSamples/2, replace=T) # will 'wow' us with its significance
+  nSamples <- dim(df)[1]
   testSampleMetadata <- data.frame(list(
     "entity.SampleID" = df[["entity.SampleID"]],
-    "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T),
-    "entity.cat3" = rep(paste0("cat3_", letters[1:3]), nSamples/3, replace=T),
-    "entity.cat4" = rep(paste0("cat4_", letters[1:4]), nSamples/4, replace=T),
-    "entity.contA" = rnorm(nSamples, sd=5)
+    "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T)
     ))
 
   testData <- microbiomeComputations::AbundanceData(
@@ -551,7 +550,7 @@ test_that("toJSON for DifferentialAbundanceResult works",{
   comparatorVariable <- microbiomeComputations::Comparator(
                           variable = veupathUtils::VariableMetadata(
                             variableSpec = VariableSpec(
-                              variableId = 'cat4',
+                              variableId = 'binA',
                               entityId = 'entity'
                             ),
                             dataShape = veupathUtils::DataShape(value="CATEGORICAL")
@@ -559,14 +558,14 @@ test_that("toJSON for DifferentialAbundanceResult works",{
                           groupA = veupathUtils::BinList(
                             S4Vectors::SimpleList(
                               c(veupathUtils::Bin(
-                                binLabel="cat4_a"
+                                binLabel="binA_a"
                               ))
                             )
                           ),
                           groupB = veupathUtils::BinList(
                             S4Vectors::SimpleList(
                               c(veupathUtils::Bin(
-                                binLabel="cat4_b"
+                                binLabel="binA_b"
                               ))
                             )
                           )
@@ -579,9 +578,81 @@ test_that("toJSON for DifferentialAbundanceResult works",{
   stats <- result@statistics
   jsonList <- jsonlite::fromJSON(toJSON(result@statistics))
 
-  expect_true(all(c('effectSizeLabel', 'statistics') %in% names(jsonList)))
+  expect_true(all(c('effectSizeLabel', 'statistics', 'pValueFloor', 'adjustedPValueFloor') %in% names(jsonList)))
   expect_true(all(c('effectSize', 'pValue', 'adjustedPValue', 'pointID') %in% names(jsonList$statistics)))
   expect_true(is.character(jsonList$statistics$effectSize))
   expect_true(is.character(jsonList$statistics$pValue))
   expect_true(is.character(jsonList$statistics$adjustedPValue))
+  expect_true(is.character(jsonList$pValueFloor))
+  expect_true(is.character(jsonList$adjustedPValueFloor))
+})
+
+test_that("The smallest pvalue we can get is our p value floor", {
+
+  df <- testOTU
+  counts <- round(df[, -c("entity.SampleID")]*1000) # make into "counts"
+  counts[ ,entity.SampleID:= df$entity.SampleID]
+  nSamples <- dim(df)[1]
+  counts$entity.wowtaxa <- rep(c(1, 100), nSamples/2, replace=T) # will 'wow' us with its significance
+  nSamples <- dim(df)[1]
+  testSampleMetadata <- data.frame(list(
+    "entity.SampleID" = df[["entity.SampleID"]],
+    "entity.binA" = rep(c("binA_a", "binA_b"), nSamples/2, replace=T)
+    ))
+
+  testData <- microbiomeComputations::AbsoluteAbundanceData(
+    data = counts,
+    sampleMetadata = SampleMetadata(
+      data = testSampleMetadata,
+      recordIdColumn = "entity.SampleID"
+    ),
+    recordIdColumn = 'entity.SampleID'
+  )
+
+  # A Binary comparator variable
+  comparatorVariable <- microbiomeComputations::Comparator(
+                          variable = veupathUtils::VariableMetadata(
+                            variableSpec = VariableSpec(
+                              variableId = 'binA',
+                              entityId = 'entity'
+                            ),
+                            dataShape = veupathUtils::DataShape(value="BINARY")
+                          ),
+                          groupA = veupathUtils::BinList(
+                            S4Vectors::SimpleList(
+                              c(veupathUtils::Bin(
+                                binLabel="binA_a"
+                              ))
+                            )
+                          ),
+                          groupB = veupathUtils::BinList(
+                            S4Vectors::SimpleList(
+                              c(veupathUtils::Bin(
+                                binLabel="binA_b"
+                              ))
+                            )
+                          )
+  )
+
+  # Try with different p value floors
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', pValueFloor = 0, verbose=F)
+  expect_equal(min(result@statistics@statistics$pValue), 0)
+  expect_equal(min(result@statistics@statistics$adjustedPValue, na.rm=T), 0) # Confirmed NAs are for pvalue=1
+
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', pValueFloor = P_VALUE_FLOOR, verbose=F)
+  expect_equal(min(result@statistics@statistics$pValue), P_VALUE_FLOOR)
+  expect_equal(min(result@statistics@statistics$adjustedPValue, na.rm=T), result@statistics@adjustedPValueFloor) # Confirmed NAs are for pvalue=1
+
+
+
+  # Repeat with Maaslin
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='Maaslin', pValueFloor = 0, verbose=F)
+  expect_equal(min(result@statistics@statistics$pValue), 0)
+  expect_equal(min(result@statistics@statistics$adjustedPValue), 0)
+
+  result <- differentialAbundance(testData, comparator=comparatorVariable, method='Maaslin', pValueFloor = P_VALUE_FLOOR, verbose=F)
+  expect_equal(min(result@statistics@statistics$pValue), P_VALUE_FLOOR)
+  expect_equal(min(result@statistics@statistics$adjustedPValue), result@statistics@adjustedPValueFloor)
+
+
 })

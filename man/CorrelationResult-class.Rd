@@ -7,7 +7,7 @@
 \title{Corrleation Result}
 \description{
 A class to represent the computed results from a correlation calculation.
-This includes their representation in R, as JSON and how they are written to files.
+This includes their representation in R, as JSON, and how they are written to files.
 }
 \section{Slots}{
 
