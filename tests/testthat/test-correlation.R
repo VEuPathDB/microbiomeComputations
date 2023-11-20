@@ -25,6 +25,15 @@ test_that('correlation works with two data tables', {
   expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData2))
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
+  # Test with NAs
+  # Should compute using complete cases. 
+  # This to try to catch regression back to the default behavior of cor, which returns results of NA if any value is NA
+  testData2$contA2[1] <- NA
+  corrResult <- correlation(testData1, testData2, 'pearson', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData2))
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
 })
 
 test_that('correlation returns an appropriately structured result for abundance data vs metadata', {
