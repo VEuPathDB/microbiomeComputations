@@ -41,7 +41,7 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
   ## Compute correlation
   # Resulting data table has column "rn" = row names of the correlation matrix (so taxa names), and the other
   # column names are the vars from sample metadata that we use
-  corrResult <- data.table::as.data.table(cor(data1, data2, method = method), keep.rownames = T)
+  corrResult <- data.table::as.data.table(cor(data1, data2, method = method, use='na.or.complete'), keep.rownames = T)
 
   veupathUtils::logWithTime(paste0('Completed correlation with method=', method,'. Formatting results.'), verbose)
 
