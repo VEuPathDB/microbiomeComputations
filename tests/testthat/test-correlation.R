@@ -57,12 +57,7 @@ test_that('correlation returns an appropriately structured result for abundance 
               recordIdColumn = 'entity.SampleID')
   
   ## All numeric sample variables
-  result <- correlation(data, sampleMetadata, 'pearson', verbose = FALSE)
-  # Check data (only sample ids)
-  dt <- result@data
-  expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), c('SampleID'))
-  expect_equal(nrow(dt), nSamples)
+  result <- correlation(data, method='pearson', verbose = FALSE)
   # Check stats (all correlation outputs)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
@@ -74,12 +69,7 @@ test_that('correlation returns an appropriately structured result for abundance 
 
 
   ## With method = spearman
-  result <- correlation(data, sampleMetadata, 'spearman', verbose = FALSE)
-  # Check data (only sample ids)
-  dt <- result@data
-  expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), c('SampleID'))
-  expect_equal(nrow(dt), nSamples)
+  result <- correlation(data, method='spearman', verbose = FALSE)
   # Check stats (all correlation outputs)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
@@ -127,17 +117,18 @@ test_that("correlation returns a ComputeResult with the correct slots" , {
 
   data <- microbiomeComputations::AbundanceData(
               data = df,
+              sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
 
   ## Pearson
-  result <- correlation(data, sampleMetadata, 'pearson', verbose = FALSE)
+  result <- correlation(data, method='pearson', verbose = FALSE)
   expect_equal(result@parameters, 'method = pearson')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
   expect_equal(result@statistics@data1Metadata, 'assay')
   expect_equal(result@statistics@data2Metadata, 'sampleMetadata')
 
   ## With spearman
-  result <- correlation(data, sampleMetadata, 'spearman', verbose = FALSE)
+  result <- correlation(data, method='spearman', verbose = FALSE)
   expect_equal(result@parameters, 'method = spearman')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
   expect_equal(result@statistics@data1Metadata, 'assay')
@@ -165,17 +156,17 @@ test_that("correlation fails with improper inputs", {
 
   data <- microbiomeComputations::AbsoluteAbundanceData(
               data = counts,
-              # sampleMetadata = sampleMetadata,
+              sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
 
   data@sampleMetadata <- sampleMetadata
 
   # Fail when we send in only categorical metadata
-  expect_error(correlation(data, sampleMetadata, verbose=F))
+  expect_error(correlation(data, verbose=F))
 
   # Fail when sample metadata is missing a sample
   sampleMetadata@data <- sampleMetadata@data[-1, ]
-  expect_error(corrleation(data, sampleMetadata, verbose=F))
+  expect_error(corrleation(data, verbose=F))
 })
 
 test_that("toJSON works as expected for the CorrelationResult class", {
@@ -196,9 +187,10 @@ test_that("toJSON works as expected for the CorrelationResult class", {
 
   data <- microbiomeComputations::AbundanceData(
               data = df,
+              sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
 
-  result <- correlation(data, sampleMetadata, 'pearson', verbose = FALSE)
+  result <- correlation(data, method='pearson', verbose = FALSE)
   jsonList <- jsonlite::fromJSON(toJSON(result@statistics))
   expect_equal(names(jsonList), c('data1Metadata', 'data2Metadata', 'statistics'))
   expect_equal(class(jsonList$data1Metadata), "character")
