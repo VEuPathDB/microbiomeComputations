@@ -88,6 +88,54 @@ setMethod("correlation", signature("data.table", "missing"), function(data1, dat
   return(formattedCorrResult)
 })
 
+getDataMetadataType <- function(data) {
+  if (inherits(data, 'AbundanceData')) {
+    return('assay')
+  } else if (inherits(data, 'SampleMetadata')) {
+    return('sampleMetadata')
+  } else {
+    stop('data must be an AbundanceData or SampleMetadata object')
+  }
+}
+
+## Helper function
+# should this be s4?
+buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, method = c('spearman','pearson')) {
+  method <- veupathUtils::matchArg(method)
+  if (!inherits(data1, c("AbundanceData", "SampleMetadata"))) {
+    stop('data1 must be an AbundanceData or SampleMetadata object')
+  }
+
+  # both AbundanceData and SampleMetadata have these slots
+  recordIdColumn <- data1@recordIdColumn
+  ancestorIdColumns <- data1@ancestorIdColumns
+  allIdColumns <- c(recordIdColumn, ancestorIdColumns)
+
+  ## Format results
+  # Construct the ComputeResult
+  result <- new("ComputeResult")
+  result@name <- 'correlation'
+  result@recordIdColumn <- recordIdColumn
+  result@ancestorIdColumns <- ancestorIdColumns
+  statistics <- CorrelationResult(
+    statistics = corrResult,
+    data1Metadata = getDataMetadataType(data1),
+    data2Metadata = ifelse(is.null(data2), getDataMetadataType(data1), getDataMetadataType(data2))
+  )
+  result@statistics <- statistics
+  result@parameters <- paste0('method = ', method)
+
+  # The resulting data should contain only the samples actually used.
+  # this seems slightly complicated to generalize, and im not sure what we use it for anyhow
+  #result@data <- abundances[, ..allIdColumns]
+  #names(result@data) <- stripEntityIdFromColumnHeader(names(result@data))
+
+  validObject(result)
+  veupathUtils::logWithTime(paste('Correlation computation completed with parameters recordIdColumn=', recordIdColumn, ', method = ', method), verbose)
+  
+  return(result)
+}
+
 #' Correlation of abundance data and metadata
 #' 
 #' This function returns the correlation of all columns of an AbundanceData object with appropriate columns of a SampleMetadata object.
@@ -103,33 +151,7 @@ setMethod("correlation", signature("AbundanceData", "missing"), function(data1, 
   computeMessage <- ''
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "taxa."), verbose)
 
-  recordIdColumn <- data1@recordIdColumn
-  ancestorIdColumns <- data1@ancestorIdColumns
-  allIdColumns <- c(recordIdColumn, ancestorIdColumns)
-
-  ## Format results
-  # Construct the ComputeResult
-  result <- new("ComputeResult")
-  result@name <- 'correlation'
-  result@recordIdColumn <- recordIdColumn
-  result@ancestorIdColumns <- ancestorIdColumns
-  statistics <- CorrelationResult(
-    statistics = corrResult,
-    data1Metadata = "assay",
-    data2Metadata = "sampleMetadata"
-  )
-  result@statistics <- statistics
-  result@parameters <- paste0('method = ', method)
-
-
-  # The resulting data should contain only the samples actually used.
-  result@data <- abundances[, ..allIdColumns]
-  names(result@data) <- stripEntityIdFromColumnHeader(names(result@data))
-
-
-  validObject(result)
-  veupathUtils::logWithTime(paste('Correlation computation completed with parameters recordIdColumn=', recordIdColumn, ', method = ', method), verbose)
-  
+  result <- buildCorrelationComputeResult(corrResult, data1, data2, method)
   return(result)  
 })
 
