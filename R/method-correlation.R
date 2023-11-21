@@ -6,7 +6,7 @@
 #' @param data2 second dataset. A SampleMetadata object (if data1 is class AbundanceData) or a data.table
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
-#' @return ComputeResult object
+#' @return data.frame with correlation coefficients or a ComputeResult object
 #' @import veupathUtils
 #' @import data.table
 #' @useDynLib microbiomeComputations
@@ -25,7 +25,7 @@ setGeneric("correlation",
 #' @param data2 data.table with columns as variables. All columns must be numeric. One row per sample. Will correlate all columns of data2 with all columns of data1.
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
-#' @return ComputeResult object
+#' @return data.frame with correlation coefficients
 setMethod("correlation", signature("data.table", "data.table"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
 
   # Check that the number of rows match.
@@ -66,7 +66,7 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 #' @param data1 data.table with columns as variables. All columns must be numeric. One row per sample.
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
-#' @return ComputeResult object
+#' @return data.frame with correlation coefficients
 setMethod("correlation", signature("data.table", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   # Check that all values are numeric
   if (!identical(veupathUtils::findNumericCols(data1), names(data1))) { stop("All columns in data1 must be numeric.")}
@@ -143,6 +143,7 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' @param data1 AbundanceData object. Will correlate abundance variables with specified variables in data2
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
+#' @return a ComputeResult object
 #' @export
 setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   abundances <- getAbundances(data1, FALSE)
@@ -231,6 +232,7 @@ setMethod("selfCorrelation", signature("data.table"), function(data1, method = c
 #' @param data2 AbundanceData object.
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
+#' @return ComputeResult object
 #' @export
 setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   abundances1 <- getAbundances(data1, FALSE)
