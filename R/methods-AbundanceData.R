@@ -5,15 +5,16 @@
 #' 
 #' @param object AbundanceData
 #' @param ignoreImputeZero boolean indicating whether we should respect the imputeZero slot
+#' @param includeIds boolean indicating whether we should include recordIdColumn and ancestorIdColumns
 #' @return data.table of abundances
 #' @export
 setGeneric("getAbundances",
-  function(object, ignoreImputeZero = c(FALSE, TRUE)) standardGeneric("getAbundances"),
+  function(object, ignoreImputeZero = c(FALSE, TRUE), includeIds = c(TRUE, FALSE)) standardGeneric("getAbundances"),
   signature = c("object")
 )
 
 #'@export 
-setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreImputeZero = c(FALSE, TRUE)) {
+setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreImputeZero = c(FALSE, TRUE), includeIds = c(TRUE, FALSE)) {
   ignoreImputeZero <- veupathUtils::matchArg(ignoreImputeZero)
   dt <- object@data
 
@@ -28,6 +29,11 @@ setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreIm
     veupathUtils::setNaToZero(dt)
   }
 
+  if (!includeIds) {
+    allIdColumns <- c(object@recordIdColumn, object@ancestorIdColumns)
+    dt <- dt[, -..allIdColumns]
+  }
+
   return(dt)
 })
 
@@ -37,15 +43,16 @@ setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreIm
 #' 
 #' @param object AbundanceData
 #' @param asCopy boolean indicating whether to return the data as a copy or by reference
+#' @param includeIds boolean indicating whether we should include recordIdColumn and ancestorIdColumns
 #' @return data.table of sample metadata
 #' @export
 setGeneric("getSampleMetadata",
-  function(object, asCopy = c(TRUE, FALSE)) standardGeneric("getSampleMetadata"),
+  function(object, asCopy = c(TRUE, FALSE), includeIds = c(TRUE, FALSE)) standardGeneric("getSampleMetadata"),
   signature = c("object")
 )
 
 #'@export 
-setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCopy = c(TRUE, FALSE)) {
+setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCopy = c(TRUE, FALSE), includeIds = c(TRUE, FALSE)) {
   asCopy <- veupathUtils::matchArg(asCopy)
   dt <- object@sampleMetadata@data
 
@@ -55,10 +62,15 @@ setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCo
   }
 
   if (asCopy) {
-    return(copy(dt))
-  } else {
-    return(dt)
+    dt <- data.table::copy(dt)
   }
+
+  if (!includeIds) {
+    allIdColumns <- c(object@recordIdColumn, object@ancestorIdColumns)
+    dt <- dt[, -..allIdColumns]
+  }
+
+  return(dt)
 })
 
 #' Drop samples with incomplete SampleMetadata

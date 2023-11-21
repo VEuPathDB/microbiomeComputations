@@ -34,6 +34,8 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
   }
 
   # Check that all values are numeric
+  print(identical(veupathUtils::findNumericCols(data1), names(data1)))
+  print(names(data1)[!names(data1) %in% veupathUtils::findNumericCols(data1)])
   if (!identical(veupathUtils::findNumericCols(data1), names(data1))) { stop("All columns in data1 must be numeric.")}
   if (!identical(veupathUtils::findNumericCols(data2), names(data2))) { stop("All columns in data2 must be numeric.")}
 
@@ -146,8 +148,8 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' @return a ComputeResult object
 #' @export
 setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  abundances <- getAbundances(data1, FALSE)
-  correlation(abundances, getSampleMetadata(data1), method, verbose)
+  abundances <- getAbundances(data1, FALSE, FALSE)
+  correlation(abundances, getSampleMetadata(data1, TRUE, FALSE), method, verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
 
@@ -181,7 +183,7 @@ setGeneric("selfCorrelation",
 #' @import veupathUtils
 #' @export
 setMethod("selfCorrelation", signature("AbundanceData"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  abundances <- getAbundances(data1, FALSE)
+  abundances <- getAbundances(data1, FALSE, FALSE)
   corrResult <- correlation(abundances, method, verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
@@ -235,8 +237,8 @@ setMethod("selfCorrelation", signature("data.table"), function(data1, method = c
 #' @return ComputeResult object
 #' @export
 setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  abundances1 <- getAbundances(data1, FALSE)
-  abundances2 <- getAbundances(data2, FALSE)
+  abundances1 <- getAbundances(data1, FALSE, FALSE)
+  abundances2 <- getAbundances(data2, FALSE, FALSE)
   corrResult <- correlation(abundances1, abundances2, method, verbose)
 
   veupathUtils::logWithTime(paste("Received first df table with", nrow(abundances1), "samples and", (ncol(abundances1)-1), "features with abundances."), verbose)
