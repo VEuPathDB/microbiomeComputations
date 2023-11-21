@@ -202,7 +202,7 @@ setMethod("selfCorrelation", signature("AbundanceData"), function(data1, method 
 #' @import veupathUtils
 #' @export
 setMethod("selfCorrelation", signature("SampleMetadata"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  corrResult <- correlation(data1, method, verbose)
+  corrResult <- correlation(getSampleMetadata(data1, TRUE, FALSE), method=method, verbose=verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(data1), "samples and", (ncol(data1)-1), "variables."), verbose)
 

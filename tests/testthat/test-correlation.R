@@ -133,6 +133,47 @@ test_that('correlation returns an appropriately structured result for abundance 
 })
 
 
+test_that("correlation returns an appropriately structured result for metadata vs metadata", {
+  df <- testOTU
+  nSamples <- dim(df)[1]
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.contA" = rnorm(nSamples),
+      "entity.contB" = rnorm(nSamples),
+      "entity.contC" = rnorm(nSamples)
+      # "entity.dateA" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )              
+
+  result <- selfCorrelation(sampleMetadata, method='pearson', verbose = FALSE)
+  expect_equal(result@statistics@data1Metadata, 'sampleMetadata')
+  expect_equal(result@statistics@data2Metadata, 'sampleMetadata')
+
+  # Check stats (all correlation outputs)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  nNumericCols <- length(veupathUtils::findNumericCols(sampleMetadata@data))
+  expect_equal(nrow(statsData), (nNumericCols * nNumericCols)) # Should be number of number of numeric vars * number of numeric vars
+  expect_equal(as.character(unique(statsData$data1)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_equal(as.character(unique(statsData$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_true(all(!is.na(statsData)))
+
+  ## With method = spearman
+  result <- selfCorrelation(sampleMetadata, method='spearman', verbose = FALSE)
+  # Check stats (all correlation outputs)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(nrow(statsData), (nNumericCols * nNumericCols)) # Should be number of taxa * number of metadata vars
+  expect_equal(as.character(unique(statsData$data1)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_equal(as.character(unique(statsData$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
+  expect_true(all(!is.na(statsData)))
+
+})
+
 test_that("correlation returns a ComputeResult with the correct slots" , {
 
   df <- testOTU
