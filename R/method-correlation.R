@@ -152,7 +152,7 @@ setMethod("correlation", signature("AbundanceData", "missing"), function(data1, 
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
 
-  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method, verbose)
+  result <- buildCorrelationComputeResult(corrResult, data1, data1@sampleMetadata, method, verbose)
   return(result)  
 })
 
