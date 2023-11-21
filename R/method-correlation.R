@@ -34,8 +34,6 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
   }
 
   # Check that all values are numeric
-  print(identical(veupathUtils::findNumericCols(data1), names(data1)))
-  print(names(data1)[!names(data1) %in% veupathUtils::findNumericCols(data1)])
   if (!identical(veupathUtils::findNumericCols(data1), names(data1))) { stop("All columns in data1 must be numeric.")}
   if (!identical(veupathUtils::findNumericCols(data2), names(data2))) { stop("All columns in data2 must be numeric.")}
 
@@ -149,11 +147,11 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' @export
 setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   abundances <- getAbundances(data1, FALSE, FALSE)
-  correlation(abundances, getSampleMetadata(data1, TRUE, FALSE), method, verbose)
+  corrResult <- correlation(abundances, getSampleMetadata(data1, TRUE, FALSE), method, verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
 
-  result <- buildCorrelationComputeResult(corrResult, data1, data2, method)
+  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method)
   return(result)  
 })
 
