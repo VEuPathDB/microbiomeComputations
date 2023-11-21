@@ -93,6 +93,54 @@ setMethod("correlation", signature("data.table", "missing"), function(data1, dat
 #' This function returns the correlation of all columns of an AbundanceData object with appropriate columns of a SampleMetadata object.
 #' 
 #' @param data1 AbundanceData object. Will correlate abundance variables with specified variables in data2
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param verbose boolean indicating if timed logging is desired
+#' @export
+setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  abundances <- getAbundances(data1, FALSE)
+  correlation(abndances, getSampleMetadata(data1), method, verbose)
+
+  computeMessage <- ''
+  veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "taxa."), verbose)
+
+  recordIdColumn <- data1@recordIdColumn
+  ancestorIdColumns <- data1@ancestorIdColumns
+  allIdColumns <- c(recordIdColumn, ancestorIdColumns)
+
+  ## Format results
+  # Construct the ComputeResult
+  result <- new("ComputeResult")
+  result@name <- 'correlation'
+  result@recordIdColumn <- recordIdColumn
+  result@ancestorIdColumns <- ancestorIdColumns
+  statistics <- CorrelationResult(
+    statistics = corrResult,
+    data1Metadata = "assay",
+    data2Metadata = "sampleMetadata"
+  )
+  result@statistics <- statistics
+  result@parameters <- paste0('method = ', method)
+
+
+  # The resulting data should contain only the samples actually used.
+  result@data <- abundances[, ..allIdColumns]
+  names(result@data) <- stripEntityIdFromColumnHeader(names(result@data))
+
+
+  validObject(result)
+  veupathUtils::logWithTime(paste('Correlation computation completed with parameters recordIdColumn=', recordIdColumn, ', method = ', method), verbose)
+  
+  return(result)  
+})
+
+
+
+#' Correlation of abundance data and metadata
+#' 
+#' This function returns the correlation of all columns of an AbundanceData object with appropriate columns of a SampleMetadata object.
+#' This is deprecated. Please use correlation(AbundanceData) instead.
+#' 
+#' @param data1 AbundanceData object. Will correlate abundance variables with specified variables in data2
 #' @param data2 SampleMetadata object. Will assume that all non-ID columns of metadata are appropriate for correlation.
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
