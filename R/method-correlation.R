@@ -59,6 +59,35 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 
 })
 
+#' Correlation
+#'
+#' This function returns correlation coefficients for all columns in one data table against themselves.
+#' 
+#' @param data1 data.table with columns as variables. All columns must be numeric. One row per sample.
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param verbose boolean indicating if timed logging is desired
+#' @return ComputeResult object
+setMethod("correlation", signature("data.table", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  # Check that all values are numeric
+  if (!identical(veupathUtils::findNumericCols(data1), names(data1))) { stop("All columns in data1 must be numeric.")}
+
+  ## Compute correlation
+  # rownames and colnames should be the same in this case
+  # na.or.complete removes rows with NAs, if no rows remain then correlation is NA
+  corrResult <- data.table::as.data.table(cor(data1, method = method, use='na.or.complete'), keep.rownames = T)
+  veupathUtils::logWithTime(paste0('Completed correlation with method=', method,'. Formatting results.'), verbose)
+
+  ## Format results
+  meltedCorrResult <- melt(corrResult, id.vars=c('rn'))
+  formattedCorrResult <- data.frame(
+    data1 = meltedCorrResult[['rn']],
+    data2 = meltedCorrResult[['variable']],
+    correlationCoef = meltedCorrResult[['value']]
+  )
+
+  return(formattedCorrResult)
+})
+
 #' Correlation of abundance data and metadata
 #' 
 #' This function returns the correlation of all columns of an AbundanceData object with appropriate columns of a SampleMetadata object.
