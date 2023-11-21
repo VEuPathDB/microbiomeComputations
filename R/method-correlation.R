@@ -183,7 +183,7 @@ setGeneric("selfCorrelation",
 #' @export
 setMethod("selfCorrelation", signature("AbundanceData"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   abundances <- getAbundances(data1, FALSE, FALSE)
-  corrResult <- correlation(abundances, method, verbose)
+  corrResult <- correlation(abundances, method=method, verbose=verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
 

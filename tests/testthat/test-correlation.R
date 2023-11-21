@@ -174,6 +174,49 @@ test_that("correlation returns an appropriately structured result for metadata v
 
 })
 
+test_that("correlation returns an appropriately structured result for assay vs assay", {
+  df <- testOTU
+  nSamples <- dim(df)[1]
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.contA" = rnorm(nSamples),
+      "entity.contB" = rnorm(nSamples),
+      "entity.contC" = rnorm(nSamples)
+      # "entity.dateA" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )
+
+  data <- microbiomeComputations::AbundanceData(
+              data = df,
+              sampleMetadata = sampleMetadata,
+              recordIdColumn = 'entity.SampleID')
+
+  result <- selfCorrelation(data, method='pearson', verbose = FALSE)
+  expect_equal(result@statistics@data1Metadata, 'assay')
+  expect_equal(result@statistics@data2Metadata, 'assay')
+
+  # Check stats (all correlation outputs)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(nrow(statsData), (ncol(testOTU) - 1) * (ncol(testOTU) - 1)) # Should be number of taxa * number of taxa
+  expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:length(names(testOTU))])
+  expect_equal(as.character(unique(statsData$data2)), names(testOTU)[2:length(names(testOTU))])
+  expect_true(all(!is.na(statsData)))
+
+  # method = spearman
+  result <- selfCorrelation(data, method='spearman', verbose = FALSE)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(nrow(statsData), (ncol(testOTU) - 1) * (ncol(testOTU) - 1)) # Should be number of taxa * number of taxa
+  expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:length(names(testOTU))])
+  expect_equal(as.character(unique(statsData$data2)), names(testOTU)[2:length(names(testOTU))])
+  expect_true(all(!is.na(statsData)))
+})
+
 test_that("correlation returns a ComputeResult with the correct slots" , {
 
   df <- testOTU
