@@ -148,7 +148,6 @@ setMethod("correlation", signature("AbundanceData", "missing"), function(data1, 
   abundances <- getAbundances(data1, FALSE)
   correlation(abndances, getSampleMetadata(data1), method, verbose)
 
-  computeMessage <- ''
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "taxa."), verbose)
 
   result <- buildCorrelationComputeResult(corrResult, data1, data2, method)
@@ -156,30 +155,87 @@ setMethod("correlation", signature("AbundanceData", "missing"), function(data1, 
 })
 
 # some things wed like in the future, ill put a skeleton here so we all know where were going
+
+#' Self Correlation
+#'
+#' This function returns correlation coefficients for variables in one dataset against itself
+#' 
+#' @param data1 first dataset. An AbundanceData object or data.table
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param verbose boolean indicating if timed logging is desired
+#' @return ComputeResult object
+#' @import veupathUtils
+#' @export
 setGeneric("selfCorrelation",
   function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), ...) standardGeneric("selfCorrelation"),
   signature = c("data1")
 )
 
+#' Self Correlation
+#'
+#' This function returns correlation coefficients for variables in one AbundanceData object against itself
+#' 
+#' @param data1 An AbundanceData object
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param verbose boolean indicating if timed logging is desired
+#' @return ComputeResult object
+#' @import veupathUtils
+#' @export
 setMethod("selfCorrelation", signature("AbundanceData"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   stop("Not yet implemented")
   correlation(getAbundances(data1, FALSE), method, verbose)
 })
 
+#' Self Correlation
+#'
+#' This function returns correlation coefficients for variables in one SampleMetadata object against itself
+#' 
+#' @param data1 SampleMetadata object
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param verbose boolean indicating if timed logging is desired
+#' @return ComputeResult object
+#' @import veupathUtils
+#' @export
 setMethod("selfCorrelation", signature("SampleMetadata"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   stop("Not yet implemented")
   correlation(data1, method, verbose)
 })
 
-# an alias
+#' Self Correlation
+#'
+#' This function returns correlation coefficients for variables in one data.table against itself.
+#' This is essentially an alias to the microbiomeComputations::correlation function.
+#' 
+#' @param data1 a data.table
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param verbose boolean indicating if timed logging is desired
+#' @return ComputeResult object
+#' @import veupathUtils
+#' @export
 setMethod("selfCorrelation", signature("data.table"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   correlation(data1, method, verbose)
 })
 
+#' Correlation of two AbundanceData objects
+#' 
+#' This function returns the correlation of all columns of an AbundanceData object with appropriate columns of a second AbundanceData object.
+#' 
+#' @param data1 AbundanceData object. 
+#' @param data2 AbundanceData object.
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param verbose boolean indicating if timed logging is desired
+#' @export
 setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   stop("Not yet implemented")
   correlation(getAbundances(data1, FALSE), getAbundances(data2, FALSE), method, verbose)
 })
+
+
+
+
+
+
+### DEPRECATED ###
 
 #' Correlation of abundance data and metadata
 #' 
