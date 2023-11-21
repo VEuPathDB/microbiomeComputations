@@ -100,8 +100,9 @@ getDataMetadataType <- function(data) {
 
 ## Helper function
 # should this be s4?
-buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, method = c('spearman','pearson')) {
+buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   method <- veupathUtils::matchArg(method)
+  verbose <- veupathUtils::matchArg(verbose)
   if (!inherits(data1, c("AbundanceData", "SampleMetadata"))) {
     stop('data1 must be an AbundanceData or SampleMetadata object')
   }
@@ -151,7 +152,7 @@ setMethod("correlation", signature("AbundanceData", "missing"), function(data1, 
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
 
-  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method)
+  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method, verbose)
   return(result)  
 })
 
@@ -186,7 +187,7 @@ setMethod("selfCorrelation", signature("AbundanceData"), function(data1, method 
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
 
-  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method)
+  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method, verbose)
   return(result)  
 })
 
@@ -205,7 +206,7 @@ setMethod("selfCorrelation", signature("SampleMetadata"), function(data1, method
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(data1), "samples and", (ncol(data1)-1), "variables."), verbose)
 
-  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method)
+  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method, verbose)
   return(result)
 })
 
@@ -242,7 +243,7 @@ setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(d
   veupathUtils::logWithTime(paste("Received first df table with", nrow(abundances1), "samples and", (ncol(abundances1)-1), "features with abundances."), verbose)
   veupathUtils::logWithTime(paste("Received second df table with", nrow(abundances2), "samples and", (ncol(abundances2)-1), "features with abundances."), verbose)
 
-  result <- buildCorrelationComputeResult(corrResult, data1, data2, method)
+  result <- buildCorrelationComputeResult(corrResult, data1, data2, method, verbose)
   return(result) 
 })
 
