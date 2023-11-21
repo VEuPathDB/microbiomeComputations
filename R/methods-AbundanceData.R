@@ -16,6 +16,7 @@ setGeneric("getAbundances",
 #'@export 
 setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreImputeZero = c(FALSE, TRUE), includeIds = c(TRUE, FALSE)) {
   ignoreImputeZero <- veupathUtils::matchArg(ignoreImputeZero)
+  includeIds <- veupathUtils::matchArg(includeIds)
   dt <- object@data
 
   # Check that incoming dt meets requirements
@@ -54,6 +55,7 @@ setGeneric("getSampleMetadata",
 #'@export 
 setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCopy = c(TRUE, FALSE), includeIds = c(TRUE, FALSE)) {
   asCopy <- veupathUtils::matchArg(asCopy)
+  includeIds <- veupathUtils::matchArg(includeIds)
   dt <- object@sampleMetadata@data
 
   # Check that incoming dt meets requirements
