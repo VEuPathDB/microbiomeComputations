@@ -19,7 +19,7 @@
 \item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
-ComputeResult object
+data.frame with correlation coefficients
 }
 \description{
 This function returns correlation coefficients for all columns in one data table against themselves.

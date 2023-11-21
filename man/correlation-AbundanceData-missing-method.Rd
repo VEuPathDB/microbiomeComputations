@@ -18,6 +18,9 @@
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }
+\value{
+a ComputeResult object
+}
 \description{
 This function returns the correlation of all columns of an AbundanceData object with appropriate columns of a SampleMetadata object.
 }
