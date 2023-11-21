@@ -133,7 +133,31 @@ setMethod("correlation", signature("AbundanceData", "missing"), function(data1, 
   return(result)  
 })
 
+# some things wed like in the future, ill put a skeleton here so we all know where were going
+setGeneric("selfCorrelation",
+  function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), ...) standardGeneric("selfCorrelation"),
+  signature = c("data1")
+)
 
+setMethod("selfCorrelation", signature("AbundanceData"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  stop("Not yet implemented")
+  correlation(getAbundances(data1, FALSE), method, verbose)
+})
+
+setMethod("selfCorrelation", signature("SampleMetadata"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  stop("Not yet implemented")
+  correlation(data1, method, verbose)
+})
+
+# an alias
+setMethod("selfCorrelation", signature("data.table"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  correlation(data1, method, verbose)
+})
+
+setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  stop("Not yet implemented")
+  correlation(getAbundances(data1, FALSE), getAbundances(data2, FALSE), method, verbose)
+})
 
 #' Correlation of abundance data and metadata
 #' 
