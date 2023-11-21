@@ -39,7 +39,7 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 
 
   ## Compute correlation
-  # Resulting data table has column "rn" = row names of the correlation matrix (so taxa names), and the other
+  # Resulting data table has column "rn" = row names of the correlation matrix (so taxa names, for example), and the other
   # column names are the vars from sample metadata that we use
   # na.or.complete removes rows with NAs, if no rows remain then correlation is NA
   corrResult <- data.table::as.data.table(cor(data1, data2, method = method, use='na.or.complete'), keep.rownames = T)
@@ -148,13 +148,11 @@ setMethod("correlation", signature("AbundanceData", "missing"), function(data1, 
   abundances <- getAbundances(data1, FALSE)
   correlation(abundances, getSampleMetadata(data1), method, verbose)
 
-  veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "taxa."), verbose)
+  veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
 
   result <- buildCorrelationComputeResult(corrResult, data1, data2, method)
   return(result)  
 })
-
-# some things wed like in the future, ill put a skeleton here so we all know where were going
 
 #' Self Correlation
 #'
@@ -185,7 +183,7 @@ setMethod("selfCorrelation", signature("AbundanceData"), function(data1, method 
   abundances <- getAbundances(data1, FALSE)
   corrResult <- correlation(abundances, method, verbose)
 
-  veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "taxa."), verbose)
+  veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
 
   result <- buildCorrelationComputeResult(corrResult, data1, NULL, method)
   return(result)  
@@ -239,8 +237,8 @@ setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(d
   abundances2 <- getAbundances(data2, FALSE)
   corrResult <- correlation(abundances1, abundances2, method, verbose)
 
-  veupathUtils::logWithTime(paste("Received first df table with", nrow(abundances1), "samples and", (ncol(abundances1)-1), "taxa."), verbose)
-  veupathUtils::logWithTime(paste("Received second df table with", nrow(abundances2), "samples and", (ncol(abundances2)-1), "taxa."), verbose)
+  veupathUtils::logWithTime(paste("Received first df table with", nrow(abundances1), "samples and", (ncol(abundances1)-1), "features with abundances."), verbose)
+  veupathUtils::logWithTime(paste("Received second df table with", nrow(abundances2), "samples and", (ncol(abundances2)-1), "features with abundances."), verbose)
 
   result <- buildCorrelationComputeResult(corrResult, data1, data2, method)
   return(result) 
@@ -288,7 +286,7 @@ setMethod("correlation", signature("AbundanceData", "SampleMetadata"), function(
 
 
   computeMessage <- ''
-  veupathUtils::logWithTime(paste("Received df table with", nrow(df1), "samples and", (ncol(df1)-1), "taxa."), verbose)
+  veupathUtils::logWithTime(paste("Received df table with", nrow(df1), "samples and", (ncol(df1)-1), "features with abundances."), verbose)
 
 
   ## Compute correlation
