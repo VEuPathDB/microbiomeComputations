@@ -222,7 +222,7 @@ setMethod("selfCorrelation", signature("SampleMetadata"), function(data1, method
 #' @import veupathUtils
 #' @export
 setMethod("selfCorrelation", signature("data.table"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  correlation(data1, method, verbose)
+  correlation(data1, method=method, verbose=verbose)
 })
 
 #' Correlation of two AbundanceData objects

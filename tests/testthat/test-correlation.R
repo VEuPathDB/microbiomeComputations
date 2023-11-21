@@ -36,6 +36,40 @@ test_that('correlation works with two data tables', {
 
 })
 
+test_that("correlation works with a single data table", {
+  nSamples = 200
+  testData1 <- data.table(
+    "contA1" = rnorm(nSamples),
+    "contB1" = rnorm(nSamples),
+    "contC1" = rnorm(nSamples)
+  )
+  corrResult <- correlation(testData1, method='spearman', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData1))
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
+  corrResult <- correlation(testData1, method='pearson', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData1))
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
+  #test alias
+  corrResult <- selfCorrelation(testData1, method='pearson', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData1))
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
+  # Test with NAs
+  # Should compute using complete cases. 
+  # This to try to catch regression back to the default behavior of cor, which returns results of NA if any value is NA
+  testData1$contA1[1] <- NA
+  corrResult <- correlation(testData1, method='pearson', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData1))
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
+})
+
 test_that('correlation returns an appropriately structured result for abundance data vs metadata', {
   df <- testOTU
   nSamples <- dim(df)[1]
