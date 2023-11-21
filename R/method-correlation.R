@@ -146,7 +146,7 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' @export
 setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   abundances <- getAbundances(data1, FALSE)
-  correlation(abndances, getSampleMetadata(data1), method, verbose)
+  correlation(abundances, getSampleMetadata(data1), method, verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "taxa."), verbose)
 
@@ -182,8 +182,13 @@ setGeneric("selfCorrelation",
 #' @import veupathUtils
 #' @export
 setMethod("selfCorrelation", signature("AbundanceData"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  stop("Not yet implemented")
-  correlation(getAbundances(data1, FALSE), method, verbose)
+  abundances <- getAbundances(data1, FALSE)
+  corrResult <- correlation(abundances, method, verbose)
+
+  veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "taxa."), verbose)
+
+  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method)
+  return(result)  
 })
 
 #' Self Correlation
@@ -197,8 +202,12 @@ setMethod("selfCorrelation", signature("AbundanceData"), function(data1, method 
 #' @import veupathUtils
 #' @export
 setMethod("selfCorrelation", signature("SampleMetadata"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  stop("Not yet implemented")
-  correlation(data1, method, verbose)
+  corrResult <- correlation(data1, method, verbose)
+
+  veupathUtils::logWithTime(paste("Received df table with", nrow(data1), "samples and", (ncol(data1)-1), "variables."), verbose)
+
+  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method)
+  return(result)
 })
 
 #' Self Correlation
@@ -226,8 +235,15 @@ setMethod("selfCorrelation", signature("data.table"), function(data1, method = c
 #' @param verbose boolean indicating if timed logging is desired
 #' @export
 setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  stop("Not yet implemented")
-  correlation(getAbundances(data1, FALSE), getAbundances(data2, FALSE), method, verbose)
+  abundances1 <- getAbundances(data1, FALSE)
+  abundances2 <- getAbundances(data2, FALSE)
+  corrResult <- correlation(abundances1, abundances2, method, verbose)
+
+  veupathUtils::logWithTime(paste("Received first df table with", nrow(abundances1), "samples and", (ncol(abundances1)-1), "taxa."), verbose)
+  veupathUtils::logWithTime(paste("Received second df table with", nrow(abundances2), "samples and", (ncol(abundances2)-1), "taxa."), verbose)
+
+  result <- buildCorrelationComputeResult(corrResult, data1, data2, method)
+  return(result) 
 })
 
 
