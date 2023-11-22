@@ -74,16 +74,14 @@ setMethod("correlation", signature("data.table", "missing"), function(data1, dat
   ## Compute correlation
   # rownames and colnames should be the same in this case
   # na.or.complete removes rows with NAs, if no rows remain then correlation is NA
-  corrResult <- data.table::as.data.table(cor(data1, method = method, use='na.or.complete'), keep.rownames = T)
+  corrResult <- cor(data1, method = method, use='na.or.complete'), keep.rownames = T
   veupathUtils::logWithTime(paste0('Completed correlation with method=', method,'. Formatting results.'), verbose)
 
   ## Format results
-  meltedCorrResult <- melt(corrResult, id.vars=c('rn'))
-  formattedCorrResult <- data.frame(
-    data1 = meltedCorrResult[['rn']],
-    data2 = meltedCorrResult[['variable']],
-    correlationCoef = meltedCorrResult[['value']]
-  )
+  rowAndColNames <- expand.grid(rownames(corrResult), colnames(corrResult))
+  deDupedRowAndColNames <- rowAndColNames[as.vector(upper.tri(corrResult)),]
+  formattedCorrResult <- cbind(deDupedRowAndColNames, corrResult[upper.tri(corrResult)])
+  colnames(formattedCorrResult) <- c("data1","data2","value")
 
   return(formattedCorrResult)
 })
