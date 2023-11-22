@@ -74,6 +74,7 @@ setMethod("correlation", signature("data.table", "missing"), function(data1, dat
   ## Compute correlation
   # rownames and colnames should be the same in this case
   # na.or.complete removes rows with NAs, if no rows remain then correlation is NA
+  # keep matrix for now so we can use lower.tri later, expand.grid will give us the needed data.frame
   corrResult <- cor(data1, method = method, use='na.or.complete')
   veupathUtils::logWithTime(paste0('Completed correlation with method=', method,'. Formatting results.'), verbose)
 
@@ -81,7 +82,7 @@ setMethod("correlation", signature("data.table", "missing"), function(data1, dat
   rowAndColNames <- expand.grid(rownames(corrResult), colnames(corrResult))
   deDupedRowAndColNames <- rowAndColNames[as.vector(upper.tri(corrResult)),]
   formattedCorrResult <- cbind(deDupedRowAndColNames, corrResult[upper.tri(corrResult)])
-  colnames(formattedCorrResult) <- c("data1","data2","value")
+  colnames(formattedCorrResult) <- c("data1","data2","correlationCoef")
 
   return(formattedCorrResult)
 })
