@@ -4,12 +4,18 @@
 \alias{getAbundances}
 \title{Get data.table of abundances from AbundanceData}
 \usage{
-getAbundances(object, ignoreImputeZero = c(FALSE, TRUE))
+getAbundances(
+  object,
+  ignoreImputeZero = c(FALSE, TRUE),
+  includeIds = c(TRUE, FALSE)
+)
 }
 \arguments{
 \item{object}{AbundanceData}
 
 \item{ignoreImputeZero}{boolean indicating whether we should respect the imputeZero slot}
+
+\item{includeIds}{boolean indicating whether we should include recordIdColumn and ancestorIdColumns}
 }
 \value{
 data.table of abundances

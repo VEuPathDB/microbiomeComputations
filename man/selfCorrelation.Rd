@@ -5,14 +5,14 @@
 \title{Self Correlation}
 \usage{
 selfCorrelation(
-  data1,
+  data,
   method = c("spearman", "pearson"),
   verbose = c(TRUE, FALSE),
   ...
 )
 }
 \arguments{
-\item{data1}{first dataset. An AbundanceData object or data.table}
+\item{data}{first dataset. An AbundanceData object or data.table}
 
 \item{method}{string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'}
 

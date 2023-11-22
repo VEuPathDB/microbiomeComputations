@@ -5,13 +5,13 @@
 \title{Self Correlation}
 \usage{
 \S4method{selfCorrelation}{SampleMetadata}(
-  data1,
+  data,
   method = c("spearman", "pearson"),
   verbose = c(TRUE, FALSE)
 )
 }
 \arguments{
-\item{data1}{SampleMetadata object}
+\item{data}{SampleMetadata object}
 
 \item{method}{string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'}
 

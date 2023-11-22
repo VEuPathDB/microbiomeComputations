@@ -4,12 +4,14 @@
 \alias{getSampleMetadata}
 \title{Get data.table of sample metadata from AbundanceData}
 \usage{
-getSampleMetadata(object, asCopy = c(TRUE, FALSE))
+getSampleMetadata(object, asCopy = c(TRUE, FALSE), includeIds = c(TRUE, FALSE))
 }
 \arguments{
 \item{object}{AbundanceData}
 
 \item{asCopy}{boolean indicating whether to return the data as a copy or by reference}
+
+\item{includeIds}{boolean indicating whether we should include recordIdColumn and ancestorIdColumns}
 }
 \value{
 data.table of sample metadata
