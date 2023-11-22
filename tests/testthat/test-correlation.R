@@ -220,10 +220,10 @@ test_that("correlation returns an appropriately structured result for assay agai
 test_that("correlation returns an appropriately structured result for assay vs assay", {
   df1 <- testOTU[, 1:500]
   df2 <- testOTU[,c(1,501:909)]
-  nSamples <- dim(df)[1]
+  nSamples <- dim(df1)[1]
   sampleMetadata <- SampleMetadata(
     data = data.frame(list(
-      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.SampleID" = df1[["entity.SampleID"]],
       "entity.contA" = rnorm(nSamples),
       "entity.contB" = rnorm(nSamples),
       "entity.contC" = rnorm(nSamples)
