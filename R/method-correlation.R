@@ -160,34 +160,34 @@ setMethod("correlation", signature("AbundanceData", "missing"), function(data1, 
 #'
 #' This function returns correlation coefficients for variables in one dataset against itself
 #' 
-#' @param data1 first dataset. An AbundanceData object or data.table
+#' @param data first dataset. An AbundanceData object or data.table
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
 setGeneric("selfCorrelation",
-  function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), ...) standardGeneric("selfCorrelation"),
-  signature = c("data1")
+  function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), ...) standardGeneric("selfCorrelation"),
+  signature = c("data")
 )
 
 #' Self Correlation
 #'
 #' This function returns correlation coefficients for variables in one AbundanceData object against itself
 #' 
-#' @param data1 An AbundanceData object
+#' @param data An AbundanceData object
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
-setMethod("selfCorrelation", signature("AbundanceData"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  abundances <- getAbundances(data1, FALSE, FALSE)
+setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  abundances <- getAbundances(data, FALSE, FALSE)
   corrResult <- correlation(abundances, method=method, verbose=verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
 
-  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method, verbose)
+  result <- buildCorrelationComputeResult(corrResult, data, NULL, method, verbose)
   return(result)  
 })
 
@@ -195,18 +195,18 @@ setMethod("selfCorrelation", signature("AbundanceData"), function(data1, method 
 #'
 #' This function returns correlation coefficients for variables in one SampleMetadata object against itself
 #' 
-#' @param data1 SampleMetadata object
+#' @param data SampleMetadata object
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
-setMethod("selfCorrelation", signature("SampleMetadata"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  corrResult <- correlation(getSampleMetadata(data1, TRUE, FALSE), method=method, verbose=verbose)
+setMethod("selfCorrelation", signature("SampleMetadata"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  corrResult <- correlation(getSampleMetadata(data, TRUE, FALSE), method=method, verbose=verbose)
 
-  veupathUtils::logWithTime(paste("Received df table with", nrow(data1), "samples and", (ncol(data1)-1), "variables."), verbose)
+  veupathUtils::logWithTime(paste("Received df table with", nrow(data1), "samples and", (ncol(data)-1), "variables."), verbose)
 
-  result <- buildCorrelationComputeResult(corrResult, data1, NULL, method, verbose)
+  result <- buildCorrelationComputeResult(corrResult, data, NULL, method, verbose)
   return(result)
 })
 
@@ -215,14 +215,14 @@ setMethod("selfCorrelation", signature("SampleMetadata"), function(data1, method
 #' This function returns correlation coefficients for variables in one data.table against itself.
 #' This is essentially an alias to the microbiomeComputations::correlation function.
 #' 
-#' @param data1 a data.table
+#' @param data a data.table
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
-setMethod("selfCorrelation", signature("data.table"), function(data1, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  correlation(data1, method=method, verbose=verbose)
+setMethod("selfCorrelation", signature("data.table"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  correlation(data, method=method, verbose=verbose)
 })
 
 #' Correlation of two AbundanceData objects
