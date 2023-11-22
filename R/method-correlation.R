@@ -74,7 +74,7 @@ setMethod("correlation", signature("data.table", "missing"), function(data1, dat
   ## Compute correlation
   # rownames and colnames should be the same in this case
   # na.or.complete removes rows with NAs, if no rows remain then correlation is NA
-  corrResult <- cor(data1, method = method, use='na.or.complete'), keep.rownames = T
+  corrResult <- cor(data1, method = method, use='na.or.complete')
   veupathUtils::logWithTime(paste0('Completed correlation with method=', method,'. Formatting results.'), verbose)
 
   ## Format results
