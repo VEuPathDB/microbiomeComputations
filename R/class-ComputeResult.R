@@ -29,32 +29,29 @@ check_compute_result <- function(object) {
         msg <- paste("Some specified computed variables have the wrong variable class.")
         errors <- c(errors, msg) 
       }
-
+    
+      # if we have computed variable metadata, we should have data and vice versa
+      if (!length(object@data) || nrow(object@data) == 0) {
+        msg <- "Compute result must include computed variable metadata or data."
+        errors <- c(errors, msg)
+      } else {
+        if (any(grepl(".", names(object@data), fixed = TRUE))) {
+          msg <- paste("Column headers appear to be in dot notation [entityId.variableId]. They should be the raw variableId.")
+          errors <- c(errors, msg)
+        }
+    
+        expectedOutputIdColHeaders <- stripEntityIdFromColumnHeader(c(object@recordIdColumn, object@ancestorIdColumns))
+        actualOutputIdColHeaders <- names(object@data)[1:length(expectedOutputIdColHeaders)]
+        if (all(expectedOutputIdColHeaders != actualOutputIdColHeaders)) {
+          msg <- paste("Columns must be ordered by recordIdColumn, ancestorIdColumns, and then data columns.")
+          errors <- c(errors, msg) 
+        }
+      }      
     } else if (!length(object@statistics)) {
       msg <- "Compute result must include computed variable metadata or statistics."
       errors <- c(errors, msg)
     }
    
-
-
-    if (any(grepl(".", names(object@data), fixed = TRUE))) {
-      msg <- paste("Column headers appear to be in dot notation [entityId.variableId]. They should be the raw variableId.")
-      errors <- c(errors, msg)
-    }
-    
-    expectedOutputIdColHeaders <- stripEntityIdFromColumnHeader(c(object@recordIdColumn, object@ancestorIdColumns))
-    actualOutputIdColHeaders <- names(object@data)[1:length(expectedOutputIdColHeaders)]
-    if (all(expectedOutputIdColHeaders != actualOutputIdColHeaders)) {
-      msg <- paste("Columns must be ordered by recordIdColumn, ancestorIdColumns, and then data columns.")
-      errors <- c(errors, msg) 
-    }
-
-    # think we always want a data.table by now, not sure how to enforce that in the class def
-    #if (!'data.table' %in% class(object@data)) {
-    #  msg <- paste("Compute result data object should be a data.table")
-    #  errors <- c(errors, msg)
-    #}
-
     return(if (length(errors) == 0) TRUE else errors)
 }
 

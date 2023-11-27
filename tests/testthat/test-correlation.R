@@ -36,6 +36,40 @@ test_that('correlation works with two data tables', {
 
 })
 
+test_that("correlation works with a single data table", {
+  nSamples = 200
+  testData1 <- data.table(
+    "contA1" = rnorm(nSamples),
+    "contB1" = rnorm(nSamples),
+    "contC1" = rnorm(nSamples)
+  )
+  corrResult <- correlation(testData1, method='spearman', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
+  corrResult <- correlation(testData1, method='pearson', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
+  #test alias
+  corrResult <- selfCorrelation(testData1, method='pearson', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
+  # Test with NAs
+  # Should compute using complete cases. 
+  # This to try to catch regression back to the default behavior of cor, which returns results of NA if any value is NA
+  testData1$contA1[1] <- NA
+  corrResult <- correlation(testData1, method='pearson', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
+})
+
 test_that('correlation returns an appropriately structured result for abundance data vs metadata', {
   df <- testOTU
   nSamples <- dim(df)[1]
@@ -57,12 +91,7 @@ test_that('correlation returns an appropriately structured result for abundance 
               recordIdColumn = 'entity.SampleID')
   
   ## All numeric sample variables
-  result <- correlation(data, sampleMetadata, 'pearson', verbose = FALSE)
-  # Check data (only sample ids)
-  dt <- result@data
-  expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), c('SampleID'))
-  expect_equal(nrow(dt), nSamples)
+  result <- correlation(data, method='pearson', verbose = FALSE)
   # Check stats (all correlation outputs)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
@@ -74,12 +103,7 @@ test_that('correlation returns an appropriately structured result for abundance 
 
 
   ## With method = spearman
-  result <- correlation(data, sampleMetadata, 'spearman', verbose = FALSE)
-  # Check data (only sample ids)
-  dt <- result@data
-  expect_s3_class(dt, 'data.table')
-  expect_equal(names(dt), c('SampleID'))
-  expect_equal(nrow(dt), nSamples)
+  result <- correlation(data, method='spearman', verbose = FALSE)
   # Check stats (all correlation outputs)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
@@ -109,6 +133,139 @@ test_that('correlation returns an appropriately structured result for abundance 
 })
 
 
+test_that("correlation returns an appropriately structured result for metadata vs metadata", {
+  df <- testOTU
+  nSamples <- dim(df)[1]
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.contA" = rnorm(nSamples),
+      "entity.contB" = rnorm(nSamples),
+      "entity.contC" = rnorm(nSamples)
+      # "entity.dateA" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )              
+
+  result <- selfCorrelation(sampleMetadata, method='pearson', verbose = FALSE)
+  expect_equal(result@statistics@data1Metadata, 'sampleMetadata')
+  expect_equal(result@statistics@data2Metadata, 'sampleMetadata')
+
+  # Check stats (all correlation outputs)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  nNumericCols <- length(veupathUtils::findNumericCols(sampleMetadata@data))
+  expect_equal(nrow(statsData), ((nNumericCols * nNumericCols) - 3)/2) # Should be number of number of numeric vars * number of numeric vars
+  expect_equal(as.character(unique(statsData$data1)), c('entity.contA', 'entity.contB'))
+  expect_equal(as.character(unique(statsData$data2)), c('entity.contB', 'entity.contC'))
+  expect_true(all(!is.na(statsData)))
+
+  ## With method = spearman
+  result <- selfCorrelation(sampleMetadata, method='spearman', verbose = FALSE)
+  # Check stats (all correlation outputs)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(nrow(statsData), ((nNumericCols * nNumericCols) - 3)/2) # Should be number of taxa * number of metadata vars
+  expect_equal(as.character(unique(statsData$data1)), c('entity.contA', 'entity.contB'))
+  expect_equal(as.character(unique(statsData$data2)), c('entity.contB', 'entity.contC'))
+  expect_true(all(!is.na(statsData)))
+
+})
+
+test_that("correlation returns an appropriately structured result for assay against self", {
+  df <- testOTU
+  nSamples <- dim(df)[1]
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.contA" = rnorm(nSamples),
+      "entity.contB" = rnorm(nSamples),
+      "entity.contC" = rnorm(nSamples)
+      # "entity.dateA" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )
+
+  data <- microbiomeComputations::AbundanceData(
+              data = df,
+              sampleMetadata = sampleMetadata,
+              recordIdColumn = 'entity.SampleID')
+
+  result <- selfCorrelation(data, method='pearson', verbose = FALSE)
+  expect_equal(result@statistics@data1Metadata, 'assay')
+  expect_equal(result@statistics@data2Metadata, 'assay')
+
+  # Check stats (all correlation outputs)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(nrow(statsData), ((ncol(testOTU) - 1) * (ncol(testOTU) - 1) - (ncol(testOTU) - 1))/2) # Should be number of taxa * number of taxa
+  expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:(length(names(testOTU))-1)])
+  expect_equal(as.character(unique(statsData$data2)), names(testOTU)[3:length(names(testOTU))])
+  expect_true(all(!is.na(statsData)))
+
+  # method = spearman
+  result <- selfCorrelation(data, method='spearman', verbose = FALSE)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(nrow(statsData), ((ncol(testOTU) - 1) * (ncol(testOTU) - 1) - (ncol(testOTU) - 1))/2) # Should be number of taxa * number of taxa
+  expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:(length(names(testOTU)) - 1)])
+  expect_equal(as.character(unique(statsData$data2)), names(testOTU)[3:length(names(testOTU))])
+  expect_true(all(!is.na(statsData)))
+})
+
+test_that("correlation returns an appropriately structured result for assay vs assay", {
+  df1 <- testOTU[, 1:500]
+  df2 <- testOTU[,c(1,501:909)]
+  nSamples <- dim(df1)[1]
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df1[["entity.SampleID"]],
+      "entity.contA" = rnorm(nSamples),
+      "entity.contB" = rnorm(nSamples),
+      "entity.contC" = rnorm(nSamples)
+      # "entity.dateA" = sample(seq(as.Date('1999/01/01'), as.Date('2000/01/01'), by="day"), nSamples)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )
+
+  data1 <- microbiomeComputations::AbundanceData(
+              data = df1,
+              sampleMetadata = sampleMetadata,
+              recordIdColumn = 'entity.SampleID')
+
+  data2 <- microbiomeComputations::AbundanceData(
+              data = df2,
+              sampleMetadata = sampleMetadata,
+              recordIdColumn = 'entity.SampleID')
+  
+  ## All numeric sample variables
+  result <- correlation(data1, data2, method='pearson', verbose = FALSE)
+  # Check stats (all correlation outputs)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(nrow(statsData), (ncol(df1) - 1) * (ncol(df2) - 1)) # Should be number of taxa in df1 * number of taxa in df2
+  expect_equal(as.character(unique(statsData$data1)), names(df1)[2:length(names(df1))])
+  expect_equal(as.character(unique(statsData$data2)), names(df2)[2:length(names(df2))])
+  expect_true(all(!is.na(statsData)))
+
+
+  ## With method = spearman
+  result <- correlation(data1, data2, method='spearman', verbose = FALSE)
+  # Check stats (all correlation outputs)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(nrow(statsData), (ncol(df1) - 1) * (ncol(df2) - 1)) # Should be number of taxa in df1 * number of taxa in df2
+  expect_equal(as.character(unique(statsData$data1)), names(df1)[2:length(names(df1))])
+  expect_equal(as.character(unique(statsData$data2)), names(df2)[2:length(names(df2))])
+  expect_true(all(!is.na(statsData)))
+})
+
 test_that("correlation returns a ComputeResult with the correct slots" , {
 
   df <- testOTU
@@ -127,17 +284,18 @@ test_that("correlation returns a ComputeResult with the correct slots" , {
 
   data <- microbiomeComputations::AbundanceData(
               data = df,
+              sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
 
   ## Pearson
-  result <- correlation(data, sampleMetadata, 'pearson', verbose = FALSE)
+  result <- correlation(data, method='pearson', verbose = FALSE)
   expect_equal(result@parameters, 'method = pearson')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
   expect_equal(result@statistics@data1Metadata, 'assay')
   expect_equal(result@statistics@data2Metadata, 'sampleMetadata')
 
   ## With spearman
-  result <- correlation(data, sampleMetadata, 'spearman', verbose = FALSE)
+  result <- correlation(data, method='spearman', verbose = FALSE)
   expect_equal(result@parameters, 'method = spearman')
   expect_equal(result@recordIdColumn, 'entity.SampleID')
   expect_equal(result@statistics@data1Metadata, 'assay')
@@ -165,17 +323,17 @@ test_that("correlation fails with improper inputs", {
 
   data <- microbiomeComputations::AbsoluteAbundanceData(
               data = counts,
-              # sampleMetadata = sampleMetadata,
+              sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
 
   data@sampleMetadata <- sampleMetadata
 
   # Fail when we send in only categorical metadata
-  expect_error(correlation(data, sampleMetadata, verbose=F))
+  expect_error(correlation(data, verbose=F))
 
   # Fail when sample metadata is missing a sample
   sampleMetadata@data <- sampleMetadata@data[-1, ]
-  expect_error(corrleation(data, sampleMetadata, verbose=F))
+  expect_error(corrleation(data, verbose=F))
 })
 
 test_that("toJSON works as expected for the CorrelationResult class", {
@@ -196,9 +354,10 @@ test_that("toJSON works as expected for the CorrelationResult class", {
 
   data <- microbiomeComputations::AbundanceData(
               data = df,
+              sampleMetadata = sampleMetadata,
               recordIdColumn = 'entity.SampleID')
 
-  result <- correlation(data, sampleMetadata, 'pearson', verbose = FALSE)
+  result <- correlation(data, method='pearson', verbose = FALSE)
   jsonList <- jsonlite::fromJSON(toJSON(result@statistics))
   expect_equal(names(jsonList), c('data1Metadata', 'data2Metadata', 'statistics'))
   expect_equal(class(jsonList$data1Metadata), "character")

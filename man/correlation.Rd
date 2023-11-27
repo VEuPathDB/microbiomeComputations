@@ -22,7 +22,7 @@ correlation(
 \item{verbose}{boolean indicating if timed logging is desired}
 }
 \value{
-ComputeResult object
+data.frame with correlation coefficients or a ComputeResult object
 }
 \description{
 This function returns correlation coefficients for variables in one dataset against variables in a second dataset

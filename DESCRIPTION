@@ -55,6 +55,7 @@ Collate:
     'methods-AbundanceData.R'
     'methods-Comparator.R'
     'methods-ComputeResult.R'
+    'methods-SampleMetadata.R'
     'methods-json.R'
     'microbiomeComputations-package.R'
     'utils.R'
