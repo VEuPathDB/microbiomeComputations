@@ -25,6 +25,7 @@ setGeneric("correlation",
 #' @param data2 data.table with columns as variables. All columns must be numeric. One row per sample. Will correlate all columns of data2 with all columns of data1.
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
+#' @importFrom Hmisc rcorr
 #' @return data.frame with correlation coefficients
 setMethod("correlation", signature("data.table", "data.table"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
 
@@ -39,10 +40,14 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 
 
   ## Compute correlation
-  # Resulting data table has column "rn" = row names of the correlation matrix (so taxa names, for example), and the other
-  # column names are the vars from sample metadata that we use
-  # na.or.complete removes rows with NAs, if no rows remain then correlation is NA
-  corrResult <- data.table::as.data.table(cor(data1, data2, method = method, use='na.or.complete'), keep.rownames = T)
+  #corrResult <- data.table::as.data.table(cor(data1, data2, method = method, use='na.or.complete'), keep.rownames = T)
+  numData1Cols <- length(data1)
+  numData2Cols <- length(data2)
+  corrResult <- Hmisc::rcorr(as.matrix(data1), as.matrix(data2), type = method)
+  # this bc Hmisc::rcorr cbinds the two data.tables and runs the correlation
+  # so we need to extract only the relevant values
+  pVals <- data.table::as.data.table(corrResult$P[1:numData1Cols, 1:numData2Cols], keep.rownames = T)
+  corrResult <- data.table::as.data.table(corrResult$r[1:numData1Cols, 1:numData2Cols], keep.rownames = T)
 
   veupathUtils::logWithTime(paste0('Completed correlation with method=', method,'. Formatting results.'), verbose)
 
@@ -53,6 +58,11 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
     data1 = meltedCorrResult[['rn']],
     data2 = meltedCorrResult[['variable']],
     correlationCoef = meltedCorrResult[['value']]
+  )
+  meltedPVals <- melt(pVals, id.vars=c('rn'))
+  formattedCorrResult <- data.frame(
+    formattedCorrResult,
+    pValue = meltedPVals[['value']]
   )
 
   return(formattedCorrResult)
