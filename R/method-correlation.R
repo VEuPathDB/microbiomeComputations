@@ -54,19 +54,15 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 
   ## Format results
   meltedCorrResult <- melt(corrResult, id.vars=c('rn'))
+  meltedPVals <- melt(pVals, id.vars=c('rn'))
   formattedCorrResult <- data.frame(
     data1 = meltedCorrResult[['rn']],
     data2 = meltedCorrResult[['variable']],
-    correlationCoef = meltedCorrResult[['value']]
-  )
-  meltedPVals <- melt(pVals, id.vars=c('rn'))
-  formattedCorrResult <- data.frame(
-    formattedCorrResult,
+    correlationCoef = meltedCorrResult[['value']],
     pValue = meltedPVals[['value']]
   )
 
   return(formattedCorrResult)
-
 })
 
 #' Correlation
