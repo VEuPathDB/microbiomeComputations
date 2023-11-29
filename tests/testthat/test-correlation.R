@@ -16,12 +16,12 @@ test_that('correlation works with two data tables', {
   )
 
   corrResult <- correlation(testData1, testData2, 'spearman', verbose=F)
-  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData2))
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
   corrResult <- correlation(testData1, testData2, 'pearson', verbose=F)
-  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData2))
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
@@ -30,7 +30,7 @@ test_that('correlation works with two data tables', {
   # This to try to catch regression back to the default behavior of cor, which returns results of NA if any value is NA
   testData2$contA2[1] <- NA
   corrResult <- correlation(testData1, testData2, 'pearson', verbose=F)
-  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), ncol(testData1) * ncol(testData2))
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
@@ -44,18 +44,18 @@ test_that("correlation works with a single data table", {
     "contC1" = rnorm(nSamples)
   )
   corrResult <- correlation(testData1, method='spearman', verbose=F)
-  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
   corrResult <- correlation(testData1, method='pearson', verbose=F)
-  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
   #test alias
   corrResult <- selfCorrelation(testData1, method='pearson', verbose=F)
-  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
@@ -64,7 +64,7 @@ test_that("correlation works with a single data table", {
   # This to try to catch regression back to the default behavior of cor, which returns results of NA if any value is NA
   testData1$contA1[1] <- NA
   corrResult <- correlation(testData1, method='pearson', verbose=F)
-  expect_equal(names(corrResult), c("data1","data2","correlationCoef"))
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
@@ -95,7 +95,7 @@ test_that('correlation returns an appropriately structured result for abundance 
   # Check stats (all correlation outputs)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
-  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   expect_equal(nrow(statsData), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
   expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:length(names(testOTU))])
   expect_equal(as.character(unique(statsData$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
@@ -107,7 +107,7 @@ test_that('correlation returns an appropriately structured result for abundance 
   # Check stats (all correlation outputs)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
-  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   expect_equal(nrow(statsData), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
   expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:length(names(testOTU))])
   expect_equal(as.character(unique(statsData$data2)), c('entity.contA', 'entity.contB', 'entity.contC'))
@@ -154,7 +154,7 @@ test_that("correlation returns an appropriately structured result for metadata v
   # Check stats (all correlation outputs)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
-  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   nNumericCols <- length(veupathUtils::findNumericCols(sampleMetadata@data))
   expect_equal(nrow(statsData), ((nNumericCols * nNumericCols) - 3)/2) # Should be number of number of numeric vars * number of numeric vars
   expect_equal(as.character(unique(statsData$data1)), c('entity.contA', 'entity.contB'))
@@ -166,7 +166,7 @@ test_that("correlation returns an appropriately structured result for metadata v
   # Check stats (all correlation outputs)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
-  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   expect_equal(nrow(statsData), ((nNumericCols * nNumericCols) - 3)/2) # Should be number of taxa * number of metadata vars
   expect_equal(as.character(unique(statsData$data1)), c('entity.contA', 'entity.contB'))
   expect_equal(as.character(unique(statsData$data2)), c('entity.contB', 'entity.contC'))
@@ -200,7 +200,7 @@ test_that("correlation returns an appropriately structured result for assay agai
   # Check stats (all correlation outputs)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
-  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   expect_equal(nrow(statsData), ((ncol(testOTU) - 1) * (ncol(testOTU) - 1) - (ncol(testOTU) - 1))/2) # Should be number of taxa * number of taxa
   expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:(length(names(testOTU))-1)])
   expect_equal(as.character(unique(statsData$data2)), names(testOTU)[3:length(names(testOTU))])
@@ -210,7 +210,7 @@ test_that("correlation returns an appropriately structured result for assay agai
   result <- selfCorrelation(data, method='spearman', verbose = FALSE)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
-  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   expect_equal(nrow(statsData), ((ncol(testOTU) - 1) * (ncol(testOTU) - 1) - (ncol(testOTU) - 1))/2) # Should be number of taxa * number of taxa
   expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:(length(names(testOTU)) - 1)])
   expect_equal(as.character(unique(statsData$data2)), names(testOTU)[3:length(names(testOTU))])
@@ -247,7 +247,7 @@ test_that("correlation returns an appropriately structured result for assay vs a
   # Check stats (all correlation outputs)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
-  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   expect_equal(nrow(statsData), (ncol(df1) - 1) * (ncol(df2) - 1)) # Should be number of taxa in df1 * number of taxa in df2
   expect_equal(as.character(unique(statsData$data1)), names(df1)[2:length(names(df1))])
   expect_equal(as.character(unique(statsData$data2)), names(df2)[2:length(names(df2))])
@@ -259,7 +259,7 @@ test_that("correlation returns an appropriately structured result for assay vs a
   # Check stats (all correlation outputs)
   statsData <- result@statistics@statistics
   expect_s3_class(statsData, 'data.frame')
-  expect_equal(names(statsData), c('data1','data2','correlationCoef'))
+  expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   expect_equal(nrow(statsData), (ncol(df1) - 1) * (ncol(df2) - 1)) # Should be number of taxa in df1 * number of taxa in df2
   expect_equal(as.character(unique(statsData$data1)), names(df1)[2:length(names(df1))])
   expect_equal(as.character(unique(statsData$data2)), names(df2)[2:length(names(df2))])
@@ -362,6 +362,6 @@ test_that("toJSON works as expected for the CorrelationResult class", {
   expect_equal(names(jsonList), c('data1Metadata', 'data2Metadata', 'statistics'))
   expect_equal(class(jsonList$data1Metadata), "character")
   expect_equal(class(jsonList$data2Metadata), "character")
-  expect_equal(names(jsonList$statistics), c('data1', 'data2', 'correlationCoef'))
-  expect_equal(unname(unlist(lapply(jsonList$statistics, class))), c('character', 'character', 'character'))
+  expect_equal(names(jsonList$statistics), c('data1', 'data2', 'correlationCoef', 'pValue'))
+  expect_equal(unname(unlist(lapply(jsonList$statistics, class))), c('character', 'character', 'character', 'character'))
 })
