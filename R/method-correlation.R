@@ -59,6 +59,7 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
     data1 = meltedCorrResult[['rn']],
     data2 = meltedCorrResult[['variable']],
     correlationCoef = meltedCorrResult[['value']],
+    # should we do a merge just to be sure?
     pValue = meltedPVals[['value']]
   )
 
@@ -81,14 +82,18 @@ setMethod("correlation", signature("data.table", "missing"), function(data1, dat
   # rownames and colnames should be the same in this case
   # na.or.complete removes rows with NAs, if no rows remain then correlation is NA
   # keep matrix for now so we can use lower.tri later, expand.grid will give us the needed data.frame
-  corrResult <- cor(data1, method = method, use='na.or.complete')
+  corrResult <- Hmisc::rcorr(data1, type = method)
+  pVals <- data.table::as.data.table(corrResult$P, keep.rownames = T)
+  corrResult <- data.table::as.data.table(corrResult$r, keep.rownames = T)
+
   veupathUtils::logWithTime(paste0('Completed correlation with method=', method,'. Formatting results.'), verbose)
 
   ## Format results
   rowAndColNames <- expand.grid(rownames(corrResult), colnames(corrResult))
   deDupedRowAndColNames <- rowAndColNames[as.vector(upper.tri(corrResult)),]
   formattedCorrResult <- cbind(deDupedRowAndColNames, corrResult[upper.tri(corrResult)])
-  colnames(formattedCorrResult) <- c("data1","data2","correlationCoef")
+  formattedCorrResult <- cbind(formattedCorrResult, pVals[upper.tri(pVals)])
+  colnames(formattedCorrResult) <- c("data1","data2","correlationCoef","pValue")
 
   return(formattedCorrResult)
 })
