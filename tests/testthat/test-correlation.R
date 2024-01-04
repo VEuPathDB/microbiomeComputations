@@ -114,8 +114,30 @@ test_that('correlation returns an appropriately structured result for abundance 
   expect_true(all(!is.na(statsData)))
 
 
+  # with a single metadata var
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.contA" = rnorm(nSamples)
+      )),
+    recordIdColumn = "entity.SampleID"
+  )
 
-  
+  data <- microbiomeComputations::AbundanceData(
+              data = df,
+              sampleMetadata = sampleMetadata,
+              recordIdColumn = 'entity.SampleID')
+
+  result <- correlation(data, method='spearman', verbose = FALSE)
+  # Check stats (all correlation outputs)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
+  expect_equal(nrow(statsData), (ncol(testOTU) - 1) * length(veupathUtils::findNumericCols(sampleMetadata@data))) # Should be number of taxa * number of metadata vars
+  expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:length(names(testOTU))])
+  expect_equal(as.character(unique(statsData$data2)), c('entity.contA'))
+  expect_true(all(!is.na(statsData)))
+
   # ## With a date <3
   #   variables <- new("VariableMetadataList", SimpleList(
   #   new("VariableMetadata",
