@@ -70,6 +70,9 @@ setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCo
   if (!includeIds) {
     allIdColumns <- c(object@recordIdColumn, object@ancestorIdColumns)
     dt <- dt[, -..allIdColumns]
+    if (nrow(dt) == 0) {
+      warning("AbundanceData object has no sample metadata. Returning empty data.table from getSampleMetadata.")
+    }
   }
 
   return(dt)
