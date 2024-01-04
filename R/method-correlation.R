@@ -28,6 +28,8 @@ setGeneric("correlation",
 #' @importFrom Hmisc rcorr
 #' @return data.frame with correlation coefficients
 setMethod("correlation", signature("data.table", "data.table"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  method <- veupathUtils::matchArg(method)
+  verbose <- veupathUtils::matchArg(verbose)
 
   # Check that the number of rows match.
   if (!identical(nrow(data1), nrow(data2))) {
@@ -46,8 +48,9 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
   corrResult <- Hmisc::rcorr(as.matrix(data1), as.matrix(data2), type = method)
   # this bc Hmisc::rcorr cbinds the two data.tables and runs the correlation
   # so we need to extract only the relevant values
-  pVals <- data.table::as.data.table(corrResult$P[1:lastData1ColIndex, firstData2ColIndex:length(colnames(corrResult$P))], keep.rownames = T)
-  corrResult <- data.table::as.data.table(corrResult$r[1:lastData1ColIndex, firstData2ColIndex:length(colnames(corrResult$r))], keep.rownames = T)
+  # of note, seems subsetting a matrix to have a single row/ column drops rownames by default. adding drop=F to prevent this.
+  pVals <- data.table::as.data.table(corrResult$P[1:lastData1ColIndex, firstData2ColIndex:length(colnames(corrResult$P)), drop = F], keep.rownames = T)
+  corrResult <- data.table::as.data.table(corrResult$r[1:lastData1ColIndex, firstData2ColIndex:length(colnames(corrResult$r)), drop = F], keep.rownames = T)
 
   veupathUtils::logWithTime(paste0('Completed correlation with method=', method,'. Formatting results.'), verbose)
 
@@ -75,6 +78,9 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.frame with correlation coefficients
 setMethod("correlation", signature("data.table", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  method <- veupathUtils::matchArg(method)
+  verbose <- veupathUtils::matchArg(verbose)
+
   # Check that all values are numeric
   if (!identical(veupathUtils::findNumericCols(data1), names(data1))) { stop("All columns in data1 must be numeric.")}
 
