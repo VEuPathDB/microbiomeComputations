@@ -40,4 +40,19 @@ test_that('AbundanceData validation works', {
   expect_equal(testing@recordIdColumn, 'entity.SampleID')
   expect_equal(testing@ancestorIdColumns, character(0))
   expect_true(testing@imputeZero)
+
+
+  sampleMetadata <- microbiomeComputations::SampleMetadata(
+    data = df[, 'entity.SampleID', with=F],
+    recordIdColumn = 'entity.SampleID'
+  )
+
+  expect_error(
+    microbiomeComputations::AbundanceData(
+      data = df,
+      sampleMetadata = sampleMetadata,
+      recordIdColumn = 'entity.SampleID'
+    )
+  )
+
 })
