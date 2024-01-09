@@ -41,7 +41,7 @@ check_abundance_data <- function(object) {
         errors <- c(errors, msg)
       }
       if (setequal(names(sampleMetadata@data), c(record_id_col, ancestor_id_cols))) {
-        msg <- paste("The sample metadata only contains record ID and ancestor ID columns.")
+        msg <- paste("The sample metadata only contains record ID and ancestor ID columns but no metadata variables.")
         errors <- c(errors, msg)
       }
     }
