@@ -18,11 +18,21 @@ setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreIm
   ignoreImputeZero <- veupathUtils::matchArg(ignoreImputeZero)
   includeIds <- veupathUtils::matchArg(includeIds)
   dt <- object@data
+  allIdColumns <- c(object@recordIdColumn, object@ancestorIdColumns)
 
   # Check that incoming dt meets requirements
   if (!inherits(dt, 'data.table')) {
     # this might technically be bad form, but i think its ok in this context
     data.table::setDT(dt)
+  }
+
+  if (object@removeEmptySamples) {
+    dt.noIds <- dt[, -..allIdColumns]
+    # Remove samples with NA in all columns
+    dt <- dt[rowSums(is.na(dt.noIds)) != ncol(dt.noIds),]
+
+    # Remove samples with zero in all columns
+    dt <- dt[rowSums(dt.noIds == 0) != ncol(dt.noIds),]
   }
 
   # Replace NA values with 0
@@ -31,7 +41,6 @@ setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreIm
   }
 
   if (!includeIds) {
-    allIdColumns <- c(object@recordIdColumn, object@ancestorIdColumns)
     dt <- dt[, -..allIdColumns]
   }
 
@@ -57,6 +66,7 @@ setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCo
   asCopy <- veupathUtils::matchArg(asCopy)
   includeIds <- veupathUtils::matchArg(includeIds)
   dt <- object@sampleMetadata@data
+  allIdColumns <- c(object@recordIdColumn, object@ancestorIdColumns)
 
   # Check that incoming dt meets requirements
   if (!inherits(dt, 'data.table')) {
@@ -67,8 +77,18 @@ setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCo
     dt <- data.table::copy(dt)
   }
 
+  if (object@removeEmptySamples) {
+    # not using getAbundances here bc i want the empty samples here
+    abundances <- object@data[, -..allIdColumns]
+
+    # Remove metadata for samples with NA in all columns
+    dt <- dt[rowSums(is.na(abundances)) != ncol(abundances),]
+
+    # Remove metadata for samples with zero in all columns
+    dt <- dt[rowSums(abundances == 0) != ncol(abundances),]
+  }
+
   if (!includeIds) {
-    allIdColumns <- c(object@recordIdColumn, object@ancestorIdColumns)
     dt <- dt[, -..allIdColumns]
   }
 
