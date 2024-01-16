@@ -115,3 +115,33 @@ setMethod("removeIncompleteSamples", signature("AbundanceData"), function(object
 
   return(object)
 })
+
+#' Prune features by predicate
+#' 
+#' Modifies the data slot of an 
+#' AbundanceData object, to exclude features for which 
+#' the provided predicate function returns FALSE.
+#' 
+#' @param object AbundanceData
+#' @param predicate Function returning a boolean indicating if a feature should be included (TRUE) or excluded (FALSE)
+#' @param verbose boolean indicating if timed logging is desired
+#' @return AbundanceData with modified data slot
+#' @export
+setGeneric("pruneFeatures",
+  function(object, predicate, verbose = c(TRUE, FALSE)) standardGeneric("pruneFeatures"),
+  signature = c("object")
+)
+
+#'@export 
+setMethod("pruneFeatures", signature("AbundanceData"), function(object, predicate, verbose = c(TRUE, FALSE)) {
+  df <- getAbundances(object)
+  allIdColumns <- c(object@recordIdColumn, object@ancestorIdColumns)
+
+  # keep columns that pass the predicate
+  keepCols <- df[, lapply(.SD, predicate), .SDcols = colnames(df)[!(colnames(df) %in% allIdColumns)]]
+  keepCols <- names(keepCols)[keepCols == TRUE]
+  df <- df[, c(allIdColumns, keepCols), with = FALSE]
+  object@data <- df
+  validObject(object)
+  return(object)
+})

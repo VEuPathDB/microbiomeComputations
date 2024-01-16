@@ -1,3 +1,8 @@
+## prefilter predicates
+halfOfSamplesHaveNonZeroAbundance <- function(x){sum(x > 0) >= length(x)/2}
+varianceIsGreaterThanOne <- function(x){var(x) > 1}
+varianceIsGreaterThanTwo <- function(x){var(x) > 2}
+
 #' Correlation
 #'
 #' This function returns correlation coefficients for variables in one dataset against variables in a second dataset
@@ -163,6 +168,9 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' @return a ComputeResult object
 #' @export
 setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  #prefilters applied
+  data1 <- pruneFeatures(data1, halfOfSamplesHaveNonZeroAbundance, verbose)
+  
   abundances <- getAbundances(data1, FALSE, FALSE)
   corrResult <- correlation(abundances, getSampleMetadata(data1, TRUE, FALSE), method, verbose)
 
@@ -198,6 +206,9 @@ setGeneric("selfCorrelation",
 #' @import veupathUtils
 #' @export
 setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  #prefilters applied
+  data <- pruneFeatures(data, halfOfSamplesHaveNonZeroAbundance, verbose)
+
   abundances <- getAbundances(data, FALSE, FALSE)
   corrResult <- correlation(abundances, method=method, verbose=verbose)
 
@@ -252,6 +263,10 @@ setMethod("selfCorrelation", signature("data.table"), function(data, method = c(
 #' @return ComputeResult object
 #' @export
 setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+  #prefilters applied
+  data1 <- pruneFeatures(data1, halfOfSamplesHaveNonZeroAbundance, verbose)
+  data2 <- pruneFeatures(data2, halfOfSamplesHaveNonZeroAbundance, verbose)
+  
   abundances1 <- getAbundances(data1, FALSE, FALSE)
   abundances2 <- getAbundances(data2, FALSE, FALSE)
   corrResult <- correlation(abundances1, abundances2, method, verbose)
