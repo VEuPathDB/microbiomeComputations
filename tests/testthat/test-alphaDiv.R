@@ -35,7 +35,9 @@ test_that('alphaDiv returns a correctly formatted data.table', {
   data <- microbiomeComputations::AbundanceData(
               data = df,
               recordIdColumn = 'entity.SampleID',
-              imputeZero = FALSE)
+              imputeZero = FALSE,
+              removeEmptySamples = FALSE
+  )
 
   result <- alphaDiv(data, method='shannon', verbose=F)  # vegan diversity sets output to NA if input has NA. See issue #187
   dt <- result@data
@@ -48,11 +50,11 @@ test_that('alphaDiv returns a correctly formatted data.table', {
   result <- alphaDiv(data, method='shannon', verbose=F)
   dt <- result@data
   expect_equal(sum(is.na(dt)), 0)
-  expect_equal(nrow(dt), nrow(df))
+  expect_equal(nrow(dt), nrow(df) - nNAs)
   expect_s3_class(dt, 'data.table')
   expect_equal(names(dt), c('SampleID','alphaDiversity'))
   expect_equal(c(class(dt$SampleID), class(dt$alphaDiversity)), c('character','numeric'))
-  expect_equal(sum(dt>0), 576)  # ensure output is not all 0s.
+  expect_equal(all(dt>0), TRUE)  # ensure output is not all 0s.
 })
 
 test_that("alphaDiv returns a ComputeResult with good ComputedVariableMetadata", {
@@ -103,7 +105,8 @@ test_that("alphaDiv fails gracefully", {
   data <- microbiomeComputations::AbundanceData(
               data = df,
               recordIdColumn = 'entity.SampleID',
-              imputeZero = FALSE)
+              imputeZero = FALSE,
+              removeEmptySamples = FALSE)
 
   result <- alphaDiv(data, method='simpson', verbose=T)
   dt <- result@data

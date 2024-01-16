@@ -30,7 +30,8 @@ test_that('betaDiv returns a correctly formatted data.table', {
   data <- microbiomeComputations::AbundanceData(
               data = df,
               recordIdColumn = 'entity.SampleID',
-              imputeZero = FALSE)
+              imputeZero = FALSE,
+              removeEmptySamples = FALSE)
 
   expect_error(betaDiv(data, method='jsd', verbose=F))  # all three methods err
 
@@ -39,7 +40,7 @@ test_that('betaDiv returns a correctly formatted data.table', {
               recordIdColumn = 'entity.SampleID')
 
   dt <- betaDiv(data, method='bray', verbose=F)@data
-  expect_equal(nrow(dt), nrow(df))
+  expect_equal(nrow(dt), nrow(df) - nNAs)
   expect_s3_class(dt, 'data.table')
   expect_equal(names(dt), c('SampleID','Axis1','Axis2'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character','numeric','numeric'))

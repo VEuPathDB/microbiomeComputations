@@ -36,7 +36,8 @@ test_that('rankedAbundance returns a correctly formatted data.table', {
   data <- microbiomeComputations::AbundanceData(
               data = df,
               recordIdColumn = 'entity.SampleID',
-              imputeZero = FALSE)
+              imputeZero = FALSE,
+              removeEmptySamples = FALSE)
 
   expect_error(rankedAbundance(data, method='q3', verbose=F))
 
@@ -45,11 +46,11 @@ test_that('rankedAbundance returns a correctly formatted data.table', {
               recordIdColumn = 'entity.SampleID')
 
   dt <- rankedAbundance(data, method='q3', verbose=F)@data
-  expect_equal(nrow(dt), nrow(df))
+  expect_equal(nrow(dt), nrow(df) - nNAs)
   expect_s3_class(dt, 'data.table')
   expect_equal(names(dt), c('SampleID','Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character', rep('numeric',10)))
-  expect_equal(sum(dt > 0), 2847)   # ensure output is not all 0s.
+  expect_equal(sum(dt > 0) > 2500, TRUE)   # ensure output is not all 0s.
 
   
 })

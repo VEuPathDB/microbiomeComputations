@@ -34,7 +34,7 @@ test_that('AbundanceData validation works', {
               recordIdColumn = c('entity.SampleID'))
 
   expect_true(inherits(testing, 'AbundanceData'))
-  expect_equal(slotNames(testing), c('data', 'sampleMetadata', 'recordIdColumn', 'ancestorIdColumns', 'imputeZero'))
+  expect_equal(slotNames(testing), c('data', 'sampleMetadata', 'recordIdColumn', 'ancestorIdColumns', 'imputeZero', 'removeEmptySamples'))
   expect_equal(nrow(testing@data), 288)
   expect_equal(ncol(testing@data), 909)
   expect_equal(testing@recordIdColumn, 'entity.SampleID')
