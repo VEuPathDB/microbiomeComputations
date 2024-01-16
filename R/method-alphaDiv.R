@@ -20,7 +20,7 @@ setGeneric("alphaDiv",
 
 #'@export 
 setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('shannon','simpson','evenness'), verbose = c(TRUE, FALSE)) {
-    df <- data@data
+    df <- getAbundances(data)
     recordIdColumn <- data@recordIdColumn
     ancestorIdColumns <- data@ancestorIdColumns
     allIdColumns <- c(recordIdColumn, ancestorIdColumns)
@@ -38,12 +38,6 @@ setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('sha
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
     
-    if (naToZero) {
-      # Replace NA values with 0
-      veupathUtils::setNaToZero(df)
-      veupathUtils::logWithTime("Replaced NAs with 0", verbose)
-    }
-
     # Compute alpha diversity
     if (identical(method, 'shannon') | identical(method, 'simpson')){
 
