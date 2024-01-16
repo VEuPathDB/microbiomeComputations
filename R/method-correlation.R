@@ -252,8 +252,24 @@ setMethod("selfCorrelation", signature("data.table"), function(data, method = c(
 #' @return ComputeResult object
 #' @export
 setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
-  abundances1 <- getAbundances(data1, FALSE, FALSE)
-  abundances2 <- getAbundances(data2, FALSE, FALSE)
+  abundances1 <- getAbundances(data1, FALSE, TRUE)
+  abundances2 <- getAbundances(data2, FALSE, TRUE)
+
+  # empty samples removed from data by getAbundances, means we need to keep samples common to both datasets and remove ids
+  # get id col names
+  recordIdColumn <- data1@recordIdColumn
+  allIdColumns <- c(recordIdColumn, data1@ancestorIdColumns)
+  # should we verify that ids are the same in both datasets?
+
+  # remove samples that are not common
+  commonSamples <- intersect(abundances1[[recordIdColumn]], abundances2[[recordIdColumn]])
+  abundances1 <- abundances1[abundances1[[recordIdColumn]] %in% commonSamples, ]
+  abundances2 <- abundances2[abundances2[[recordIdColumn]] %in% commonSamples, ]
+
+  # remove ids
+  abundances1 <- abundances1[, -..allIdColumns]
+  abundances2 <- abundances2[, -..allIdColumns]  
+
   corrResult <- correlation(abundances1, abundances2, method, verbose)
 
   veupathUtils::logWithTime(paste("Received first df table with", nrow(abundances1), "samples and", (ncol(abundances1)-1), "features with abundances."), verbose)
