@@ -2,6 +2,8 @@
 halfOfSamplesHaveNonZeroAbundance <- function(x){sum(x > 0) >= length(x)/2}
 varianceIsGreaterThanOne <- function(x){var(x) > 1}
 varianceIsGreaterThanTwo <- function(x){var(x) > 2}
+sdIsGreaterThanOne <- function(x){sd(x) > 1}
+sdIsGreaterThanTwo <- function(x){sd(x) > 2}
 
 #' Correlation
 #'
