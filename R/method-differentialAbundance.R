@@ -5,7 +5,7 @@ cleanComparatorVariable <- function(data, comparator, verbose = c(TRUE, FALSE)) 
 
   comparatorColName <- veupathUtils::getColName(comparator@variable@variableSpec)
   data <- removeIncompleteSamples(data, comparatorColName, verbose)
-  abundances <- getAbundances(data)
+  abundances <- getAbundances(data, verbose = verbose)
   sampleMetadata <- getSampleMetadata(data)
   recordIdColumn <- data@recordIdColumn
 

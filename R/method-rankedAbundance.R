@@ -18,7 +18,7 @@ setGeneric("rankedAbundance",
 
 #'@export 
 setMethod("rankedAbundance", signature("AbundanceData"), function(data, method = c('median','max','q3','variance'), cutoff=10, verbose = c(TRUE, FALSE)) {
-    df <- data@data
+    df <- getAbundances(data, verbose = verbose)
     recordIdColumn <- data@recordIdColumn
     naToZero <- data@imputeZero
     ancestorIdColumns <- data@ancestorIdColumns
@@ -35,12 +35,6 @@ setMethod("rankedAbundance", signature("AbundanceData"), function(data, method =
 
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
-
-    if (naToZero) {
-      # Replace NA values with 0
-      veupathUtils::setNaToZero(df)
-      veupathUtils::logWithTime("Replaced NAs with 0", verbose)
-    }
 
     # Reshape back to sample, taxonomicLevel, abundance
     formattedDT <- data.table::melt(df, measure.vars=colnames(df[, -..allIdColumns]), variable.factor=F, variable.name='TaxonomicLevel', value.name="Abundance")

@@ -30,7 +30,8 @@ test_that('betaDiv returns a correctly formatted data.table', {
   data <- microbiomeComputations::AbundanceData(
               data = df,
               recordIdColumn = 'entity.SampleID',
-              imputeZero = FALSE)
+              imputeZero = FALSE,
+              removeEmptySamples = FALSE)
 
   expect_error(betaDiv(data, method='jsd', verbose=F))  # all three methods err
 
