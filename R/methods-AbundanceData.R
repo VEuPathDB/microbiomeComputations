@@ -45,11 +45,8 @@ setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreIm
 
   if (object@removeEmptySamples) {
     dt.noIds <- dt[, -..allIdColumns]
-    # Remove samples with NA in all columns
-    dt <- dt[rowSums(is.na(dt.noIds)) != ncol(dt.noIds),]
-
-    # Remove samples with zero in all columns
-    dt <- dt[rowSums(dt.noIds == 0) != ncol(dt.noIds),]
+    # Remove samples with NA or 0 in all columns
+    dt <- dt[rowSums(isNAorZero(dt.noIds)) != ncol(dt.noIds),]
   }
 
   # Replace NA values with 0
@@ -98,11 +95,8 @@ setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCo
     # not using getAbundances here bc i want the empty samples here
     abundances <- object@data[, -..allIdColumns]
 
-    # Remove metadata for samples with NA in all columns
-    dt <- dt[rowSums(is.na(abundances)) != ncol(abundances),]
-
-    # Remove metadata for samples with zero in all columns
-    dt <- dt[rowSums(abundances == 0) != ncol(abundances),]
+    # Remove metadata for samples with NA or 0 in all columns
+    dt <- dt[rowSums(isNAorZero(abundances)) != ncol(abundances),]
   }
 
   if (!includeIds) {

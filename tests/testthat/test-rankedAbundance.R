@@ -46,7 +46,7 @@ test_that('rankedAbundance returns a correctly formatted data.table', {
               recordIdColumn = 'entity.SampleID')
 
   dt <- rankedAbundance(data, method='q3', verbose=F)@data
-  expect_equal(nrow(dt), nrow(df) - nNAs)
+  expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
   expect_equal(names(dt), c('SampleID','Lactobacillus','Snodgrassella','Gilliamella','Frischella','Commensalibacter','unclassified Rhizobiaceae','Bifidobacterium','unclassified Mitochondria','unclassified Chloroplast','Bombella'))
   expect_equal(unname(unlist(lapply(dt, class))), c('character', rep('numeric',10)))

@@ -50,7 +50,7 @@ test_that('alphaDiv returns a correctly formatted data.table', {
   result <- alphaDiv(data, method='shannon', verbose=F)
   dt <- result@data
   expect_equal(sum(is.na(dt)), 0)
-  expect_equal(nrow(dt), nrow(df) - nNAs)
+  expect_equal(nrow(dt), nrow(df))
   expect_s3_class(dt, 'data.table')
   expect_equal(names(dt), c('SampleID','alphaDiversity'))
   expect_equal(c(class(dt$SampleID), class(dt$alphaDiversity)), c('character','numeric'))
