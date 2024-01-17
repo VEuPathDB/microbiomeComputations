@@ -47,6 +47,10 @@ setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreIm
     dt.noIds <- dt[, -..allIdColumns]
     # Remove samples with NA or 0 in all columns
     dt <- dt[rowSums(isNAorZero(dt.noIds)) != ncol(dt.noIds),]
+    numSamplesRemoved <- nrow(dt.noIds) - nrow(dt)
+    if (numSamplesRemoved > 0) {
+      veupathUtils::logWithTime(paste0("Removed ", numSamplesRemoved, " samples with no data."), object@verbose)
+    }
   }
 
   # Replace NA values with 0
