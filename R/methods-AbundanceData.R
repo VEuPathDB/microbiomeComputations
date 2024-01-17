@@ -51,7 +51,7 @@ setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreIm
     dt <- dt[rowSums(isNAorZero(dt.noIds)) != ncol(dt.noIds),]
     numSamplesRemoved <- nrow(dt.noIds) - nrow(dt)
     if (numSamplesRemoved > 0) {
-      veupathUtils::logWithTime(paste0("Removed ", numSamplesRemoved, " samples with no data."), object@verbose)
+      veupathUtils::logWithTime(paste0("Removed ", numSamplesRemoved, " samples with no data."), verbose)
     }
   }
 
