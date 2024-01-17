@@ -31,9 +31,11 @@ setGeneric("getAbundances",
 )
 
 #'@export 
-setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreImputeZero = c(FALSE, TRUE), includeIds = c(TRUE, FALSE)) {
+setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreImputeZero = c(FALSE, TRUE), includeIds = c(TRUE, FALSE), verbose = c(TRUE, FALSE)) {
   ignoreImputeZero <- veupathUtils::matchArg(ignoreImputeZero)
   includeIds <- veupathUtils::matchArg(includeIds)
+  verbose <- veupathUtils::matchArg(verbose)
+  
   dt <- object@data
   allIdColumns <- getIdColumns(object)
 
