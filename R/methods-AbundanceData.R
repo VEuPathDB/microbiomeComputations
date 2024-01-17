@@ -26,7 +26,7 @@ setMethod("getIdColumns", signature("AbundanceData"), function(object) {
 #' @return data.table of abundances
 #' @export
 setGeneric("getAbundances",
-  function(object, ignoreImputeZero = c(FALSE, TRUE), includeIds = c(TRUE, FALSE)) standardGeneric("getAbundances"),
+  function(object, ignoreImputeZero = c(FALSE, TRUE), includeIds = c(TRUE, FALSE), verbose = c(TRUE, FALSE)) standardGeneric("getAbundances"),
   signature = c("object")
 )
 
