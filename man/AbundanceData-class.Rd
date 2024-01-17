@@ -20,5 +20,7 @@ A class for working with microbiome or ecological abundance data.
 \item{\code{ancestorIdColumns}}{A character vector of column names representing parent entities of the recordIdColumn.}
 
 \item{\code{imputeZero}}{A logical indicating whether NA/ null values should be replaced with zeros.}
+
+\item{\code{removeEmptySamples}}{A logical indicating whether empty (all NA/ zero)samples should be removed.}
 }}
 

@@ -22,7 +22,7 @@ setGeneric("betaDiv",
 
 #'@export 
 setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray','jaccard','jsd'), k = 2, verbose = c(TRUE, FALSE)) {
-    df <- data@data
+    df <- getAbundances(data, verbose = verbose)
     recordIdColumn <- data@recordIdColumn
     naToZero <- data@imputeZero
     ancestorIdColumns <- data@ancestorIdColumns
@@ -39,12 +39,6 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
 
     computeMessage <- ''
     veupathUtils::logWithTime(paste("Received df table with", nrow(df), "samples and", (ncol(df)-1), "taxa."), verbose)
-
-    if (naToZero) {
-      # Replace NA values with 0
-      veupathUtils::setNaToZero(df)
-      veupathUtils::logWithTime("Replaced NAs with 0", verbose)
-    }
 
     # Compute beta diversity using given dissimilarity method
     if (identical(method, 'bray') | identical(method, 'jaccard')) {
