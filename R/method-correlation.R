@@ -1,5 +1,5 @@
 ## prefilter predicates
-halfOfSamplesHaveNonZeroAbundance <- function(x){sum(x > 0) >= length(x)/2}
+halfAreNonZero <- function(x){sum(x > 0) >= length(x)/2}
 varianceIsGreaterThanOne <- function(x){var(x) > 1}
 varianceIsGreaterThanTwo <- function(x){var(x) > 2}
 sdIsGreaterThanOne <- function(x){sd(x) > 1}
@@ -171,7 +171,7 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' @export
 setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   #prefilters applied
-  data1 <- pruneFeatures(data1, halfOfSamplesHaveNonZeroAbundance, verbose)
+  data1 <- pruneFeatures(data1, halfAreNonZero, verbose)
   
   abundances <- getAbundances(data1, FALSE, FALSE, verbose)
   corrResult <- correlation(abundances, getSampleMetadata(data1, TRUE, FALSE), method, verbose)
@@ -209,7 +209,7 @@ setGeneric("selfCorrelation",
 #' @export
 setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   #prefilters applied
-  data <- pruneFeatures(data, halfOfSamplesHaveNonZeroAbundance, verbose)
+  data <- pruneFeatures(data, halfAreNonZero, verbose)
 
   abundances <- getAbundances(data, FALSE, FALSE, verbose)
   corrResult <- correlation(abundances, method=method, verbose=verbose)
@@ -266,8 +266,8 @@ setMethod("selfCorrelation", signature("data.table"), function(data, method = c(
 #' @export
 setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   #prefilters applied
-  data1 <- pruneFeatures(data1, halfOfSamplesHaveNonZeroAbundance, verbose)
-  data2 <- pruneFeatures(data2, halfOfSamplesHaveNonZeroAbundance, verbose)
+  data1 <- pruneFeatures(data1, halfAreNonZero, verbose)
+  data2 <- pruneFeatures(data2, halfAreNonZero, verbose)
   
   abundances1 <- getAbundances(data1, FALSE, TRUE, verbose)
   abundances2 <- getAbundances(data2, FALSE, TRUE, verbose)

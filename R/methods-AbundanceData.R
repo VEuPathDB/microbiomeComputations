@@ -85,6 +85,7 @@ setGeneric("getSampleMetadata",
 setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCopy = c(TRUE, FALSE), includeIds = c(TRUE, FALSE)) {
   asCopy <- veupathUtils::matchArg(asCopy)
   includeIds <- veupathUtils::matchArg(includeIds)
+  
   dt <- object@sampleMetadata@data
   allIdColumns <- getIdColumns(object)
 
@@ -130,6 +131,8 @@ setGeneric("removeIncompleteSamples",
 
 #'@export 
 setMethod("removeIncompleteSamples", signature("AbundanceData"), function(object, colName = character(), verbose = c(TRUE, FALSE)) {
+  verbose <- veupathUtils::matchArg(verbose)
+
   df <- getAbundances(object, verbose = verbose)
   sampleMetadata <- getSampleMetadata(object)
 
