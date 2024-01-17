@@ -7,7 +7,8 @@
 getAbundances(
   object,
   ignoreImputeZero = c(FALSE, TRUE),
-  includeIds = c(TRUE, FALSE)
+  includeIds = c(TRUE, FALSE),
+  verbose = c(TRUE, FALSE)
 )
 }
 \arguments{
