@@ -35,7 +35,7 @@ setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreIm
   ignoreImputeZero <- veupathUtils::matchArg(ignoreImputeZero)
   includeIds <- veupathUtils::matchArg(includeIds)
   verbose <- veupathUtils::matchArg(verbose)
-  
+
   dt <- object@data
   allIdColumns <- getIdColumns(object)
 
@@ -130,7 +130,7 @@ setGeneric("removeIncompleteSamples",
 
 #'@export 
 setMethod("removeIncompleteSamples", signature("AbundanceData"), function(object, colName = character(), verbose = c(TRUE, FALSE)) {
-  df <- getAbundances(object)
+  df <- getAbundances(object, verbose = verbose)
   sampleMetadata <- getSampleMetadata(object)
 
   # Remove samples with NA from data and metadata
