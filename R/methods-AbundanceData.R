@@ -1,3 +1,20 @@
+#' Get all ID columns
+#' 
+#' Returns a vector of all ID columns
+#' 
+#' @param object AbundanceData
+#' @return vector of all ID columns
+#' @export
+setGeneric("getIdColumns",
+  function(object) standardGeneric("getIdColumns"),
+  signature = c("object")
+)
+
+#'@export 
+setMethod("getIdColumns", signature("AbundanceData"), function(object) {
+  c(object@recordIdColumn, object@ancestorIdColumns)
+})
+
 #' Get data.table of abundances from AbundanceData
 #'
 #' Returns a data.table of abundances, respecting the
@@ -18,7 +35,7 @@ setMethod("getAbundances", signature("AbundanceData"), function(object, ignoreIm
   ignoreImputeZero <- veupathUtils::matchArg(ignoreImputeZero)
   includeIds <- veupathUtils::matchArg(includeIds)
   dt <- object@data
-  allIdColumns <- c(object@recordIdColumn, object@ancestorIdColumns)
+  allIdColumns <- getIdColumns(object)
 
   # Check that incoming dt meets requirements
   if (!inherits(dt, 'data.table')) {
@@ -66,7 +83,7 @@ setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCo
   asCopy <- veupathUtils::matchArg(asCopy)
   includeIds <- veupathUtils::matchArg(includeIds)
   dt <- object@sampleMetadata@data
-  allIdColumns <- c(object@recordIdColumn, object@ancestorIdColumns)
+  allIdColumns <- getIdColumns(object)
 
   # Check that incoming dt meets requirements
   if (!inherits(dt, 'data.table')) {
