@@ -1,3 +1,53 @@
+#' Predicate Factory
+#' 
+#' This function creates a predicate function based on a string defining the type of predicate to run and a numeric value. 
+#' The currently supported types are 'proportionNonZero', 'variance' and 'sd'. The numeric value associated
+#' with each predicate type is the threshold for the predicate to be true.
+#' 
+#' @param predicateType string defining the type of predicate to run. The currently supported values are 'proportionNonZero', 'variance' and 'sd'
+#' @param threshold numeric value associated with the predicate type
+#' @return Function returning a boolean indicating if a feature should be included (TRUE) or excluded (FALSE)
+#' @export
+setGeneric("predicateFactory",
+  function(predicateType, threshold) standardGeneric("predicateFactory"),
+  signature = c("predicateType", "threshold")
+)
+
+
+#' Predicate Factory
+#'
+#' This function creates a predicate function based on a string defining the type of predicate to run and a numeric value. 
+#' The currently supported types are 'proportionNonZero', 'variance' and 'sd'. The numeric value associated
+#' with each predicate type is the threshold for the predicate to be true.
+#' 
+#' @param predicateType string defining the type of predicate to run. The currently supported values are 'proportionNonZero', 'variance' and 'sd'
+#' @param threshold numeric value associated with the predicate type
+#' @return Function returning a boolean indicating if a feature should be included (TRUE) or excluded (FALSE)
+#' @export
+setMethod("predicateFactory", signature("character", "numeric"), function(predicateType = c('proportionNonZero', 'variance', 'sd'), threshold = 0.5) {
+  predicateType <- veupathUtils::matchArg(predicateType)
+
+  if (predicateType == 'proportionNonZero') {
+    if (threshold < 0 | threshold > 1) {
+      stop('threshold must be between 0 and 1 for proportionNonZero')
+    }
+    return(function(x){sum(x > 0) >= length(x) * threshold})
+
+  } else if (predicateType == 'variance') {
+    if (threshold < 0) {
+      stop('threshold must be greater than 0 for variance')
+    }
+    return(function(x){var(x) > threshold})
+
+  } else if (predicateType == 'sd') {
+    if (threshold < 0) {
+      stop('threshold must be greater than 0 for sd')
+    }
+    return(function(x){sd(x) > threshold})
+  }
+
+})
+
 #' Correlation
 #'
 #' This function returns correlation coefficients for variables in one dataset against variables in a second dataset
@@ -160,9 +210,17 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' @param data1 AbundanceData object. Will correlate abundance variables with specified variables in data2
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
+#' @param proportionNonZeroThreshold numeric threshold to filter features by proportion of non-zero values across samples
+#' @param varianceThreshold numeric threshold to filter features by variance across samples
+#' @param stdDevThreshold numeric threshold to filter features by standard deviation across samples
 #' @return a ComputeResult object
 #' @export
-setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
+  #prefilters applied
+  data1 <- pruneFeatures(data1, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('variance', varianceThreshold), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('sd', stdDevThreshold), verbose)
+  
   abundances <- getAbundances(data1, FALSE, FALSE, verbose)
   corrResult <- correlation(abundances, getSampleMetadata(data1, TRUE, FALSE), method, verbose)
 
@@ -194,10 +252,18 @@ setGeneric("selfCorrelation",
 #' @param data An AbundanceData object
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
+#' @param proportionNonZeroThreshold numeric threshold to filter features by proportion of non-zero values across samples
+#' @param varianceThreshold numeric threshold to filter features by variance across samples
+#' @param stdDevThreshold numeric threshold to filter features by standard deviation across samples
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
-setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
+  #prefilters applied
+  data <- pruneFeatures(data, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
+  data <- pruneFeatures(data, predicateFactory('variance', varianceThreshold), verbose)
+  data <- pruneFeatures(data, predicateFactory('sd', stdDevThreshold), verbose)
+
   abundances <- getAbundances(data, FALSE, FALSE, verbose)
   corrResult <- correlation(abundances, method=method, verbose=verbose)
 
@@ -249,9 +315,20 @@ setMethod("selfCorrelation", signature("data.table"), function(data, method = c(
 #' @param data2 AbundanceData object.
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
+#' @param proportionNonZeroThreshold numeric threshold to filter features by proportion of non-zero values across samples
+#' @param varianceThreshold numeric threshold to filter features by variance across samples
+#' @param stdDevThreshold numeric threshold to filter features by standard deviation across samples
 #' @return ComputeResult object
 #' @export
-setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
+  #prefilters applied
+  data1 <- pruneFeatures(data1, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('variance', varianceThreshold), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('sd', stdDevThreshold), verbose)
+  data2 <- pruneFeatures(data2, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
+  data2 <- pruneFeatures(data2, predicateFactory('variance', varianceThreshold), verbose)
+  data2 <- pruneFeatures(data2, predicateFactory('sd', stdDevThreshold), verbose)
+  
   abundances1 <- getAbundances(data1, FALSE, TRUE, verbose)
   abundances2 <- getAbundances(data2, FALSE, TRUE, verbose)
 

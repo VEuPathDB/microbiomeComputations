@@ -85,6 +85,7 @@ setGeneric("getSampleMetadata",
 setMethod("getSampleMetadata", signature("AbundanceData"), function(object, asCopy = c(TRUE, FALSE), includeIds = c(TRUE, FALSE)) {
   asCopy <- veupathUtils::matchArg(asCopy)
   includeIds <- veupathUtils::matchArg(includeIds)
+  
   dt <- object@sampleMetadata@data
   allIdColumns <- getIdColumns(object)
 
@@ -130,6 +131,8 @@ setGeneric("removeIncompleteSamples",
 
 #'@export 
 setMethod("removeIncompleteSamples", signature("AbundanceData"), function(object, colName = character(), verbose = c(TRUE, FALSE)) {
+  verbose <- veupathUtils::matchArg(verbose)
+
   df <- getAbundances(object, verbose = verbose)
   sampleMetadata <- getSampleMetadata(object)
 
@@ -150,5 +153,43 @@ setMethod("removeIncompleteSamples", signature("AbundanceData"), function(object
     validObject(object)
   }
 
+  return(object)
+})
+
+#' Prune features by predicate
+#' 
+#' Modifies the data slot of an 
+#' AbundanceData object, to exclude features for which 
+#' the provided predicate function returns FALSE.
+#' 
+#' @param object AbundanceData
+#' @param predicate Function returning a boolean indicating if a feature should be included (TRUE) or excluded (FALSE)
+#' @param verbose boolean indicating if timed logging is desired
+#' @return AbundanceData with modified data slot
+#' @export
+setGeneric("pruneFeatures",
+  function(object, predicate, verbose = c(TRUE, FALSE)) standardGeneric("pruneFeatures"),
+  signature = c("object")
+)
+
+#'@export 
+setMethod("pruneFeatures", signature("AbundanceData"), function(object, predicate, verbose = c(TRUE, FALSE)) {
+  df <- getAbundances(object)
+  allIdColumns <- c(object@recordIdColumn, object@ancestorIdColumns)
+
+  # keep columns that pass the predicate
+  keepCols <- df[, lapply(.SD, predicate), .SDcols = colnames(df)[!(colnames(df) %in% allIdColumns)]]
+  keepCols <- names(keepCols)[keepCols == TRUE]
+  df <- df[, c(allIdColumns, keepCols), with = FALSE]
+
+  # LET ME EXPLAIN
+  # since we called getAbundances (which removes empty samples)..
+  # we need to do the same for sampleMetadata in order to produce a valid object.
+  # and, we dont want those empty samples influencing which features get pruned, so i think were tied to this.
+  # we just need to be sure we ask for the metadata before resetting the abundance data, or else we'll get an error
+  # bc getSampleMetadata also calls getAbundances to find which samples to remove
+  object@sampleMetadata@data <- getSampleMetadata(object)
+  object@data <- df
+  validObject(object)
   return(object)
 })
