@@ -210,6 +210,9 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' @param data1 AbundanceData object. Will correlate abundance variables with specified variables in data2
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
+#' @param proportionNonZeroThreshold numeric threshold to filter features by proportion of non-zero values across samples
+#' @param varianceThreshold numeric threshold to filter features by variance across samples
+#' @param stdDevThreshold numeric threshold to filter features by standard deviation across samples
 #' @return a ComputeResult object
 #' @export
 setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
@@ -249,6 +252,9 @@ setGeneric("selfCorrelation",
 #' @param data An AbundanceData object
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
+#' @param proportionNonZeroThreshold numeric threshold to filter features by proportion of non-zero values across samples
+#' @param varianceThreshold numeric threshold to filter features by variance across samples
+#' @param stdDevThreshold numeric threshold to filter features by standard deviation across samples
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
@@ -309,6 +315,9 @@ setMethod("selfCorrelation", signature("data.table"), function(data, method = c(
 #' @param data2 AbundanceData object.
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
+#' @param proportionNonZeroThreshold numeric threshold to filter features by proportion of non-zero values across samples
+#' @param varianceThreshold numeric threshold to filter features by variance across samples
+#' @param stdDevThreshold numeric threshold to filter features by standard deviation across samples
 #' @return ComputeResult object
 #' @export
 setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
