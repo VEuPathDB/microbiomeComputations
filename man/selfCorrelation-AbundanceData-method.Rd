@@ -7,7 +7,10 @@
 \S4method{selfCorrelation}{AbundanceData}(
   data,
   method = c("spearman", "pearson"),
-  verbose = c(TRUE, FALSE)
+  verbose = c(TRUE, FALSE),
+  proportionNonZeroThreshold = 0.5,
+  varianceThreshold = 0,
+  stdDevThreshold = 0
 )
 }
 \arguments{
@@ -16,6 +19,12 @@
 \item{method}{string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'}
 
 \item{verbose}{boolean indicating if timed logging is desired}
+
+\item{proportionNonZeroThreshold}{numeric threshold to filter features by proportion of non-zero values across samples}
+
+\item{varianceThreshold}{numeric threshold to filter features by variance across samples}
+
+\item{stdDevThreshold}{numeric threshold to filter features by standard deviation across samples}
 }
 \value{
 ComputeResult object
