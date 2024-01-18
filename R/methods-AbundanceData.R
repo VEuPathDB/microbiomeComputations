@@ -181,6 +181,14 @@ setMethod("pruneFeatures", signature("AbundanceData"), function(object, predicat
   keepCols <- df[, lapply(.SD, predicate), .SDcols = colnames(df)[!(colnames(df) %in% allIdColumns)]]
   keepCols <- names(keepCols)[keepCols == TRUE]
   df <- df[, c(allIdColumns, keepCols), with = FALSE]
+
+  # LET ME EXPLAIN
+  # since we called getAbundances (which removes empty samples)..
+  # we need to do the same for sampleMetadata in order to produce a valid object.
+  # and, we dont want those empty samples influencing which features get pruned, so i think were tied to this.
+  # we just need to be sure we ask for the metadata before resetting the abundance data, or else we'll get an error
+  # bc getSampleMetadata also calls getAbundances to find which samples to remove
+  object@sampleMetadata@data <- getSampleMetadata(object)
   object@data <- df
   validObject(object)
   return(object)

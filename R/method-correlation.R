@@ -216,7 +216,7 @@ setMethod("correlation", signature("AbundanceData", "missing"), function(data1, 
   #prefilters applied
   data1 <- pruneFeatures(data1, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
   data1 <- pruneFeatures(data1, predicateFactory('variance', varianceThreshold), verbose)
-  data1 <- pruneFeatures(data1, predicateFactory('stdDev', stdDevThreshold), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('sd', stdDevThreshold), verbose)
   
   abundances <- getAbundances(data1, FALSE, FALSE, verbose)
   corrResult <- correlation(abundances, getSampleMetadata(data1, TRUE, FALSE), method, verbose)
@@ -256,7 +256,7 @@ setMethod("selfCorrelation", signature("AbundanceData"), function(data, method =
   #prefilters applied
   data <- pruneFeatures(data, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
   data <- pruneFeatures(data, predicateFactory('variance', varianceThreshold), verbose)
-  data <- pruneFeatures(data, predicateFactory('stdDev', stdDevThreshold), verbose)
+  data <- pruneFeatures(data, predicateFactory('sd', stdDevThreshold), verbose)
 
   abundances <- getAbundances(data, FALSE, FALSE, verbose)
   corrResult <- correlation(abundances, method=method, verbose=verbose)
@@ -315,10 +315,10 @@ setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(d
   #prefilters applied
   data1 <- pruneFeatures(data1, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
   data1 <- pruneFeatures(data1, predicateFactory('variance', varianceThreshold), verbose)
-  data1 <- pruneFeatures(data1, predicateFactory('stdDev', stdDevThreshold), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('sd', stdDevThreshold), verbose)
   data2 <- pruneFeatures(data2, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
   data2 <- pruneFeatures(data2, predicateFactory('variance', varianceThreshold), verbose)
-  data2 <- pruneFeatures(data2, predicateFactory('stdDev', stdDevThreshold), verbose)
+  data2 <- pruneFeatures(data2, predicateFactory('sd', stdDevThreshold), verbose)
   
   abundances1 <- getAbundances(data1, FALSE, TRUE, verbose)
   abundances2 <- getAbundances(data2, FALSE, TRUE, verbose)
