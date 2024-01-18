@@ -212,9 +212,11 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' @param verbose boolean indicating if timed logging is desired
 #' @return a ComputeResult object
 #' @export
-setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
   #prefilters applied
-  data1 <- pruneFeatures(data1, predicateFactory(), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('variance', varianceThreshold), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('stdDev', stdDevThreshold), verbose)
   
   abundances <- getAbundances(data1, FALSE, FALSE, verbose)
   corrResult <- correlation(abundances, getSampleMetadata(data1, TRUE, FALSE), method, verbose)
@@ -250,9 +252,11 @@ setGeneric("selfCorrelation",
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
-setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
   #prefilters applied
-  data <- pruneFeatures(data, predicateFactory(), verbose)
+  data <- pruneFeatures(data, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
+  data <- pruneFeatures(data, predicateFactory('variance', varianceThreshold), verbose)
+  data <- pruneFeatures(data, predicateFactory('stdDev', stdDevThreshold), verbose)
 
   abundances <- getAbundances(data, FALSE, FALSE, verbose)
   corrResult <- correlation(abundances, method=method, verbose=verbose)
@@ -307,10 +311,14 @@ setMethod("selfCorrelation", signature("data.table"), function(data, method = c(
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @export
-setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
   #prefilters applied
-  data1 <- pruneFeatures(data1, predicateFactory(), verbose)
-  data2 <- pruneFeatures(data2, predicateFactory(), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('variance', varianceThreshold), verbose)
+  data1 <- pruneFeatures(data1, predicateFactory('stdDev', stdDevThreshold), verbose)
+  data2 <- pruneFeatures(data2, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
+  data2 <- pruneFeatures(data2, predicateFactory('variance', varianceThreshold), verbose)
+  data2 <- pruneFeatures(data2, predicateFactory('stdDev', stdDevThreshold), verbose)
   
   abundances1 <- getAbundances(data1, FALSE, TRUE, verbose)
   abundances2 <- getAbundances(data2, FALSE, TRUE, verbose)
