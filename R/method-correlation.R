@@ -31,14 +31,28 @@ setGeneric("predicateFactory",
 #' @param threshold numeric value associated with the predicate type
 #' @return Function returning a boolean indicating if a feature should be included (TRUE) or excluded (FALSE)
 #' @export
-setMethod("predicateFactory", signature("character", "numeric"), function(predicateType, threshold) {
+setMethod("predicateFactory", signature("character", "numeric"), function(predicateType = c('proportionNonZero', 'variance', 'sd'), threshold = 0.5) {
+  predicateType <- veupathUtils::matchArg(predicateType)
+
   if (predicateType == 'proportionNonZero') {
+    if (threshold < 0 | threshold > 1) {
+      stop('threshold must be between 0 and 1 for proportionNonZero')
+    }
     return(function(x){sum(x > 0) >= length(x) * threshold})
+
   } else if (predicateType == 'variance') {
+    if (threshold < 0) {
+      stop('threshold must be greater than 0 for variance')
+    }
     return(function(x){var(x) > threshold})
+
   } else if (predicateType == 'sd') {
+    if (threshold < 0) {
+      stop('threshold must be greater than 0 for sd')
+    }
     return(function(x){sd(x) > threshold})
   }
+  
 })
 
 #' Correlation
