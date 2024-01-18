@@ -5,6 +5,42 @@ varianceIsGreaterThanTwo <- function(x){var(x) > 2}
 sdIsGreaterThanOne <- function(x){sd(x) > 1}
 sdIsGreaterThanTwo <- function(x){sd(x) > 2}
 
+#' Predicate Factory
+#' 
+#' This function creates a predicate function based on a string defining the type of predicate to run and a numeric value. 
+#' The currently supported types are 'proportionNonZero', 'variance' and 'sd'. The numeric value associated
+#' with each predicate type is the threshold for the predicate to be true.
+#' 
+#' @param predicateType string defining the type of predicate to run. The currently supported values are 'proportionNonZero', 'variance' and 'sd'
+#' @param threshold numeric value associated with the predicate type
+#' @return Function returning a boolean indicating if a feature should be included (TRUE) or excluded (FALSE)
+#' @export
+setGeneric("predicateFactory",
+  function(predicateType, threshold) standardGeneric("predicateFactory"),
+  signature = c("predicateType", "threshold")
+)
+
+
+#' Predicate Factory
+#'
+#' This function creates a predicate function based on a string defining the type of predicate to run and a numeric value. 
+#' The currently supported types are 'proportionNonZero', 'variance' and 'sd'. The numeric value associated
+#' with each predicate type is the threshold for the predicate to be true.
+#' 
+#' @param predicateType string defining the type of predicate to run. The currently supported values are 'proportionNonZero', 'variance' and 'sd'
+#' @param threshold numeric value associated with the predicate type
+#' @return Function returning a boolean indicating if a feature should be included (TRUE) or excluded (FALSE)
+#' @export
+setMethod("predicateFactory", signature("character", "numeric"), function(predicateType, threshold) {
+  if (predicateType == 'proportionNonZero') {
+    return(function(x){sum(x > 0) >= length(x) * threshold})
+  } else if (predicateType == 'variance') {
+    return(function(x){var(x) > threshold})
+  } else if (predicateType == 'sd') {
+    return(function(x){sd(x) > threshold})
+  }
+})
+
 #' Correlation
 #'
 #' This function returns correlation coefficients for variables in one dataset against variables in a second dataset
