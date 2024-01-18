@@ -188,7 +188,10 @@ setMethod("pruneFeatures", signature("AbundanceData"), function(object, predicat
   # and, we dont want those empty samples influencing which features get pruned, so i think were tied to this.
   # we just need to be sure we ask for the metadata before resetting the abundance data, or else we'll get an error
   # bc getSampleMetadata also calls getAbundances to find which samples to remove
-  object@sampleMetadata@data <- getSampleMetadata(object)
+  # we could maybe do it better, by introducing a hasSampleMetadata method in here. but i'm not sure if that's worth it.
+  if (nrow(object@sampleMetadata@data) > 0) {
+    object@sampleMetadata@data <- getSampleMetadata(object)
+  }
   object@data <- df
   validObject(object)
   return(object)

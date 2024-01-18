@@ -86,3 +86,16 @@ test_that("getAbundances works", {
   expect_equal(nrow(abundances), nrow(df) -1)
   expect_equal(ncol(abundances), ncol(df))
 })
+
+test_that("pruneFeatures works", {
+  df <- testOTU
+  testing <- microbiomeComputations::AbundanceData(
+    data = df,
+    recordIdColumn = 'entity.SampleID'
+  )
+  
+  # pruneFeatures touched SampleMetadata, which this AbundanceData object has none. it shouldnt fail for that though.
+  testing <- pruneFeatures(testing, predicateFactory('proportionNonZero', 0.5))
+  expect_equal(nrow(testing@data), 288)
+  expect_equal(ncol(testing@data), 13)
+})
