@@ -62,7 +62,7 @@ setMethod("predicateFactory", signature("character", "numeric"), function(predic
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("correlation",
-  function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), ...) standardGeneric("correlation"),
+  function(data1, data2, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE), ...) standardGeneric("correlation"),
   signature = c("data1","data2")
 )
 
@@ -77,9 +77,14 @@ setGeneric("correlation",
 #' @param verbose boolean indicating if timed logging is desired
 #' @importFrom Hmisc rcorr
 #' @return data.frame with correlation coefficients
-setMethod("correlation", signature("data.table", "data.table"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("correlation", signature("data.table", "data.table"), function(data1, data2, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
   method <- veupathUtils::matchArg(method)
   verbose <- veupathUtils::matchArg(verbose)
+
+  # sparcc is not intended for use with two datasets
+  if (method == 'sparcc') {
+    stop("sparcc is not intended for use with two datasets.")
+  }  
 
   # Check that the number of rows match.
   if (!identical(nrow(data1), nrow(data2))) {
@@ -127,7 +132,10 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 #' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.frame with correlation coefficients
-setMethod("correlation", signature("data.table", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+#' @importFrom Hmisc rcorr
+#' @importFrom SpiecEasi pval.sparccboot
+#' @importFrom SpiecEasi sparccboot
+setMethod("correlation", signature("data.table", "missing"), function(data1, data2, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
   method <- veupathUtils::matchArg(method)
   verbose <- veupathUtils::matchArg(verbose)
 
@@ -136,11 +144,19 @@ setMethod("correlation", signature("data.table", "missing"), function(data1, dat
 
   ## Compute correlation
   # rownames and colnames should be the same in this case
-  # na.or.complete removes rows with NAs, if no rows remain then correlation is NA
   # keep matrix for now so we can use lower.tri later, expand.grid will give us the needed data.frame
-  corrResult <- Hmisc::rcorr(as.matrix(data1), type = method)
-  pVals <- corrResult$P
-  corrResult <- corrResult$r
+  if (method == 'sparcc') {
+    statisticperm=function(data, indices) do.call("sparcc", c(list(apply(data[indices,], 2, sample)), list()))$Cor
+    statisticboot=function(data, indices) do.call("sparcc", c(list(data[indices,,drop=FALSE]), list()))$Cor
+
+    corResult <- SpiecEasi::pval.sparccboot(SpiecEasi::sparccboot(data1, statisticboot = statisticboot, statisticperm = statisticperm, R = 100))
+    pVals <- corResult$pVals
+    corResult <- corResult$cors
+  } else {
+    corrResult <- Hmisc::rcorr(as.matrix(data1), type = method)
+    pVals <- corrResult$P
+    corrResult <- corrResult$r
+  }
 
   veupathUtils::logWithTime(paste0('Completed correlation with method=', method,'. Formatting results.'), verbose)
 
