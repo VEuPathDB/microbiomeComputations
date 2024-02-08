@@ -19,6 +19,7 @@ Imports:
     Maaslin2,
     methods,
     Rcpp (>= 0.11.0),
+    SpiecEasi,
     stringi,
     vegan,
     veupathUtils,
@@ -28,7 +29,8 @@ Depends:
     purrr,
     R (>= 2.10)
 Remotes:
-    VEuPathDB/veupathUtils
+    VEuPathDB/veupathUtils,
+    zdk123/SpiecEasi
 LinkingTo: Rcpp
 URL: https://github.com/VEuPathDB/microbiomeComputations
 BugReports: https://github.com/VEuPathDB/microbiomeComputations/issues
