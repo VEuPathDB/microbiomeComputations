@@ -135,6 +135,7 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 #' @importFrom Hmisc rcorr
 #' @importFrom SpiecEasi pval.sparccboot
 #' @importFrom SpiecEasi sparccboot
+#' @importFrom SpiecEasi sparcc
 setMethod("correlation", signature("data.table", "missing"), function(data1, data2, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
   method <- veupathUtils::matchArg(method)
   verbose <- veupathUtils::matchArg(verbose)
@@ -146,16 +147,26 @@ setMethod("correlation", signature("data.table", "missing"), function(data1, dat
   # rownames and colnames should be the same in this case
   # keep matrix for now so we can use lower.tri later, expand.grid will give us the needed data.frame
   if (method == 'sparcc') {
+
+    # get the sparcc function from the SpiecEasi namespace and make a local copy that do.call can find
+    sparcc <- get("sparcc", asNamespace("SpiecEasi"))
+    # sub-sampled `statistic` functions to pass to `boot::boot` that we can use to find pvalues
     statisticperm=function(data, indices) do.call("sparcc", c(list(apply(data[indices,], 2, sample)), list()))$Cor
     statisticboot=function(data, indices) do.call("sparcc", c(list(data[indices,,drop=FALSE]), list()))$Cor
 
-    corResult <- SpiecEasi::pval.sparccboot(SpiecEasi::sparccboot(data1, statisticboot = statisticboot, statisticperm = statisticperm, R = 100))
-    pVals <- corResult$pVals
-    corResult <- corResult$cors
+    # calling the bootstrap version of sparcc and finding pvalues
+    corrResult <- SpiecEasi::pval.sparccboot(SpiecEasi::sparccboot(data1, statisticboot = statisticboot, statisticperm = statisticperm, R = 100))
+    # making sure results are formatted correctly for downstream use
+    pVals <- matrix(corrResult$pvals, nrow = ncol(data1), ncol = ncol(data1), byrow = T)
+    corrResult <- corrResult$cors
+    rownames(corrResult) <- colnames(corrResult) <- colnames(data1)
+  
   } else {
+  
     corrResult <- Hmisc::rcorr(as.matrix(data1), type = method)
     pVals <- corrResult$P
     corrResult <- corrResult$r
+  
   }
 
   veupathUtils::logWithTime(paste0('Completed correlation with method=', method,'. Formatting results.'), verbose)
