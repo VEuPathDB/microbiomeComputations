@@ -251,7 +251,7 @@ test_that("correlation returns an appropriately structured result for assay agai
   expect_equal(nrow(statsData), 66) # Should be number of taxa * number of taxa
   #expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:(length(names(testOTU)) - 1)])
   #expect_equal(as.character(unique(statsData$data2)), names(testOTU)[3:length(names(testOTU))])
-  expect_true(all(!is.na(statsData)))
+  expect_true(all(!is.na(statsData$correlationCoef))) # sparcc returns NA for pvalues sometimes
 })
 
 test_that("correlation returns an appropriately structured result for assay vs assay", {
