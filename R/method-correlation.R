@@ -235,14 +235,14 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' This function returns the correlation of all columns of an AbundanceData object with appropriate columns of a SampleMetadata object.
 #' 
 #' @param data1 AbundanceData object. Will correlate abundance variables with specified variables in data2
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson', and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @param proportionNonZeroThreshold numeric threshold to filter features by proportion of non-zero values across samples
 #' @param varianceThreshold numeric threshold to filter features by variance across samples
 #' @param stdDevThreshold numeric threshold to filter features by standard deviation across samples
 #' @return a ComputeResult object
 #' @export
-setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
+setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
   #prefilters applied
   data1 <- pruneFeatures(data1, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
   data1 <- pruneFeatures(data1, predicateFactory('variance', varianceThreshold), verbose)
@@ -262,13 +262,13 @@ setMethod("correlation", signature("AbundanceData", "missing"), function(data1, 
 #' This function returns correlation coefficients for variables in one dataset against itself
 #' 
 #' @param data first dataset. An AbundanceData object or data.table
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman','pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
 setGeneric("selfCorrelation",
-  function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), ...) standardGeneric("selfCorrelation"),
+  function(data, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE), ...) standardGeneric("selfCorrelation"),
   signature = c("data")
 )
 
@@ -277,7 +277,7 @@ setGeneric("selfCorrelation",
 #' This function returns correlation coefficients for variables in one AbundanceData object against itself
 #' 
 #' @param data An AbundanceData object
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman','pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @param proportionNonZeroThreshold numeric threshold to filter features by proportion of non-zero values across samples
 #' @param varianceThreshold numeric threshold to filter features by variance across samples
@@ -285,7 +285,7 @@ setGeneric("selfCorrelation",
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
-setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
+setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
   #prefilters applied
   data <- pruneFeatures(data, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
   data <- pruneFeatures(data, predicateFactory('variance', varianceThreshold), verbose)
@@ -305,12 +305,12 @@ setMethod("selfCorrelation", signature("AbundanceData"), function(data, method =
 #' This function returns correlation coefficients for variables in one SampleMetadata object against itself
 #' 
 #' @param data SampleMetadata object
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
-setMethod("selfCorrelation", signature("SampleMetadata"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("selfCorrelation", signature("SampleMetadata"), function(data, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
   corrResult <- correlation(getSampleMetadata(data, TRUE, FALSE), method=method, verbose=verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(data1), "samples and", (ncol(data)-1), "variables."), verbose)
@@ -325,12 +325,12 @@ setMethod("selfCorrelation", signature("SampleMetadata"), function(data, method 
 #' This is essentially an alias to the microbiomeComputations::correlation function.
 #' 
 #' @param data a data.table
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
-setMethod("selfCorrelation", signature("data.table"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("selfCorrelation", signature("data.table"), function(data, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
   correlation(data, method=method, verbose=verbose)
 })
 
