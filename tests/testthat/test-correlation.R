@@ -39,9 +39,9 @@ test_that('correlation works with two data tables', {
 test_that("correlation works with a single data table", {
   nSamples = 200
   testData1 <- data.table(
-    "contA1" = rnorm(nSamples),
-    "contB1" = rnorm(nSamples),
-    "contC1" = rnorm(nSamples)
+    "contA1" = rnorm(nSamples,1,.5), #sparcc wont like negative values
+    "contB1" = rnorm(nSamples,1,.5),
+    "contC1" = rnorm(nSamples,1,.5)
   )
   corrResult <- correlation(testData1, method='spearman', verbose=F)
   expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
@@ -49,6 +49,11 @@ test_that("correlation works with a single data table", {
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
   corrResult <- correlation(testData1, method='pearson', verbose=F)
+  expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
+  expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
+  expect_true(!all(is.na(corrResult$correlationCoef)))
+
+  corrResult <- correlation(testData1, method='sparcc', verbose=F)
   expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
   expect_true(!all(is.na(corrResult$correlationCoef)))
@@ -234,6 +239,16 @@ test_that("correlation returns an appropriately structured result for assay agai
   expect_s3_class(statsData, 'data.frame')
   expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   expect_equal(nrow(statsData), 66) # Should be number of taxa * number of taxa, less pruned taxa
+  #expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:(length(names(testOTU)) - 1)])
+  #expect_equal(as.character(unique(statsData$data2)), names(testOTU)[3:length(names(testOTU))])
+  expect_true(all(!is.na(statsData)))
+
+  # method = sparcc
+  result <- selfCorrelation(data, method='sparcc', verbose = FALSE)
+  statsData <- result@statistics@statistics
+  expect_s3_class(statsData, 'data.frame')
+  expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
+  expect_equal(nrow(statsData), 66) # Should be number of taxa * number of taxa
   #expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:(length(names(testOTU)) - 1)])
   #expect_equal(as.character(unique(statsData$data2)), names(testOTU)[3:length(names(testOTU))])
   expect_true(all(!is.na(statsData)))
