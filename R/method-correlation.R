@@ -54,7 +54,7 @@ setMethod("predicateFactory", signature("character", "numeric"), function(predic
 #' 
 #' @param data1 first dataset. An AbundanceData object or data.table
 #' @param data2 second dataset. A SampleMetadata object (if data1 is class AbundanceData) or a data.table
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.frame with correlation coefficients or a ComputeResult object
 #' @import veupathUtils
@@ -73,7 +73,7 @@ setGeneric("correlation",
 #' 
 #' @param data1 data.table with columns as variables. All columns must be numeric. One row per sample.
 #' @param data2 data.table with columns as variables. All columns must be numeric. One row per sample. Will correlate all columns of data2 with all columns of data1.
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @importFrom Hmisc rcorr
 #' @return data.frame with correlation coefficients
@@ -129,7 +129,7 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 #' This function returns correlation coefficients for all columns in one data table against themselves.
 #' 
 #' @param data1 data.table with columns as variables. All columns must be numeric. One row per sample.
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.frame with correlation coefficients
 #' @importFrom Hmisc rcorr
@@ -193,7 +193,7 @@ getDataMetadataType <- function(data) {
 
 ## Helper function
 # should this be s4?
-buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
   method <- veupathUtils::matchArg(method)
   verbose <- veupathUtils::matchArg(verbose)
   if (!inherits(data1, c("AbundanceData", "SampleMetadata"))) {
