@@ -148,17 +148,25 @@ setMethod("correlation", signature("data.table", "missing"), function(data1, dat
   # keep matrix for now so we can use lower.tri later, expand.grid will give us the needed data.frame
   if (method == 'sparcc') {
 
-    # get the sparcc function from the SpiecEasi namespace and make a local copy that do.call can find
-    sparcc <- get("sparcc", asNamespace("SpiecEasi"))
+    # this is a local alias for the sparcc function from the SpiecEasi namespace that do.call can find
+    # if we need to customize how we call sparcc in the future, we'll need to do something like the following
+    # except the empty list would have args for the sparcc function
+    #sparcc <- get("sparcc", asNamespace("SpiecEasi"))
+    #statisticperm=function(data, indices) do.call("sparcc", c(list(apply(data[indices,], 2, sample)), list()))$Cor
+    #statisticboot=function(data, indices) do.call("sparcc", c(list(data[indices,,drop=FALSE]), list()))$Cor
+
     # sub-sampled `statistic` functions to pass to `boot::boot` that we can use to find pvalues
-    statisticperm=function(data, indices) do.call("sparcc", c(list(apply(data[indices,], 2, sample)), list()))$Cor
-    statisticboot=function(data, indices) do.call("sparcc", c(list(data[indices,,drop=FALSE]), list()))$Cor
+    # statisticboot = function which takes data and bootstrap sample indices of the bootstapped correlation matrix
+    # statisticperm = function which takes data and permutated sample indices of the null correlation matrix
+    # the SpiecEasi defaults for these functions return the upper triangle of the correlation matrix. We do that manually later instead.
+    statisticperm = function(data, indices) SpiecEasi::sparcc(apply(data[indices,], 2, sample))$Cor
+    statisticboot = function(data, indices) SpiecEasi::sparcc(data[indices,,drop=FALSE])$Cor
 
     # calling the bootstrap version of sparcc and finding pvalues
-    corrResult <- SpiecEasi::pval.sparccboot(SpiecEasi::sparccboot(data1, statisticboot = statisticboot, statisticperm = statisticperm, R = 100))
+    result <- SpiecEasi::pval.sparccboot(SpiecEasi::sparccboot(data1, statisticboot = statisticboot, statisticperm = statisticperm, R = 100))
     # making sure results are formatted correctly for downstream use
-    pVals <- matrix(corrResult$pvals, nrow = ncol(data1), ncol = ncol(data1), byrow = T)
-    corrResult <- corrResult$cors
+    pVals <- matrix(result$pvals, nrow = ncol(data1), ncol = ncol(data1), byrow = T)
+    corrResult <- result$cors
     rownames(corrResult) <- colnames(corrResult) <- colnames(data1)
   
   } else {
