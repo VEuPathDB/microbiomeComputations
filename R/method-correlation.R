@@ -54,7 +54,7 @@ setMethod("predicateFactory", signature("character", "numeric"), function(predic
 #' 
 #' @param data1 first dataset. An AbundanceData object or data.table
 #' @param data2 second dataset. A SampleMetadata object (if data1 is class AbundanceData) or a data.table
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson' and 'sparcc'
+#' @param method string defining the type of correlation to run. The currently supported values are specific to the class of data1 and data2.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.frame with correlation coefficients or a ComputeResult object
 #' @import veupathUtils
@@ -62,7 +62,7 @@ setMethod("predicateFactory", signature("character", "numeric"), function(predic
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("correlation",
-  function(data1, data2, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE), ...) standardGeneric("correlation"),
+  function(data1, data2, method, verbose = c(TRUE, FALSE), ...) standardGeneric("correlation"),
   signature = c("data1","data2")
 )
 
@@ -73,18 +73,13 @@ setGeneric("correlation",
 #' 
 #' @param data1 data.table with columns as variables. All columns must be numeric. One row per sample.
 #' @param data2 data.table with columns as variables. All columns must be numeric. One row per sample. Will correlate all columns of data2 with all columns of data1.
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson' and 'sparcc'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
 #' @importFrom Hmisc rcorr
 #' @return data.frame with correlation coefficients
-setMethod("correlation", signature("data.table", "data.table"), function(data1, data2, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
+setMethod("correlation", signature("data.table", "data.table"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
   method <- veupathUtils::matchArg(method)
   verbose <- veupathUtils::matchArg(verbose)
-
-  # sparcc is not intended for use with two datasets
-  if (method == 'sparcc') {
-    stop("sparcc is not intended for use with two datasets.")
-  }  
 
   # Check that the number of rows match.
   if (!identical(nrow(data1), nrow(data2))) {
@@ -243,14 +238,14 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' This function returns the correlation of all columns of an AbundanceData object with appropriate columns of a SampleMetadata object.
 #' 
 #' @param data1 AbundanceData object. Will correlate abundance variables with specified variables in data2
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson', and 'sparcc'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
 #' @param verbose boolean indicating if timed logging is desired
 #' @param proportionNonZeroThreshold numeric threshold to filter features by proportion of non-zero values across samples
 #' @param varianceThreshold numeric threshold to filter features by variance across samples
 #' @param stdDevThreshold numeric threshold to filter features by standard deviation across samples
 #' @return a ComputeResult object
 #' @export
-setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
+setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
   #prefilters applied
   data1 <- pruneFeatures(data1, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
   data1 <- pruneFeatures(data1, predicateFactory('variance', varianceThreshold), verbose)
