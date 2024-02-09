@@ -53,13 +53,13 @@ test_that("correlation works with a single data table", {
   expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
-  corrResult <- correlation(abs(testData1), method='sparcc', verbose=F)
+  corrResult <- correlation(abs(testData1), method='sparcc', verbose=F) #sparcc wont like negative values
   expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
   #test alias
-  corrResult <- selfCorrelation(abs(testData1), method='pearson', verbose=F) #sparcc wont like negative values
+  corrResult <- selfCorrelation(testData1, method='pearson', verbose=F) 
   expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
   expect_true(!all(is.na(corrResult$correlationCoef)))
