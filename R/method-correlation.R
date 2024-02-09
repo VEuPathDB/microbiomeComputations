@@ -54,7 +54,7 @@ setMethod("predicateFactory", signature("character", "numeric"), function(predic
 #' 
 #' @param data1 first dataset. An AbundanceData object or data.table
 #' @param data2 second dataset. A SampleMetadata object (if data1 is class AbundanceData) or a data.table
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are specific to the class of data1 and data2.
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.frame with correlation coefficients or a ComputeResult object
 #' @import veupathUtils
@@ -62,7 +62,7 @@ setMethod("predicateFactory", signature("character", "numeric"), function(predic
 #' @useDynLib microbiomeComputations
 #' @export
 setGeneric("correlation",
-  function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), ...) standardGeneric("correlation"),
+  function(data1, data2, method, verbose = c(TRUE, FALSE), ...) standardGeneric("correlation"),
   signature = c("data1","data2")
 )
 
@@ -124,10 +124,14 @@ setMethod("correlation", signature("data.table", "data.table"), function(data1, 
 #' This function returns correlation coefficients for all columns in one data table against themselves.
 #' 
 #' @param data1 data.table with columns as variables. All columns must be numeric. One row per sample.
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return data.frame with correlation coefficients
-setMethod("correlation", signature("data.table", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+#' @importFrom Hmisc rcorr
+#' @importFrom SpiecEasi pval.sparccboot
+#' @importFrom SpiecEasi sparccboot
+#' @importFrom SpiecEasi sparcc
+setMethod("correlation", signature("data.table", "missing"), function(data1, data2, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
   method <- veupathUtils::matchArg(method)
   verbose <- veupathUtils::matchArg(verbose)
 
@@ -136,11 +140,37 @@ setMethod("correlation", signature("data.table", "missing"), function(data1, dat
 
   ## Compute correlation
   # rownames and colnames should be the same in this case
-  # na.or.complete removes rows with NAs, if no rows remain then correlation is NA
   # keep matrix for now so we can use lower.tri later, expand.grid will give us the needed data.frame
-  corrResult <- Hmisc::rcorr(as.matrix(data1), type = method)
-  pVals <- corrResult$P
-  corrResult <- corrResult$r
+  if (method == 'sparcc') {
+
+    # this is a local alias for the sparcc function from the SpiecEasi namespace that do.call can find
+    # if we need to customize how we call sparcc in the future, we'll need to do something like the following
+    # except the empty list would have args for the sparcc function
+    #sparcc <- get("sparcc", asNamespace("SpiecEasi"))
+    #statisticperm=function(data, indices) do.call("sparcc", c(list(apply(data[indices,], 2, sample)), list()))$Cor
+    #statisticboot=function(data, indices) do.call("sparcc", c(list(data[indices,,drop=FALSE]), list()))$Cor
+
+    # sub-sampled `statistic` functions to pass to `boot::boot` that we can use to find pvalues
+    # statisticboot = function which takes data and bootstrap sample indices of the bootstapped correlation matrix
+    # statisticperm = function which takes data and permutated sample indices of the null correlation matrix
+    # the SpiecEasi defaults for these functions return the upper triangle of the correlation matrix. We do that manually later instead.
+    statisticperm = function(data, indices) SpiecEasi::sparcc(apply(data[indices,], 2, sample))$Cor
+    statisticboot = function(data, indices) SpiecEasi::sparcc(data[indices,,drop=FALSE])$Cor
+
+    # calling the bootstrap version of sparcc and finding pvalues
+    result <- SpiecEasi::pval.sparccboot(SpiecEasi::sparccboot(data1, statisticboot = statisticboot, statisticperm = statisticperm, R = 100))
+    # making sure results are formatted correctly for downstream use
+    pVals <- matrix(result$pvals, nrow = ncol(data1), ncol = ncol(data1), byrow = T)
+    corrResult <- result$cors
+    rownames(corrResult) <- colnames(corrResult) <- colnames(data1)
+  
+  } else {
+  
+    corrResult <- Hmisc::rcorr(as.matrix(data1), type = method)
+    pVals <- corrResult$P
+    corrResult <- corrResult$r
+  
+  }
 
   veupathUtils::logWithTime(paste0('Completed correlation with method=', method,'. Formatting results.'), verbose)
 
@@ -166,7 +196,7 @@ getDataMetadataType <- function(data) {
 
 ## Helper function
 # should this be s4?
-buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
   method <- veupathUtils::matchArg(method)
   verbose <- veupathUtils::matchArg(verbose)
   if (!inherits(data1, c("AbundanceData", "SampleMetadata"))) {
@@ -235,13 +265,13 @@ setMethod("correlation", signature("AbundanceData", "missing"), function(data1, 
 #' This function returns correlation coefficients for variables in one dataset against itself
 #' 
 #' @param data first dataset. An AbundanceData object or data.table
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman','pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
 setGeneric("selfCorrelation",
-  function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), ...) standardGeneric("selfCorrelation"),
+  function(data, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE), ...) standardGeneric("selfCorrelation"),
   signature = c("data")
 )
 
@@ -250,7 +280,7 @@ setGeneric("selfCorrelation",
 #' This function returns correlation coefficients for variables in one AbundanceData object against itself
 #' 
 #' @param data An AbundanceData object
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman','pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @param proportionNonZeroThreshold numeric threshold to filter features by proportion of non-zero values across samples
 #' @param varianceThreshold numeric threshold to filter features by variance across samples
@@ -258,7 +288,7 @@ setGeneric("selfCorrelation",
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
-setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
+setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
   #prefilters applied
   data <- pruneFeatures(data, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
   data <- pruneFeatures(data, predicateFactory('variance', varianceThreshold), verbose)
@@ -278,12 +308,12 @@ setMethod("selfCorrelation", signature("AbundanceData"), function(data, method =
 #' This function returns correlation coefficients for variables in one SampleMetadata object against itself
 #' 
 #' @param data SampleMetadata object
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
-setMethod("selfCorrelation", signature("SampleMetadata"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("selfCorrelation", signature("SampleMetadata"), function(data, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
   corrResult <- correlation(getSampleMetadata(data, TRUE, FALSE), method=method, verbose=verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(data1), "samples and", (ncol(data)-1), "variables."), verbose)
@@ -298,12 +328,12 @@ setMethod("selfCorrelation", signature("SampleMetadata"), function(data, method 
 #' This is essentially an alias to the microbiomeComputations::correlation function.
 #' 
 #' @param data a data.table
-#' @param method string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'
+#' @param method string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson' and 'sparcc'
 #' @param verbose boolean indicating if timed logging is desired
 #' @return ComputeResult object
 #' @import veupathUtils
 #' @export
-setMethod("selfCorrelation", signature("data.table"), function(data, method = c('spearman','pearson'), verbose = c(TRUE, FALSE)) {
+setMethod("selfCorrelation", signature("data.table"), function(data, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
   correlation(data, method=method, verbose=verbose)
 })
 
