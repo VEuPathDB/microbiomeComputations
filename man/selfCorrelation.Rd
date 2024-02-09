@@ -6,7 +6,7 @@
 \usage{
 selfCorrelation(
   data,
-  method = c("spearman", "pearson"),
+  method = c("spearman", "pearson", "sparcc"),
   verbose = c(TRUE, FALSE),
   ...
 )
@@ -14,7 +14,7 @@ selfCorrelation(
 \arguments{
 \item{data}{first dataset. An AbundanceData object or data.table}
 
-\item{method}{string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'}
+\item{method}{string defining the type of correlation to run. The currently supported values are 'spearman','pearson' and 'sparcc'}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

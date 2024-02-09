@@ -7,14 +7,14 @@
 \S4method{correlation}{data.table,missing}(
   data1,
   data2,
-  method = c("spearman", "pearson"),
+  method = c("spearman", "pearson", "sparcc"),
   verbose = c(TRUE, FALSE)
 )
 }
 \arguments{
 \item{data1}{data.table with columns as variables. All columns must be numeric. One row per sample.}
 
-\item{method}{string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'}
+\item{method}{string defining the type of correlation to run. The currently supported values are 'spearman', 'pearson' and 'sparcc'}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 }

@@ -79,6 +79,7 @@ cleanComparatorVariable <- function(data, comparator, verbose = c(TRUE, FALSE)) 
     return(data)
 }
 
+#' @export
 DifferentialAbundanceResult <- setClass("DifferentialAbundanceResult", representation(
     effectSizeLabel = 'character',
     statistics = 'data.frame',
