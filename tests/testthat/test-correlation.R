@@ -39,9 +39,9 @@ test_that('correlation works with two data tables', {
 test_that("correlation works with a single data table", {
   nSamples = 200
   testData1 <- data.table(
-    "contA1" = rnorm(nSamples,1,.5), #sparcc wont like negative values
-    "contB1" = rnorm(nSamples,1,.5),
-    "contC1" = rnorm(nSamples,1,.5)
+    "contA1" = rnorm(nSamples),
+    "contB1" = rnorm(nSamples),
+    "contC1" = rnorm(nSamples)
   )
   corrResult <- correlation(testData1, method='spearman', verbose=F)
   expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
@@ -53,13 +53,13 @@ test_that("correlation works with a single data table", {
   expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
-  corrResult <- correlation(testData1, method='sparcc', verbose=F)
+  corrResult <- correlation(abs(testData1), method='sparcc', verbose=F)
   expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
   expect_true(!all(is.na(corrResult$correlationCoef)))
 
   #test alias
-  corrResult <- selfCorrelation(testData1, method='pearson', verbose=F)
+  corrResult <- selfCorrelation(abs(testData1), method='pearson', verbose=F) #sparcc wont like negative values
   expect_equal(names(corrResult), c("data1","data2","correlationCoef","pValue"))
   expect_equal(nrow(corrResult), (ncol(testData1) * ncol(testData1) - 3)/2)
   expect_true(!all(is.na(corrResult$correlationCoef)))
@@ -202,7 +202,14 @@ test_that("correlation returns an appropriately structured result for metadata v
 })
 
 test_that("correlation returns an appropriately structured result for assay against self", {
+
   df <- testOTU
+  #manually prefilter, so we can test on smaller data set w known column names
+  predicate <- predicateFactory('proportionNonZero', 0.5)
+  keepCols <- df[, lapply(.SD, predicate), .SDcols = colnames(df)[!(colnames(df) %in% "entity.SampleID")]]
+  keepCols <- names(keepCols)[keepCols == TRUE]
+  df <- df[, c("entity.SampleID", keepCols), with = FALSE]
+
   nSamples <- dim(df)[1]
   sampleMetadata <- SampleMetadata(
     data = data.frame(list(
@@ -229,8 +236,8 @@ test_that("correlation returns an appropriately structured result for assay agai
   expect_s3_class(statsData, 'data.frame')
   expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   expect_equal(nrow(statsData), 66) # Should be number of taxa * number of taxa
-  #expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:(length(names(testOTU))-1)])
-  #expect_equal(as.character(unique(statsData$data2)), names(testOTU)[3:length(names(testOTU))])
+  expect_equal(as.character(unique(statsData$data1)), names(df)[2:(length(names(df))-1)])
+  expect_equal(as.character(unique(statsData$data2)), names(df)[3:length(names(df))])
   expect_true(all(!is.na(statsData)))
 
   # method = spearman
@@ -239,8 +246,8 @@ test_that("correlation returns an appropriately structured result for assay agai
   expect_s3_class(statsData, 'data.frame')
   expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   expect_equal(nrow(statsData), 66) # Should be number of taxa * number of taxa, less pruned taxa
-  #expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:(length(names(testOTU)) - 1)])
-  #expect_equal(as.character(unique(statsData$data2)), names(testOTU)[3:length(names(testOTU))])
+  expect_equal(as.character(unique(statsData$data1)), names(df)[2:(length(names(df)) - 1)])
+  expect_equal(as.character(unique(statsData$data2)), names(df)[3:length(names(df))])
   expect_true(all(!is.na(statsData)))
 
   # method = sparcc
@@ -249,8 +256,8 @@ test_that("correlation returns an appropriately structured result for assay agai
   expect_s3_class(statsData, 'data.frame')
   expect_equal(names(statsData), c('data1','data2','correlationCoef','pValue'))
   expect_equal(nrow(statsData), 66) # Should be number of taxa * number of taxa
-  #expect_equal(as.character(unique(statsData$data1)), names(testOTU)[2:(length(names(testOTU)) - 1)])
-  #expect_equal(as.character(unique(statsData$data2)), names(testOTU)[3:length(names(testOTU))])
+  expect_equal(as.character(unique(statsData$data1)), names(df)[2:(length(names(df)) - 1)])
+  expect_equal(as.character(unique(statsData$data2)), names(df)[3:length(names(df))])
   expect_true(all(!is.na(statsData$correlationCoef))) # sparcc returns NA for pvalues sometimes
 })
 
