@@ -64,6 +64,10 @@ cleanComparatorVariable <- function(data, comparator, verbose = c(TRUE, FALSE)) 
     if (!length(keepSamples)) {
       stop("No samples remain after subsetting based on the comparator variable.")
     }
+    # need to make sure we actually have two groups
+    if (length(unique(sampleMetadata[[comparatorColName]])) < 2) {
+      stop("The comparator variable must have at least two values/ groups within the subset.")
+    }
     veupathUtils::logWithTime(paste0("Found ",length(keepSamples)," samples with a value for ", comparatorColName, " in either groupA or groupB. The calculation will continue with only these samples."), verbose)
 
     # Subset the abundance data based on the kept samples

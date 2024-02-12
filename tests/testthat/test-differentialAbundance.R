@@ -656,3 +656,37 @@ test_that("The smallest pvalue we can get is our p value floor", {
 
 
 })
+
+test_that("differentialAbundance fails if comparator has one value", {
+
+  df <- testOTU
+  
+  sampleMetadata <- SampleMetadata(
+    data = data.frame(list(
+      "entity.SampleID" = df[["entity.SampleID"]],
+      "entity.binA" = rep(c("binA"), nrow(df))
+    )),
+    recordIdColumn ="entity.SampleID"
+  )
+
+  testData <- microbiomeComputations::AbundanceData(
+    data = df,
+    sampleMetadata = sampleMetadata,
+    recordIdColumn = 'entity.SampleID'
+  )
+
+  comparatorVariable <- microbiomeComputations::Comparator(
+    variable = veupathUtils::VariableMetadata(
+      variableSpec = VariableSpec(
+        variableId = 'binA',
+        entityId = 'entity'
+      ),
+      dataShape = veupathUtils::DataShape(value="BINARY")
+    ),
+    groupA = veupathUtils::BinList(S4Vectors::SimpleList(c(veupathUtils::Bin(binLabel="binA")))),
+    groupB = veupathUtils::BinList(S4Vectors::SimpleList(c(veupathUtils::Bin(binLabel="binB"))))
+  )
+
+  expect_error(differentialAbundance(testData, comparator=comparatorVariable, method='DESeq', verbose=F))
+  expect_error(differentialAbundance(testData, comparator=comparatorVariable, method='Maaslin', verbose=F))
+})
