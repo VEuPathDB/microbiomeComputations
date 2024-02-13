@@ -9,9 +9,12 @@ check_abundance_data <- function(object) {
     errors <- c(errors, msg)
 
     # Abundance data should all come from the same entity
-    if (uniqueN(veupathUtils::strSplit(names(df)[!names(df) %in% ancestor_id_cols], ".", ncol=2, index=1)) > 1) {
-      msg <- paste("All columns must belong to the same entity.")
-      errors <- c(errors, msg)
+    # using the presence of the period to indicate eda services formatted data
+    if (all(grepl(".", names(df), fixed = TRUE))) {
+      if (uniqueN(veupathUtils::strSplit(names(df)[!names(df) %in% ancestor_id_cols], ".", ncol=2, index=1)) > 1) {
+        msg <- paste("All columns must belong to the same entity.")
+        errors <- c(errors, msg)
+      }
     }
 
     allDataColsNumeric <- all(unlist(lapply(df[, !(names(df) %in% c(record_id_col, ancestor_id_cols))], is.numeric)))
