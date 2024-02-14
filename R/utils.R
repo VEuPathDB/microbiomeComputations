@@ -51,7 +51,10 @@ rankTaxa <- function(df, method=c('median','max','q3','variance')) {
 
 stripEntityIdFromColumnHeader <- function(columnNames) {
   columnsToFix <- grepl(".", columnNames, fixed=T)
-  columnNames[columnsToFix] <- veupathUtils::strSplit(columnNames[columnsToFix], ".", index=2)
+
+  if (sum(columnsToFix) > 0) {
+    columnNames[columnsToFix] <- veupathUtils::strSplit(columnNames[columnsToFix], ".", index=2)
+  }
 
   return(columnNames)
 }
