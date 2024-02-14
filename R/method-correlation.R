@@ -246,6 +246,9 @@ buildCorrelationComputeResult <- function(corrResult, data1, data2 = NULL, metho
 #' @return a ComputeResult object
 #' @export
 setMethod("correlation", signature("AbundanceData", "missing"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
+  method <- veupathUtils::matchArg(method)
+  verbose <- veupathUtils::matchArg(verbose)
+  
   #prefilters applied
   data1 <- pruneFeatures(data1, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
   data1 <- pruneFeatures(data1, predicateFactory('variance', varianceThreshold), verbose)
@@ -289,6 +292,9 @@ setGeneric("selfCorrelation",
 #' @import veupathUtils
 #' @export
 setMethod("selfCorrelation", signature("AbundanceData"), function(data, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
+  method <- veupathUtils::matchArg(method)
+  verbose <- veupathUtils::matchArg(verbose)
+
   #prefilters applied
   data <- pruneFeatures(data, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
   data <- pruneFeatures(data, predicateFactory('variance', varianceThreshold), verbose)
@@ -314,6 +320,9 @@ setMethod("selfCorrelation", signature("AbundanceData"), function(data, method =
 #' @import veupathUtils
 #' @export
 setMethod("selfCorrelation", signature("SampleMetadata"), function(data, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
+  method <- veupathUtils::matchArg(method)
+  verbose <- veupathUtils::matchArg(verbose)
+  
   corrResult <- correlation(getSampleMetadata(data, TRUE, FALSE), method=method, verbose=verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(data1), "samples and", (ncol(data)-1), "variables."), verbose)
@@ -334,6 +343,9 @@ setMethod("selfCorrelation", signature("SampleMetadata"), function(data, method 
 #' @import veupathUtils
 #' @export
 setMethod("selfCorrelation", signature("data.table"), function(data, method = c('spearman','pearson','sparcc'), verbose = c(TRUE, FALSE)) {
+  method <- veupathUtils::matchArg(method)
+  verbose <- veupathUtils::matchArg(verbose)
+  
   correlation(data, method=method, verbose=verbose)
 })
 
@@ -351,6 +363,9 @@ setMethod("selfCorrelation", signature("data.table"), function(data, method = c(
 #' @return ComputeResult object
 #' @export
 setMethod("correlation", signature("AbundanceData", "AbundanceData"), function(data1, data2, method = c('spearman','pearson'), verbose = c(TRUE, FALSE), proportionNonZeroThreshold = 0.5, varianceThreshold = 0, stdDevThreshold = 0) {
+  method <- veupathUtils::matchArg(method)
+  verbose <- veupathUtils::matchArg(verbose)
+  
   #prefilters applied
   data1 <- pruneFeatures(data1, predicateFactory('proportionNonZero', proportionNonZeroThreshold), verbose)
   data1 <- pruneFeatures(data1, predicateFactory('variance', varianceThreshold), verbose)
