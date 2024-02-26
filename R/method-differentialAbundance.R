@@ -309,7 +309,7 @@ setMethod("differentialAbundance", signature("AbundanceData", "Comparator"), fun
 
     # The resulting data should contain only the samples actually used.
     result@data <- data@data[, ..allIdColumns]
-    names(result@data) <- stripEntityIdFromColumnHeader(names(result@data))
+    names(result@data) <- veupathUtils::stripEntityIdFromColumnHeader(names(result@data))
 
 
     validObject(result)

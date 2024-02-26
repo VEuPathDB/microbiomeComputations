@@ -86,7 +86,7 @@ setMethod("alphaDiv", signature("AbundanceData"), function(data, method = c('sha
       )
       
     result@computedVariableMetadata <- veupathUtils::VariableMetadataList(S4Vectors::SimpleList(computedVariableMetadata))
-    names(dt) <- stripEntityIdFromColumnHeader(names(dt))
+    names(dt) <- veupathUtils::stripEntityIdFromColumnHeader(names(dt))
     result@data <- dt 
     
     validObject(result)

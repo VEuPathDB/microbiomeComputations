@@ -116,7 +116,7 @@ setMethod("betaDiv", signature("AbundanceData"), function(data, method = c('bray
     computedVariableMetadata <- veupathUtils::VariableMetadataList(lapply(displayNames, makeVariableMetadataObject))
 
     result@computedVariableMetadata <- computedVariableMetadata
-    names(dt) <- stripEntityIdFromColumnHeader(names(dt))
+    names(dt) <- veupathUtils::stripEntityIdFromColumnHeader(names(dt))
     result@data <- dt
 
     validObject(result)
