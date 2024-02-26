@@ -8,6 +8,7 @@
   data1,
   data2,
   method = c("spearman", "pearson"),
+  format = c("ComputeResult", "data.table"),
   verbose = c(TRUE, FALSE),
   proportionNonZeroThreshold = 0.5,
   varianceThreshold = 0,
@@ -20,6 +21,8 @@
 \item{data2}{AbundanceData object.}
 
 \item{method}{string defining the type of correlation to run. The currently supported values are 'spearman' and 'pearson'}
+
+\item{format}{string defining the desired format of the result. The currently supported values are 'data.table' and 'ComputeResult'.}
 
 \item{verbose}{boolean indicating if timed logging is desired}
 
