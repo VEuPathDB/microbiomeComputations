@@ -49,16 +49,6 @@ rankTaxa <- function(df, method=c('median','max','q3','variance')) {
     return(ranked)
 }
 
-stripEntityIdFromColumnHeader <- function(columnNames) {
-  columnsToFix <- grepl(".", columnNames, fixed=T)
-
-  if (sum(columnsToFix) > 0) {
-    columnNames[columnsToFix] <- veupathUtils::strSplit(columnNames[columnsToFix], ".", index=2)
-  }
-
-  return(columnNames)
-}
-
 # Given a data table, a recordIdColumn, and ancestorIdColumns (see slots of AbundanceData or SampleMetadata),
 # check to ensure given id columns are valid. Return any errors. 
 validateIdColumns <- function(df, record_id_col=character(), ancestor_id_cols=c()) {
