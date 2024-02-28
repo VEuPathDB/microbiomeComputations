@@ -1,3 +1,10 @@
+> [!CAUTION]
+> Maintenance of this repository was moved to [microbiomeDB](https://github.com/microbiomeDB) on 28 Feb 2024.
+> Please see the [new location](https://github.com/microbiomeDB/microbiomeComputations) for the most recent version.
+
+
+
+
 # microbiomeComputations
 
 microbiomeComputations is an R package which provides helper functions for performing common analyses 
