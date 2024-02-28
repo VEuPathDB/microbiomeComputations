@@ -27,7 +27,7 @@ function(data1, data2, method = c('spearman','pearson'), format  = c('ComputeRes
   data1 <- pruneFeatures(data1, predicateFactory('sd', stdDevThreshold), verbose)
   
   abundances <- getAbundances(data1, FALSE, FALSE, verbose)
-  corrResult <- correlation(abundances, getSampleMetadata(data1, TRUE, FALSE), method = method, format = 'data.table', verbose = verbose)
+  corrResult <- veupathUtils::correlation(abundances, getSampleMetadata(data1, TRUE, FALSE), method = method, format = 'data.table', verbose = verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
 
@@ -66,7 +66,7 @@ function(data, method = c('spearman','pearson','sparcc'), format = c('ComputeRes
   data <- pruneFeatures(data, predicateFactory('sd', stdDevThreshold), verbose)
 
   abundances <- getAbundances(data, FALSE, FALSE, verbose)
-  corrResult <- correlation(abundances, method = method, format = 'data.table', verbose = verbose)
+  corrResult <- veupathUtils::correlation(abundances, method = method, format = 'data.table', verbose = verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(abundances), "samples and", (ncol(abundances)-1), "features with abundances."), verbose)
 
@@ -96,7 +96,7 @@ function(data, method = c('spearman','pearson','sparcc'), format = c('ComputeRes
   method <- veupathUtils::matchArg(method)
   verbose <- veupathUtils::matchArg(verbose)
   
-  corrResult <- correlation(getSampleMetadata(data, TRUE, FALSE), method = method, format = 'data.table', verbose = verbose)
+  corrResult <- veupathUtils::correlation(getSampleMetadata(data, TRUE, FALSE), method = method, format = 'data.table', verbose = verbose)
 
   veupathUtils::logWithTime(paste("Received df table with", nrow(data), "samples and", (ncol(data)-1), "variables."), verbose)
 
@@ -155,7 +155,7 @@ function(data1, data2, method = c('spearman','pearson'), format = c('ComputeResu
   abundances1 <- abundances1[, -..allIdColumns]
   abundances2 <- abundances2[, -..allIdColumns]  
 
-  corrResult <- correlation(abundances1, abundances2, method = method, format = 'data.table', verbose = verbose)
+  corrResult <- veupathUtils::correlation(abundances1, abundances2, method = method, format = 'data.table', verbose = verbose)
 
   veupathUtils::logWithTime(paste("Received first df table with", nrow(abundances1), "samples and", (ncol(abundances1)-1), "features with abundances."), verbose)
   veupathUtils::logWithTime(paste("Received second df table with", nrow(abundances2), "samples and", (ncol(abundances2)-1), "features with abundances."), verbose)
