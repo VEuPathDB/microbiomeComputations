@@ -15,6 +15,14 @@ test_that('AbundanceData validation works', {
               recordIdColumn = c('entity.SampleID'),
               ancestorIdColumns = c('test')))
 
+  # Negatives
+  df_neg <- df
+  df_neg[3, 5] <- -1
+  df_neg[7, 9] <- -2
+  expect_error(microbiomeComputations::AbundanceData(
+              data = df_neg,
+              recordIdColumn = c('entity.SampleID')))
+
   df$entity.strings <- 'a'
 
   expect_error(microbiomeComputations::AbundanceData(
