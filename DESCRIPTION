@@ -1,6 +1,6 @@
 Package: microbiomeComputations
 Title: Compute Results for Microbiome Analyses
-Version: 4.0.0
+Version: 4.1.0
 Authors@R: 
     c(person(given = "Danielle",
            family = "Callan",
@@ -19,7 +19,6 @@ Imports:
     Maaslin2,
     methods,
     Rcpp (>= 0.11.0),
-    SpiecEasi,
     stringi,
     vegan,
     veupathUtils,
@@ -29,8 +28,8 @@ Depends:
     purrr,
     R (>= 2.10)
 Remotes:
-    VEuPathDB/veupathUtils,
-    zdk123/SpiecEasi
+    VEuPathDB/veupathUtils@v2.9.0,
+    bioc::3.22/Maaslin2
 LinkingTo: Rcpp
 URL: https://github.com/VEuPathDB/microbiomeComputations
 BugReports: https://github.com/VEuPathDB/microbiomeComputations/issues
