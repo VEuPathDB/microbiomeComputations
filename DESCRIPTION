@@ -23,7 +23,6 @@ Imports:
     vegan,
     veupathUtils,
 Depends:
-    Maaslin2,
     S4Vectors,
     purrr,
     R (>= 2.10)
