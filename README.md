@@ -29,6 +29,10 @@ dt <- alphaDiv(df, recordIdColumn="entity.SampleID", method='simpson')
 ## Testing
 This package uses the testthat package for testing.
 
+## Docker
+
+The `Dockerfile` is just for testing installation and dependency resolution. You can probably ignore it.
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
